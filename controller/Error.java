@@ -9,10 +9,10 @@ import java.time.format.DateTimeFormatter;
 public class Error {
     public Error(String message) {
         try {
-            File file = new File("error.log");
+            File file = new File("/error.log");
             file.createNewFile();
 
-            FileWriter fileWriter = new FileWriter("error.log");
+            FileWriter fileWriter = new FileWriter(file.getAbsolutePath());
             String content = "[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")) + "]: " + message;
             fileWriter.write(content);
             fileWriter.close();

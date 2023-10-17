@@ -165,11 +165,12 @@ public class Controller {
         if (empty_nama && empty_alamat && empty_kota && empty_foto) { return -2; }
 
         String sql = "UPDATE `cinema` SET ";
-
-        if (!empty_nama) { sql += "`nama` = `?`, "; }
-        if (!empty_alamat) { sql += "`alamat` = `?`, "; }
-        if (!empty_kota) { sql += "`kota` = `?`, "; }
-        if (!empty_foto) { sql += "`img` = `?`,"; }
+        if (!empty_nama) { sql += "`nama` = ?, "; }
+        if (!empty_alamat) { sql += "`alamat` = ?, "; }
+        if (!empty_kota) { sql += "`kota` = ?, "; }
+        if (!empty_foto) { sql += "`img` = ?,"; }
+        sql = sql.substring(0, sql.length() - 1);
+        sql += " WHERE `id_cinema` = ?";
 
         try {
             Connection conn = null;
@@ -186,7 +187,8 @@ public class Controller {
                 if (!empty_nama) { ps.setString(count, nama); count++; }
                 if (!empty_alamat) { ps.setString(count, alamat); count++; }
                 if (!empty_kota) { ps.setString(count, kota); count++; }
-                if (!empty_foto) { ps.setBinaryStream(count, fis, (int) fotoCinema.length());}
+                if (!empty_foto) { ps.setBinaryStream(count, fis, (int) fotoCinema.length()); count++; }
+                ps.setString(count, idCinema);
                 
                 ps.executeUpdate();
                 conn.commit();

@@ -315,3 +315,6 @@ The last packet sent successfully to the server was 0 milliseconds ago. The driv
 [2023/10/17 22:15:49]: Duplicate entry 'S-JKRT-011' for key 'PRIMARY'
 [2023/10/17 22:15:49]: Duplicate entry 'S-JKRT-011' for key 'PRIMARY'
 [2023/10/17 22:15:49]: Duplicate entry 'S-JKRT-011' for key 'PRIMARY'
+[2023/10/17 22:31:58]: Parameter index out of range (1 > number of parameters, which is 0).
+[2023/10/17 22:34:11]: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 1
+[2023/10/17 22:34:50]: You have an error in your SQL syntax; check the manual that corresponds to your MariaDB server version for the right syntax to use near '' at line 1

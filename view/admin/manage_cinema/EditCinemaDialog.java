@@ -18,7 +18,8 @@ public class EditCinemaDialog extends CinemaFormDialog {
         this.setTitle("Admin: Update cinema");
         Cinema cinema = controller.getCinemaById(idCinema);
 
-        fieldID.setText(cinema.getID());    
+        fieldID.setText(cinema.getID()); 
+        fieldID.setEditable(false);   
         fieldNama.setText(cinema.getNama());
         fieldKota.setText(cinema.getKota());
         fieldAlamat.setText(cinema.getAlamat());
@@ -34,26 +35,20 @@ public class EditCinemaDialog extends CinemaFormDialog {
         buttonSubmit.setText("Update cinema");
         buttonSubmit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Update Cinema");
-                buttonSubmit.addActionListener(new ActionListener() {
-                    public void actionPerformed(ActionEvent e) {
-                        int status = controller.editCinema(
-                            fieldID.getText(),
-                            fieldNama.getText(),
-                            fieldAlamat.getText(),
-                            fieldKota.getText(),
-                            fotoCinema);
-                            System.out.println("Update status: " + status);
-                        if (status == 0) {
-                            JOptionPane.showMessageDialog(
-                                owner,
-                                "Operation success",
-                                "Admin: Edit cinema",
-                                JOptionPane.INFORMATION_MESSAGE
-                            );
-                        }
-                    }
-                });
+                if (controller.editCinema(
+                    fieldID.getText(),
+                    fieldNama.getText(),
+                    fieldAlamat.getText(),
+                    fieldKota.getText(),
+                    fotoCinema) == 0
+                ) {
+                    JOptionPane.showMessageDialog(
+                        owner,
+                        "Operation success",
+                        "Admin: Edit cinema",
+                        JOptionPane.INFORMATION_MESSAGE
+                    );
+                }
             }
         });
         this.setVisible(true);

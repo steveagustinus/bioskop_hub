@@ -1,4 +1,0 @@
-Mappings for movie language
-1 - English
-2 - Japanese
-3 - Bahasa Indonesia

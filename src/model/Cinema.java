@@ -1,9 +1,9 @@
-package model;
+package src.model;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import model.studio.Studio;
+import src.model.studio.Studio;
 
 public class Cinema {
     private String id;
@@ -22,7 +22,7 @@ public class Cinema {
         this.studio = studio;
     }
 
-    public String getID() {
+    public String getId() {
         return this.id;
     }
 

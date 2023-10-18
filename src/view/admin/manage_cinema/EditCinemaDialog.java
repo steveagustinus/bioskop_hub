@@ -1,4 +1,4 @@
-package view.admin.manage_cinema;
+package src.view.admin.manage_cinema;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -7,8 +7,8 @@ import java.awt.event.ActionListener;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
-import controller.Controller;
-import model.Cinema;
+import src.controller.Controller;
+import src.model.Cinema;
 
 public class EditCinemaDialog extends CinemaFormDialog {
     Controller controller = new Controller();
@@ -18,7 +18,7 @@ public class EditCinemaDialog extends CinemaFormDialog {
         this.setTitle("Admin: Update cinema");
         Cinema cinema = controller.getCinemaById(idCinema);
 
-        fieldID.setText(cinema.getID()); 
+        fieldID.setText(cinema.getId()); 
         fieldID.setEditable(false);   
         fieldNama.setText(cinema.getNama());
         fieldKota.setText(cinema.getKota());

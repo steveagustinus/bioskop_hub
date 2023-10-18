@@ -1,11 +1,13 @@
-package view.admin;
+package src.view.admin;
 
 import javax.swing.JOptionPane;
 
-import controller.Controller;
-import view.MainInterface;
-import view.admin.manage_cinema.EditCinemaScreen;
-import view.admin.manage_cinema.NewCinemaDialog;
+import src.controller.Controller;
+import src.model.user.User;
+import src.view.MainInterface;
+import src.view.admin.manage_cinema.EditCinemaScreen;
+import src.view.admin.manage_cinema.NewCinemaDialog;
+import src.view.admin.manage_movie.NewMovieDialog;
 
 public class MainMenuScreen implements MainInterface {
     Controller controller = new Controller();
@@ -16,13 +18,21 @@ public class MainMenuScreen implements MainInterface {
     }
 
     public void showMainMenuScreen() {
+        // test area
+        User user = controller.login("admin", "123");
+        if (user == null) { System.out.println("NULL GBLG");}
+        System.out.println(user.getUsername());
+        // test are
+
         boolean exit = false;
 
         while (!exit) {
             String userInput = JOptionPane.showInputDialog(
                 mainFrame,
                 "1. Tambah cinema baru\r\n" +
-                    "2. Edit cinema\r\n",
+                    "2. Edit cinema\r\n" +
+                    "3. Tambah movie baru\r\n" +
+                    "4. Edit movie\r\n" +
                 "Admin",
                 JOptionPane.QUESTION_MESSAGE
             );
@@ -35,7 +45,9 @@ public class MainMenuScreen implements MainInterface {
             switch (userInput) {
                 case "1": new NewCinemaDialog(mainFrame); break;
                 case "2": new EditCinemaScreen(mainFrame); break;
-                case "3": exit = true; break;
+                case "3": new NewMovieDialog(mainFrame); break;
+                case "4": new EditCinemaScreen(mainFrame); break;
+                case "5": exit = true; break;
             }
         }
 

@@ -1,4 +1,4 @@
-package view.admin.manage_cinema;
+package src.view.admin.manage_cinema;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;

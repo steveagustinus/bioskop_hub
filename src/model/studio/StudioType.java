@@ -1,4 +1,4 @@
-package model.studio;
+package src.model.studio;
 
 public interface StudioType {
     public int TYPE2D = 1;

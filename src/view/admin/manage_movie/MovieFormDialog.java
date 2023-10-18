@@ -1,4 +1,4 @@
-package view.admin.manage_cinema;
+package src.view.admin.manage_movie;
 
 import java.awt.Window;
 import java.awt.event.*;
@@ -12,21 +12,21 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import controller.Controller;
+import src.controller.Controller;
 
-public abstract class CinemaFormDialog extends JDialog {
+public abstract class MovieFormDialog extends JDialog {
     protected Controller controller = new Controller();
 
     protected JTextField fieldID;
-    protected JTextField fieldNama;
-    protected JTextField fieldKota;
+    protected JTextField fieldJudul;
+    //protected DatePicker datePickerReleaseDate;
     protected JTextArea fieldAlamat;
     protected JFileChooser fChooser;
     protected JLabel labelDisplayFoto;
-    protected File fotoCinema;
+    protected File fotoMovie;
     protected JButton buttonSubmit;
 
-    public CinemaFormDialog(Window owner) {
+    public MovieFormDialog(Window owner) {
         super(owner, ModalityType.DOCUMENT_MODAL);
         initializeComponent();
         this.setLocationRelativeTo(owner);
@@ -39,8 +39,8 @@ public abstract class CinemaFormDialog extends JDialog {
         JLabel labelID = new JLabel("ID: ");
         labelID.setBounds(5, 5, 100, 20);
 
-        JLabel labelNama = new JLabel("Nama Cinema: ");
-        labelNama.setBounds(5, 30, 100, 20);
+        JLabel labelJudul = new JLabel("Judul: ");
+        labelJudul.setBounds(5, 30, 100, 20);
         
         JLabel labelKota = new JLabel("Kota: ");
         labelKota.setBounds(5, 55, 100, 20);
@@ -57,20 +57,20 @@ public abstract class CinemaFormDialog extends JDialog {
         fieldID = new JTextField("");
         fieldID.setBounds(110, 5, 200, 20);
 
-        fieldNama = new JTextField("");
-        fieldNama.setBounds(110, 30, 200, 20);
+        fieldJudul = new JTextField("");
+        fieldJudul.setBounds(110, 30, 200, 20);
 
-        fieldKota = new JTextField("");
-        fieldKota.setBounds(110, 55, 200, 20);
+        //datePickerReleaseDate = new DatePicker();
+        //datePickerReleaseDate.setBounds(110, 55, 200, 20);
 
         fieldAlamat = new JTextArea();
         fieldAlamat.setBounds(110, 80, 200, 80);
         fieldAlamat.setLineWrap(true);
         fieldAlamat.setWrapStyleWord(true);
         
-        if (fotoCinema != null) {
+        if (fotoMovie != null) {
             labelDisplayFoto.setIcon(new ImageIcon(
-                new ImageIcon(fotoCinema.getAbsolutePath())
+                new ImageIcon(fotoMovie.getAbsolutePath())
                 .getImage()
                 .getScaledInstance(450, 250,java.awt.Image.SCALE_SMOOTH)
             ));
@@ -84,15 +84,15 @@ public abstract class CinemaFormDialog extends JDialog {
             public void actionPerformed(ActionEvent e) {
                 fChooser.setCurrentDirectory(new File(controller.getLastOpenedDirectory()));
                 if (fChooser.showOpenDialog(getParent()) == JFileChooser.APPROVE_OPTION) {
-                    fotoCinema = fChooser.getSelectedFile();
+                    fotoMovie = fChooser.getSelectedFile();
 
                     labelDisplayFoto.setIcon(new ImageIcon(
-                        new ImageIcon(fotoCinema.getAbsolutePath())
+                        new ImageIcon(fotoMovie.getAbsolutePath())
                         .getImage()
                         .getScaledInstance(450, 250,java.awt.Image.SCALE_SMOOTH)
                     ));
 
-                    controller.saveLastOpenedDirectory(fotoCinema.getParent());
+                    controller.saveLastOpenedDirectory(fotoMovie.getParent());
                 }
             }
         });
@@ -102,15 +102,15 @@ public abstract class CinemaFormDialog extends JDialog {
         //buttonSubmit.setEnabled(false);
 
         this.add(labelID);
-        this.add(labelNama);
+        this.add(labelJudul);
         this.add(labelKota);
         this.add(labelAlamat);
         this.add(labelFoto);
         this.add(labelDisplayFoto);
 
         this.add(fieldID);
-        this.add(fieldNama);
-        this.add(fieldKota);
+        this.add(fieldJudul);
+        // this.add(datePickerReleaseDate);
         this.add(fieldAlamat);
         this.add(buttonSelectFoto);
         this.add(buttonSubmit);

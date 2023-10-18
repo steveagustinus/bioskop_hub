@@ -1,10 +1,10 @@
-package view.admin.manage_cinema;
+package src.view.admin.manage_movie;
 
 import java.awt.Window;
 
 import javax.swing.JOptionPane;
 
-import controller.Controller;
+import src.controller.Controller;
 
 public class EditCinemaScreen {
     private Controller controller = new Controller();

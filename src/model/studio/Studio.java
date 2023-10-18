@@ -1,4 +1,4 @@
-package model.studio;
+package src.model.studio;
 
 public class Studio implements StudioType {
     private StudioClass studioClass;

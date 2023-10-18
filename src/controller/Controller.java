@@ -1,24 +1,33 @@
-package controller;
+package src.controller;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import model.Cinema;
+import src.model.Cinema;
+import src.model.movie.Movie;
+import src.model.user.Admin;
+import src.model.user.Customer;
+import src.model.user.MembershipCustomer;
+import src.model.user.User;
 
 public class Controller {
     public Controller() { }
 
-    // return list of string nama cinema
-    public ArrayList<String> getCinemaList() {
+    // Cinema area
+    public String[] getCinemaList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
         try {
             Connection conn = null;
@@ -41,7 +50,7 @@ public class Controller {
             new ErrorLogger(ex.getMessage());
         }
 
-        return cinemaList;
+        return cinemaList.toArray(new String[cinemaList.size()]);
     }
 
     public boolean isCinemaExists(String idCinema) {
@@ -205,6 +214,144 @@ public class Controller {
         }
     }
 
+    // Movie area
+    public Movie getMovieById(String idMovie) {
+        try {
+            Connection conn = null;
+            Class.forName(Config.Database.JDBC_DRIVER);
+            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+
+            Statement statement = conn.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'"
+            );
+
+            result.next();
+
+            File fotoMovie = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/img.png");
+            fotoMovie.createNewFile();
+
+            Path target = fotoMovie.toPath();
+            Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
+
+            fotoMovie = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/img.png");
+
+            Movie movie = new Movie(
+                idMovie,
+                result.getString("judul"),
+                result.getDate("release_date"),
+                result.getString("director"),
+                result.getInt("language"),
+                result.getInt("durasi"),
+                result.getString("sinopsis"),
+                fotoMovie
+            );
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return movie;
+        } catch (Exception ex) {
+            new ErrorLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    // User area
+    private User getUserById(String idUser) {
+        try {
+            Connection conn = null;
+            Class.forName(Config.Database.JDBC_DRIVER);
+            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+
+            Statement statement = conn.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `user` WHERE `id_user`='" + idUser + "'"
+            );
+
+            result.next();
+
+            User user = null;
+            int userType = result.getInt("user_type");
+
+            switch (userType) {
+                case 0:
+                user = new Admin(result.getString("username"), result.getString("password"));
+                break;
+
+                case 1:
+                user = new Customer(
+                    result.getString("username"),
+                    result.getString("password"),
+                    result.getString("email"),
+                    result.getString("phoneNumber"),
+                    result.getString("address")
+                );
+                break;
+
+                case 2:
+                user = new MembershipCustomer(
+                    result.getString("username"),
+                    result.getString("password"),
+                    result.getString("email"),
+                    result.getString("phoneNumber"),
+                    result.getString("address"),
+                    result.getInt("poin")
+                );
+                break;
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return user;
+        } catch (Exception ex) {
+            new ErrorLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public User login(String username, String password) {
+        try {
+            Connection conn = null;
+            Class.forName(Config.Database.JDBC_DRIVER);
+            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+
+            Statement statement = conn.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_user` FROM `user` WHERE `username`='" + username +"' AND `password`='" + sha256(password) + "'"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            result.next();
+            return getUserById(result.getString("id_user"));
+        } catch (Exception ex) {
+            new ErrorLogger(ex.getMessage());
+            return null;
+        }
+
+    }
+    
+    // Common services
+    public String sha256(String content) {
+            try {
+                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+                byte[] hash = messageDigest.digest(content.getBytes(StandardCharsets.UTF_8));
+                
+                return String.format("%064x", new BigInteger(1, hash));
+        } catch (NoSuchAlgorithmException NSAex) {
+            new ErrorLogger(NSAex.getMessage());
+        } catch (Exception ex) {
+            new ErrorLogger(ex.getMessage());
+        }
+        return null;
+    }
+
     public String getLastOpenedDirectory() {
         try {
             Scanner scanner = new Scanner(new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/lastdir.txt"));
@@ -239,7 +386,5 @@ public class Controller {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-
-        
     }
 }

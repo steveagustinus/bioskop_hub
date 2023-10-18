@@ -19,8 +19,8 @@ public class MainMenuScreen implements MainInterface {
 
     public void showMainMenuScreen() {
         // test area
-        User user = controller.login("admin", "123");
-        System.out.println(user.getUsername());
+        // User user = controller.login("admin", "123");
+        // System.out.println(user.getUsername());
         // test are
 
         boolean exit = false;

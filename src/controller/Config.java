@@ -8,7 +8,7 @@ public class Config {
         public static final String PASSWORD = "";
     }
 
-    public class Path {
+    public static class Path {
         public static final String TEMP_DIR = System.getProperty("java.io.tmpdir") + "/BioskopHub/";
     }
 }

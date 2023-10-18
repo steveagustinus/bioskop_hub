@@ -20,7 +20,6 @@ public class MainMenuScreen implements MainInterface {
     public void showMainMenuScreen() {
         // test area
         User user = controller.login("admin", "123");
-        if (user == null) { System.out.println("NULL GBLG");}
         System.out.println(user.getUsername());
         // test are
 

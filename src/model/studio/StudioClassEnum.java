@@ -1,5 +1,5 @@
 package src.model.studio;
 
-public enum StudioClass {
+public enum StudioClassEnum {
     VIP, JUNIOR, LUXE, REGULER
 }

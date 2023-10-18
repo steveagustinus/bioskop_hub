@@ -1,15 +1,15 @@
 package src.model.studio;
 
-public class Studio implements StudioType {
-    private StudioClass studioClass;
+public class Studio implements StudioTypeInterface {
+    private StudioClassEnum studioClass;
     private int studioType;
 
-    public Studio(StudioClass studioClass, int studioType) {
+    public Studio(StudioClassEnum studioClass, int studioType) {
         this.studioClass = studioClass;
         this.studioType = studioType;
     }
 
-    public StudioClass getStudioClass() {
+    public StudioClassEnum getStudioClass() {
         return this.studioClass;
     }
 

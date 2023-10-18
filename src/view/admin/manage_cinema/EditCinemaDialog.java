@@ -16,7 +16,7 @@ public class EditCinemaDialog extends CinemaFormDialog {
     public EditCinemaDialog(Window owner, String idCinema) {
         super(owner);
         this.setTitle("Admin: Update cinema");
-        Cinema cinema = controller.getCinemaById(idCinema);
+        Cinema cinema = controller.getCinemaById(idCinema, false);
 
         fieldID.setText(cinema.getId()); 
         fieldID.setEditable(false);   

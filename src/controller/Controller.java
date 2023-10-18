@@ -18,6 +18,8 @@ import java.util.Scanner;
 
 import src.model.Cinema;
 import src.model.movie.Movie;
+import src.model.studio.Studio;
+import src.model.studio.StudioClassEnum;
 import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
@@ -25,9 +27,65 @@ import src.model.user.User;
 
 public class Controller {
     public Controller() { }
+    
+    // Studio area
+    public ArrayList<Studio> getStudio(String idCinema, boolean getJadwalData) {
+        try {
+            Connection conn = null;
+            Class.forName(Config.Database.JDBC_DRIVER);
+            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+
+            Statement statement = conn.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "'"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            ArrayList<Studio> studioList = new ArrayList<Studio>();
+            while(result.next()) {
+                Studio studio = new Studio(
+                    getStudioClassEnum(result.getString("studio_class")),
+                    result.getInt("studio_type")
+                );
+                studioList.add(studio);
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return studioList;
+        } catch (Exception ex) {
+            new ErrorLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public StudioClassEnum getStudioClassEnum(String studioClass) {
+        switch (studioClass) {
+            case "vip": return StudioClassEnum.VIP;
+            case "junior": return StudioClassEnum.JUNIOR;
+            case "luxe": return StudioClassEnum.LUXE;
+            case "reguler": return StudioClassEnum.REGULER;
+        }
+        return null;
+    }
+
+    public String getStudioClassString(StudioClassEnum studioClass) {
+        switch (studioClass) {
+            case VIP: return "VIP";
+            case JUNIOR: return "Junior";
+            case LUXE: return "Luxe";
+            case REGULER: return "Reguler";
+        }
+        return "";
+    }
 
     // Cinema area
-    public String[] getCinemaList() {
+    public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
         try {
             Connection conn = null;
@@ -81,7 +139,7 @@ public class Controller {
         }
     }
 
-    public Cinema getCinemaById(String idCinema) {
+    public Cinema getCinemaById(String idCinema, boolean getStudioData) {
         try {
             Connection conn = null;
             Class.forName(Config.Database.JDBC_DRIVER);
@@ -94,22 +152,35 @@ public class Controller {
 
             result.next();
 
-            File fotoCinema = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/img.png");
+            File fotoCinema = new File(Config.Path.TEMP_DIR + "img.png");
             fotoCinema.createNewFile();
 
             Path target = fotoCinema.toPath();
             Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
 
-            fotoCinema = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/img.png");
+            fotoCinema = new File(Config.Path.TEMP_DIR + "img.png");
 
-            Cinema cinema = new Cinema(
-                idCinema,
-                result.getString("nama"),
-                result.getString("alamat"),
-                result.getString("kota"),
-                fotoCinema,
-                null
-            );
+            Cinema cinema = null;
+            if (getStudioData) {
+                cinema = new Cinema(
+                    idCinema,
+                    result.getString("nama"),
+                    result.getString("alamat"),
+                    result.getString("kota"),
+                    fotoCinema,
+                    getStudio(idCinema, true)
+                );
+            }
+            else {
+                cinema = new Cinema(
+                    idCinema,
+                    result.getString("nama"),
+                    result.getString("alamat"),
+                    result.getString("kota"),
+                    fotoCinema,
+                    null
+                );
+            }
 
             result.close();
             statement.close();
@@ -228,13 +299,13 @@ public class Controller {
 
             result.next();
 
-            File fotoMovie = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/img.png");
+            File fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
             fotoMovie.createNewFile();
 
             Path target = fotoMovie.toPath();
             Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
 
-            fotoMovie = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/img.png");
+            fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
 
             Movie movie = new Movie(
                 idMovie,
@@ -284,6 +355,7 @@ public class Controller {
                 user = new Customer(
                     result.getString("username"),
                     result.getString("password"),
+                    result.getString("profile_name"),
                     result.getString("email"),
                     result.getString("phoneNumber"),
                     result.getString("address")
@@ -294,6 +366,7 @@ public class Controller {
                 user = new MembershipCustomer(
                     result.getString("username"),
                     result.getString("password"),
+                    result.getString("profile_name"),
                     result.getString("email"),
                     result.getString("phoneNumber"),
                     result.getString("address"),
@@ -337,13 +410,50 @@ public class Controller {
 
     }
     
+    public int register(String username, String password, String email, String phoneNumber, String alamat) {
+        if (username == null || username.equals("")) { return -1; }
+        if (password == null || password.equals("")) { return -2; }
+        if (email == null || email.equals("")) { return -3; }
+        if (phoneNumber == null || phoneNumber.equals("")) { return -4; }
+        if (alamat == null || alamat.equals("")) { return -5; }
+
+        try {
+            Connection conn = null;
+            Class.forName(Config.Database.JDBC_DRIVER);
+            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+
+            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `user_type`)" +
+                "VALUES (?, ?, ?, ?, ?, ?)";
+
+            conn.setAutoCommit(false);
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setString(2, sha256(password));
+            ps.setString(3, email);
+            ps.setString(4, phoneNumber);
+            ps.setString(5, alamat);
+            ps.setInt(6, 1);
+            ps.executeUpdate();
+            conn.commit();
+            ps.close();
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ErrorLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return -99;
+        }
+    }
+
     // Common services
     public String sha256(String content) {
-            try {
-                MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
-                byte[] hash = messageDigest.digest(content.getBytes(StandardCharsets.UTF_8));
-                
-                return String.format("%064x", new BigInteger(1, hash));
+        try {
+            MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = messageDigest.digest(content.getBytes(StandardCharsets.UTF_8));
+            
+            return String.format("%064x", new BigInteger(1, hash));
         } catch (NoSuchAlgorithmException NSAex) {
             new ErrorLogger(NSAex.getMessage());
         } catch (Exception ex) {
@@ -354,7 +464,7 @@ public class Controller {
 
     public String getLastOpenedDirectory() {
         try {
-            Scanner scanner = new Scanner(new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/lastdir.txt"));
+            Scanner scanner = new Scanner(new File(Config.Path.TEMP_DIR + "lastdir.txt"));
             return scanner.nextLine();
         } catch (FileNotFoundException fileNotFoundEx) {
             return "";
@@ -363,7 +473,7 @@ public class Controller {
 
     public int saveLastOpenedDirectory(String path) {
         try {
-            File file = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub/lastdir.txt");
+            File file = new File(Config.Path.TEMP_DIR + "lastdir.txt");
             if (!file.exists()) {
                 file.createNewFile();
             }
@@ -382,7 +492,7 @@ public class Controller {
     }
 
     public void programStart() {
-        File dir = new File(System.getProperty("java.io.tmpdir") + "/BioskopHub");
+        File dir = new File(Config.Path.TEMP_DIR);
         if (!dir.exists()) {
             dir.mkdirs();
         }

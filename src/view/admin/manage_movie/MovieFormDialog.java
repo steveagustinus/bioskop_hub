@@ -3,6 +3,7 @@ package src.view.admin.manage_movie;
 import java.awt.Window;
 import java.awt.event.*;
 import java.io.File;
+import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -12,6 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
+import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
+import net.sourceforge.jdatepicker.impl.UtilDateModel;
 import src.controller.Controller;
 
 public abstract class MovieFormDialog extends JDialog {
@@ -19,7 +23,7 @@ public abstract class MovieFormDialog extends JDialog {
 
     protected JTextField fieldID;
     protected JTextField fieldJudul;
-    //protected DatePicker datePickerReleaseDate;
+    protected JDatePickerImpl datePickerReleaseDate;
     protected JTextArea fieldAlamat;
     protected JFileChooser fChooser;
     protected JLabel labelDisplayFoto;
@@ -60,11 +64,17 @@ public abstract class MovieFormDialog extends JDialog {
         fieldJudul = new JTextField("");
         fieldJudul.setBounds(110, 30, 200, 20);
 
-        //datePickerReleaseDate = new DatePicker();
-        //datePickerReleaseDate.setBounds(110, 55, 200, 20);
+        UtilDateModel model = new UtilDateModel();
+        Properties p = new Properties();
+        p.put("text.today", "Today");
+        p.put("text.month", "Month");
+        p.put("text.year", "Year");
+        JDatePanelImpl datePanel = new JDatePanelImpl(model);
+        datePickerReleaseDate = new JDatePickerImpl(datePanel);
+        datePickerReleaseDate.setBounds(110, 55, 200, 30);
 
         fieldAlamat = new JTextArea();
-        fieldAlamat.setBounds(110, 80, 200, 80);
+        fieldAlamat.setBounds(110, 90, 200, 80);
         fieldAlamat.setLineWrap(true);
         fieldAlamat.setWrapStyleWord(true);
         
@@ -110,7 +120,7 @@ public abstract class MovieFormDialog extends JDialog {
 
         this.add(fieldID);
         this.add(fieldJudul);
-        // this.add(datePickerReleaseDate);
+        this.add(datePickerReleaseDate);
         this.add(fieldAlamat);
         this.add(buttonSelectFoto);
         this.add(buttonSubmit);

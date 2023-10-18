@@ -35,5 +35,8 @@ public class LoginScreen {
         panel.add(passwordField);
         panel.add(new JLabel());
         panel.add(loginButton);
+
+        loginJFrame.add(panel);
+        loginJFrame.setVisible(true);
     }
 }

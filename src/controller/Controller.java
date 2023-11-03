@@ -26,8 +26,9 @@ import src.model.user.MembershipCustomer;
 import src.model.user.User;
 
 public class Controller {
-    public Controller() { }
-    
+    public Controller() {
+    }
+
     // Studio area
     public ArrayList<Studio> getStudio(String idCinema, boolean getJadwalData) {
         try {
@@ -37,19 +38,17 @@ public class Controller {
 
             Statement statement = conn.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "'"
-            );
+                    "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "'");
 
             if (!result.isBeforeFirst()) {
                 return null;
             }
 
             ArrayList<Studio> studioList = new ArrayList<Studio>();
-            while(result.next()) {
+            while (result.next()) {
                 Studio studio = new Studio(
-                    getStudioClassEnum(result.getString("studio_class")),
-                    result.getInt("studio_type")
-                );
+                        getStudioClassEnum(result.getString("studio_class")),
+                        result.getInt("studio_type"));
                 studioList.add(studio);
             }
 
@@ -66,20 +65,28 @@ public class Controller {
 
     public StudioClassEnum getStudioClassEnum(String studioClass) {
         switch (studioClass) {
-            case "vip": return StudioClassEnum.VIP;
-            case "junior": return StudioClassEnum.JUNIOR;
-            case "luxe": return StudioClassEnum.LUXE;
-            case "reguler": return StudioClassEnum.REGULER;
+            case "vip":
+                return StudioClassEnum.VIP;
+            case "junior":
+                return StudioClassEnum.JUNIOR;
+            case "luxe":
+                return StudioClassEnum.LUXE;
+            case "reguler":
+                return StudioClassEnum.REGULER;
         }
         return null;
     }
 
     public String getStudioClassString(StudioClassEnum studioClass) {
         switch (studioClass) {
-            case VIP: return "VIP";
-            case JUNIOR: return "Junior";
-            case LUXE: return "Luxe";
-            case REGULER: return "Reguler";
+            case VIP:
+                return "VIP";
+            case JUNIOR:
+                return "Junior";
+            case LUXE:
+                return "Luxe";
+            case REGULER:
+                return "Reguler";
         }
         return "";
     }
@@ -94,8 +101,7 @@ public class Controller {
 
             Statement statement = conn.createStatement();
             ResultSet rows = statement.executeQuery(
-                "SELECT `nama` FROM `cinema`"
-            );
+                    "SELECT `nama` FROM `cinema`");
 
             while (rows.next()) {
                 cinemaList.add(rows.getString("nama"));
@@ -119,8 +125,7 @@ public class Controller {
 
             Statement statement = conn.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'"
-            );
+                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
 
             boolean exists = false;
             if (result.isBeforeFirst()) {
@@ -147,8 +152,7 @@ public class Controller {
 
             Statement statement = conn.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'"
-            );
+                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
 
             result.next();
 
@@ -163,23 +167,20 @@ public class Controller {
             Cinema cinema = null;
             if (getStudioData) {
                 cinema = new Cinema(
-                    idCinema,
-                    result.getString("nama"),
-                    result.getString("alamat"),
-                    result.getString("kota"),
-                    fotoCinema,
-                    getStudio(idCinema, true)
-                );
-            }
-            else {
+                        idCinema,
+                        result.getString("nama"),
+                        result.getString("alamat"),
+                        result.getString("kota"),
+                        fotoCinema,
+                        getStudio(idCinema, true));
+            } else {
                 cinema = new Cinema(
-                    idCinema,
-                    result.getString("nama"),
-                    result.getString("alamat"),
-                    result.getString("kota"),
-                    fotoCinema,
-                    null
-                );
+                        idCinema,
+                        result.getString("nama"),
+                        result.getString("alamat"),
+                        result.getString("kota"),
+                        fotoCinema,
+                        null);
             }
 
             result.close();
@@ -194,11 +195,21 @@ public class Controller {
     }
 
     public int addNewCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
-        if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) { return -1; }
-        if (nama == null || nama.equals("")) { return -2; }
-        if (alamat == null || alamat.equals("")) { return -3; }
-        if (kota == null || kota.equals("")) { return -4; }
-        if (fotoCinema == null) { return -5; }
+        if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
+            return -1;
+        }
+        if (nama == null || nama.equals("")) {
+            return -2;
+        }
+        if (alamat == null || alamat.equals("")) {
+            return -3;
+        }
+        if (kota == null || kota.equals("")) {
+            return -4;
+        }
+        if (fotoCinema == null) {
+            return -5;
+        }
 
         try {
             Connection conn = null;
@@ -206,14 +217,13 @@ public class Controller {
             conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
 
             String sql = "INSERT INTO `cinema` (`id_cinema`, `nama`, `kota`, `alamat`, `img`)" +
-                "VALUES (?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?)";
 
             conn.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.prepareStatement(sql);) {
                 ps.setString(1, idCinema);
                 ps.setString(2, nama);
                 ps.setString(3, kota);
@@ -235,20 +245,32 @@ public class Controller {
     }
 
     public int editCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
-        if (idCinema == null || idCinema.equals("")) { return -1; }
-        
+        if (idCinema == null || idCinema.equals("")) {
+            return -1;
+        }
+
         boolean empty_nama = nama == null || nama.equals("");
         boolean empty_alamat = alamat == null || alamat.equals("");
         boolean empty_kota = kota == null || kota.equals("");
         boolean empty_foto = fotoCinema == null;
 
-        if (empty_nama && empty_alamat && empty_kota && empty_foto) { return -2; }
+        if (empty_nama && empty_alamat && empty_kota && empty_foto) {
+            return -2;
+        }
 
         String sql = "UPDATE `cinema` SET ";
-        if (!empty_nama) { sql += "`nama` = ?, "; }
-        if (!empty_alamat) { sql += "`alamat` = ?, "; }
-        if (!empty_kota) { sql += "`kota` = ?, "; }
-        if (!empty_foto) { sql += "`img` = ?,"; }
+        if (!empty_nama) {
+            sql += "`nama` = ?, ";
+        }
+        if (!empty_alamat) {
+            sql += "`alamat` = ?, ";
+        }
+        if (!empty_kota) {
+            sql += "`kota` = ?, ";
+        }
+        if (!empty_foto) {
+            sql += "`img` = ?,";
+        }
         sql = sql.substring(0, sql.length() - 1);
         sql += " WHERE `id_cinema` = ?";
 
@@ -260,16 +282,27 @@ public class Controller {
             conn.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.prepareStatement(sql);) {
                 int count = 1;
-                if (!empty_nama) { ps.setString(count, nama); count++; }
-                if (!empty_alamat) { ps.setString(count, alamat); count++; }
-                if (!empty_kota) { ps.setString(count, kota); count++; }
-                if (!empty_foto) { ps.setBinaryStream(count, fis, (int) fotoCinema.length()); count++; }
+                if (!empty_nama) {
+                    ps.setString(count, nama);
+                    count++;
+                }
+                if (!empty_alamat) {
+                    ps.setString(count, alamat);
+                    count++;
+                }
+                if (!empty_kota) {
+                    ps.setString(count, kota);
+                    count++;
+                }
+                if (!empty_foto) {
+                    ps.setBinaryStream(count, fis, (int) fotoCinema.length());
+                    count++;
+                }
                 ps.setString(count, idCinema);
-                
+
                 ps.executeUpdate();
                 conn.commit();
                 ps.close();
@@ -294,8 +327,7 @@ public class Controller {
 
             Statement statement = conn.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'"
-            );
+                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
 
             result.next();
 
@@ -308,15 +340,14 @@ public class Controller {
             fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
 
             Movie movie = new Movie(
-                idMovie,
-                result.getString("judul"),
-                result.getDate("release_date"),
-                result.getString("director"),
-                result.getInt("language"),
-                result.getInt("durasi"),
-                result.getString("sinopsis"),
-                fotoMovie
-            );
+                    idMovie,
+                    result.getString("judul"),
+                    result.getDate("release_date"),
+                    result.getString("director"),
+                    result.getInt("language"),
+                    result.getInt("durasi"),
+                    result.getString("sinopsis"),
+                    fotoMovie);
 
             result.close();
             statement.close();
@@ -338,8 +369,7 @@ public class Controller {
 
             Statement statement = conn.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `user` WHERE `id_user`='" + idUser + "'"
-            );
+                    "SELECT * FROM `user` WHERE `id_user`='" + idUser + "'");
 
             result.next();
 
@@ -348,31 +378,29 @@ public class Controller {
 
             switch (userType) {
                 case 0:
-                user = new Admin(result.getString("username"), result.getString("password"));
-                break;
+                    user = new Admin(result.getString("username"), result.getString("password"));
+                    break;
 
                 case 1:
-                user = new Customer(
-                    result.getString("username"),
-                    result.getString("password"),
-                    result.getString("profile_name"),
-                    result.getString("email"),
-                    result.getString("phoneNumber"),
-                    result.getString("address")
-                );
-                break;
+                    user = new Customer(
+                            result.getString("username"),
+                            result.getString("password"),
+                            result.getString("profile_name"),
+                            result.getString("email"),
+                            result.getString("phoneNumber"),
+                            result.getString("address"));
+                    break;
 
                 case 2:
-                user = new MembershipCustomer(
-                    result.getString("username"),
-                    result.getString("password"),
-                    result.getString("profile_name"),
-                    result.getString("email"),
-                    result.getString("phoneNumber"),
-                    result.getString("address"),
-                    result.getInt("poin")
-                );
-                break;
+                    user = new MembershipCustomer(
+                            result.getString("username"),
+                            result.getString("password"),
+                            result.getString("profile_name"),
+                            result.getString("email"),
+                            result.getString("phoneNumber"),
+                            result.getString("address"),
+                            result.getInt("poin"));
+                    break;
             }
 
             result.close();
@@ -394,8 +422,8 @@ public class Controller {
 
             Statement statement = conn.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT `id_user` FROM `user` WHERE `username`='" + username +"' AND `password`='" + sha256(password) + "'"
-            );
+                    "SELECT `id_user` FROM `user` WHERE `username`='" + username + "' AND `password`='"
+                            + sha256(password) + "'");
 
             if (!result.isBeforeFirst()) {
                 return null;
@@ -409,21 +437,34 @@ public class Controller {
         }
 
     }
-    
+
     public int register(String username, String password, String email, String phoneNumber, String alamat) {
-        if (username == null || username.equals("")) { return -1; }
-        if (password == null || password.equals("")) { return -2; }
-        if (email == null || email.equals("")) { return -3; }
-        if (phoneNumber == null || phoneNumber.equals("")) { return -4; }
-        if (alamat == null || alamat.equals("")) { return -5; }
+        if (username == null || username.equals("")) {
+            return -1;
+        }
+        if (password == null || password.equals("")) {
+            return -2;
+        }
+        if (email == null || email.equals("")) {
+            return -3;
+        }
+        if (phoneNumber == null || phoneNumber.equals("")) {
+            return -4;
+        }
+        if (alamat == null || alamat.equals("")) {
+            return -5;
+        }
 
         try {
             Connection conn = null;
             Class.forName(Config.Database.JDBC_DRIVER);
             conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
-
+            int isNameExist = isNameExist(username);
+            if (isNameExist == 1) {
+                return -6;
+            }
             String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `user_type`)" +
-                "VALUES (?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?)";
 
             conn.setAutoCommit(false);
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -447,12 +488,33 @@ public class Controller {
         }
     }
 
+    public int isNameExist(String username){
+        try{
+            Connection conn = null;
+            Class.forName(Config.Database.JDBC_DRIVER);
+            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            Statement statement = conn.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `user` WHERE `username`='" + username + "'"
+            );
+            if (!result.isBeforeFirst()) {
+                return 0;
+            }
+            result.next();
+            return 1;
+        } catch (Exception ex) {
+            new ErrorLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return -99;
+        }
+    }
+
     // Common services
     public String sha256(String content) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
             byte[] hash = messageDigest.digest(content.getBytes(StandardCharsets.UTF_8));
-            
+
             return String.format("%064x", new BigInteger(1, hash));
         } catch (NoSuchAlgorithmException NSAex) {
             new ErrorLogger(NSAex.getMessage());

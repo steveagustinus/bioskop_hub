@@ -435,9 +435,6 @@ public class Controller {
         }
 
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
             int isNameExist = isNameExist(username);
             if (isNameExist == 1) {
                 return -6;
@@ -483,7 +480,7 @@ public class Controller {
             result.next();
             return 1;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             System.out.println(ex.getMessage());
             return -99;
         }

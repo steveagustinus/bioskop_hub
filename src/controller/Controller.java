@@ -17,7 +17,9 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
+import src.model.Jadwal;
 import src.model.movie.Movie;
+import src.model.seat.Seat;
 import src.model.studio.Studio;
 import src.model.studio.StudioClassEnum;
 import src.model.user.Admin;
@@ -28,8 +30,40 @@ import src.model.user.User;
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
     public Controller() { }
-    
+
+    //Jadwal area
+    public Seat[] GenerateSeat(Jadwal jadwal) {
+        return null;
+    }
+
     // Studio area
+    public Studio getStudioById(String idStudio) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "';"
+            );
+
+            result.next();
+
+            Studio studio = new Studio(
+                idStudio,
+                getStudioClassEnum(result.getString("studio_class")),
+                result.getInt("studio_type")
+            );
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return studio;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
     public ArrayList<Studio> getStudio(String idCinema, boolean getJadwalData) {
         try {
             conn.open();
@@ -45,6 +79,7 @@ public class Controller {
             ArrayList<Studio> studioList = new ArrayList<Studio>();
             while(result.next()) {
                 Studio studio = new Studio(
+                    result.getString("id_studio"),
                     getStudioClassEnum(result.getString("studio_class")),
                     result.getInt("studio_type")
                 );

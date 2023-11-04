@@ -6,10 +6,10 @@ import java.io.FileWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class ErrorLogger {
-    public ErrorLogger(String message) {
+public class ExceptionLogger {
+    public ExceptionLogger(String message) {
         // try {
-        //     File file = new File("controller/error.log");
+        //     File file = new File("controller/exception.log");
         //     file.createNewFile();
 
         //     FileWriter fileWriter = new FileWriter(file.getAbsolutePath());
@@ -23,7 +23,7 @@ public class ErrorLogger {
         // }
 
         try {
-            File file = new File("controller/error.log");
+            File file = new File("controller/exception.log");
             file.createNewFile();
 
             String content = "[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")) + "]: " + message + "\r\n";

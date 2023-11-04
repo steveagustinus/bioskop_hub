@@ -26,17 +26,14 @@ import src.model.user.MembershipCustomer;
 import src.model.user.User;
 
 public class Controller {
-    public Controller() {
-    }
-
+    static DatabaseHandler conn = new DatabaseHandler();
+    public Controller() { }
+    
     // Studio area
     public ArrayList<Studio> getStudio(String idCinema, boolean getJadwalData) {
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
-
-            Statement statement = conn.createStatement();
+            conn.open();
+            Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                     "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "'");
 
@@ -58,7 +55,7 @@ public class Controller {
 
             return studioList;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return null;
         }
     }
@@ -95,11 +92,9 @@ public class Controller {
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            conn.open();
 
-            Statement statement = conn.createStatement();
+            Statement statement = conn.connection.createStatement();
             ResultSet rows = statement.executeQuery(
                     "SELECT `nama` FROM `cinema`");
 
@@ -111,7 +106,7 @@ public class Controller {
             statement.close();
             conn.close();
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
         }
 
         return cinemaList.toArray(new String[cinemaList.size()]);
@@ -119,11 +114,9 @@ public class Controller {
 
     public boolean isCinemaExists(String idCinema) {
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            conn.open();
 
-            Statement statement = conn.createStatement();
+            Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                     "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
 
@@ -138,19 +131,16 @@ public class Controller {
 
             return exists;
         } catch (Exception ex) {
-            System.out.println(ex);
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return false;
         }
     }
 
     public Cinema getCinemaById(String idCinema, boolean getStudioData) {
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            conn.open();
 
-            Statement statement = conn.createStatement();
+            Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                     "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
 
@@ -189,7 +179,7 @@ public class Controller {
 
             return cinema;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return null;
         }
     }
@@ -212,25 +202,24 @@ public class Controller {
         }
 
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            conn.open();
 
             String sql = "INSERT INTO `cinema` (`id_cinema`, `nama`, `kota`, `alamat`, `img`)" +
                     "VALUES (?, ?, ?, ?, ?)";
 
-            conn.setAutoCommit(false);
+            conn.connection.setAutoCommit(false);
 
             try (
-                    FileInputStream fis = new FileInputStream(fotoCinema);
-                    PreparedStatement ps = conn.prepareStatement(sql);) {
+                FileInputStream fis = new FileInputStream(fotoCinema);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
                 ps.setString(1, idCinema);
                 ps.setString(2, nama);
                 ps.setString(3, kota);
                 ps.setString(4, alamat);
                 ps.setBinaryStream(5, fis, (int) fotoCinema.length());
                 ps.executeUpdate();
-                conn.commit();
+                conn.connection.commit();
                 ps.close();
             }
 
@@ -238,8 +227,7 @@ public class Controller {
 
             return 0;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
@@ -275,15 +263,14 @@ public class Controller {
         sql += " WHERE `id_cinema` = ?";
 
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            conn.open();
 
-            conn.setAutoCommit(false);
+            conn.connection.setAutoCommit(false);
 
             try (
-                    FileInputStream fis = new FileInputStream(fotoCinema);
-                    PreparedStatement ps = conn.prepareStatement(sql);) {
+                FileInputStream fis = new FileInputStream(fotoCinema);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
                 int count = 1;
                 if (!empty_nama) {
                     ps.setString(count, nama);
@@ -304,7 +291,7 @@ public class Controller {
                 ps.setString(count, idCinema);
 
                 ps.executeUpdate();
-                conn.commit();
+                conn.connection.commit();
                 ps.close();
             }
 
@@ -312,8 +299,7 @@ public class Controller {
 
             return 0;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
@@ -321,11 +307,8 @@ public class Controller {
     // Movie area
     public Movie getMovieById(String idMovie) {
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
-
-            Statement statement = conn.createStatement();
+            conn.open();
+            Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                     "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
 
@@ -355,7 +338,7 @@ public class Controller {
 
             return movie;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return null;
         }
     }
@@ -363,11 +346,9 @@ public class Controller {
     // User area
     private User getUserById(String idUser) {
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            conn.open();
 
-            Statement statement = conn.createStatement();
+            Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                     "SELECT * FROM `user` WHERE `id_user`='" + idUser + "'");
 
@@ -409,18 +390,16 @@ public class Controller {
 
             return user;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return null;
         }
     }
 
     public User login(String username, String password) {
         try {
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
+            conn.open();
 
-            Statement statement = conn.createStatement();
+            Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                     "SELECT `id_user` FROM `user` WHERE `username`='" + username + "' AND `password`='"
                             + sha256(password) + "'");
@@ -432,7 +411,7 @@ public class Controller {
             result.next();
             return getUserById(result.getString("id_user"));
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return null;
         }
 
@@ -463,11 +442,13 @@ public class Controller {
             if (isNameExist == 1) {
                 return -6;
             }
+            
+            conn.open();
             String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `user_type`)" +
                     "VALUES (?, ?, ?, ?, ?, ?)";
 
-            conn.setAutoCommit(false);
-            PreparedStatement ps = conn.prepareStatement(sql);
+            conn.connection.setAutoCommit(false);
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
             ps.setString(1, username);
             ps.setString(2, sha256(password));
             ps.setString(3, email);
@@ -475,15 +456,14 @@ public class Controller {
             ps.setString(5, alamat);
             ps.setInt(6, 1);
             ps.executeUpdate();
-            conn.commit();
+            conn.connection.commit();
             ps.close();
 
             conn.close();
 
             return 0;
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
@@ -517,9 +497,9 @@ public class Controller {
 
             return String.format("%064x", new BigInteger(1, hash));
         } catch (NoSuchAlgorithmException NSAex) {
-            new ErrorLogger(NSAex.getMessage());
+            new ExceptionLogger(NSAex.getMessage());
         } catch (Exception ex) {
-            new ErrorLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
         }
         return null;
     }
@@ -529,6 +509,7 @@ public class Controller {
             Scanner scanner = new Scanner(new File(Config.Path.TEMP_DIR + "lastdir.txt"));
             return scanner.nextLine();
         } catch (FileNotFoundException fileNotFoundEx) {
+            new ExceptionLogger(fileNotFoundEx.getMessage());
             return "";
         }
     }
@@ -545,10 +526,10 @@ public class Controller {
             fileWriter.close();
             return 0; // Success
         } catch (IOException ioEx) {
-            System.out.println(ioEx);
+            new ExceptionLogger(ioEx.getMessage());
             return -1;
         } catch (Exception ex) {
-            System.out.println(ex);
+            new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }

@@ -8,7 +8,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-public class RegisterScreen extends JFrame {
+public class RegisterScreen {
+    JFrame frame = new JFrame();
     private JTextField usernameField;
     private JPasswordField passwordField;
     private JTextField emailField;
@@ -16,7 +17,7 @@ public class RegisterScreen extends JFrame {
     private JTextField addressField;
 
     public RegisterScreen() {
-        setTitle("Register");
+        frame.setTitle("Register");
 
         JLabel usernameLabel = new JLabel("Username:");
         JLabel passwordLabel = new JLabel("Password:");
@@ -58,15 +59,16 @@ public class RegisterScreen extends JFrame {
                     JOptionPane.showMessageDialog(null, "Username already exists!");
                     return;
                 }
-                JOptionPane.showMessageDialog(RegisterScreen.this, "Registration successful for " + username + "!");
+                JOptionPane.showMessageDialog(null, "Registration " + username +" successful!");
+                frame.dispose();
             }
         });
 
-        add(panel);
+        frame.add(panel);
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(300, 200);
-        setLocationRelativeTo(null); 
-        setVisible(true);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(300, 200);
+        frame.setLocationRelativeTo(null); 
+        frame.setVisible(true);
     }
 }

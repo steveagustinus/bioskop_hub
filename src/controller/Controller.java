@@ -486,6 +486,21 @@ public class Controller {
         }
     }
 
+    //Line Ini Jangan dihapus yak sementara yak biar ga pusing
+    public int totalPoinMembership(User user) {
+        if (user instanceof MembershipCustomer) {
+            MembershipCustomer membershipCustomer = (MembershipCustomer) user;
+            return membershipCustomer.getPoin();
+        } else {
+            return 0; 
+        }
+    }
+
+    public MembershipCustomer registerMembership(String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
+        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, poin);
+        return membershipCustomer;
+    }
+
     // Common services
     public String sha256(String content) {
         try {

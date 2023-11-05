@@ -6,8 +6,9 @@ public class transactionJadwal extends transaction{
     private String idJadwal;
     private String idSeat;
 
-    public transactionJadwal(String idTransaction, LocalDateTime transactionDate, String idJadwal, String idSeat) {
-        super(idTransaction, transactionDate);
+    public transactionJadwal(String idTransaction, LocalDateTime transactionDate, String idUser, String idJadwal,
+            String idSeat) {
+        super(idTransaction, transactionDate, idUser);
         this.idJadwal = idJadwal;
         this.idSeat = idSeat;
     }

@@ -5,10 +5,12 @@ import java.time.LocalDateTime;
 abstract public class transaction {
     private String idTransaction;
     private LocalDateTime transactionDate;
+    private String idUser;
 
-    public transaction (String idTransaction, LocalDateTime transactionDate){
+    public transaction(String idTransaction, LocalDateTime transactionDate, String idUser) {
         this.idTransaction = idTransaction;
         this.transactionDate = transactionDate;
+        this.idUser = idUser;
     }
 
     public String getIdTransaction() {
@@ -25,5 +27,13 @@ abstract public class transaction {
 
     public void setTransactionDate(LocalDateTime transactionDate) {
         this.transactionDate = transactionDate;
+    }
+
+    public String getIdUser() {
+        return idUser;
+    }
+
+    public void setIdUser(String idUser) {
+        this.idUser = idUser;
     }
 }

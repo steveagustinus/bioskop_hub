@@ -6,8 +6,9 @@ public class transactionFnb extends transaction{
     private String idFnb;
     private int quantity;
 
-    public transactionFnb(String idTransaction, LocalDateTime transactionDate, String idFnb, int quantity) {
-        super(idTransaction, transactionDate);
+    public transactionFnb(String idTransaction, LocalDateTime transactionDate, String idUser, String idFnb,
+            int quantity) {
+        super(idTransaction, transactionDate, idUser);
         this.idFnb = idFnb;
         this.quantity = quantity;
     }

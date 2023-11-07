@@ -369,7 +369,7 @@ public class Controller {
                             result.getString("profile_name"),
                             result.getString("email"),
                             result.getString("phoneNumber"),
-                            result.getString("address"));
+                            result.getString("address"), null);
                     break;
 
                 case 2:
@@ -380,7 +380,7 @@ public class Controller {
                             result.getString("email"),
                             result.getString("phoneNumber"),
                             result.getString("address"),
-                            result.getInt("poin"));
+                            null, result.getInt("poin"));
                     break;
             }
 
@@ -497,7 +497,7 @@ public class Controller {
     }
 
     public MembershipCustomer registerMembership(String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, poin);
+        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, null, poin);
         return membershipCustomer;
     }
 

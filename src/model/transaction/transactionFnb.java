@@ -2,11 +2,11 @@ package src.model.transaction;
 
 import java.time.LocalDateTime;
 
-public class transactionFnb extends transaction{
+public class TransactionFnb extends Transaction{
     private String idFnb;
     private int quantity;
 
-    public transactionFnb(String idTransaction, LocalDateTime transactionDate, String idUser, String idFnb,
+    public TransactionFnb(String idTransaction, LocalDateTime transactionDate, String idUser, String idFnb,
             int quantity) {
         super(idTransaction, transactionDate, idUser);
         this.idFnb = idFnb;

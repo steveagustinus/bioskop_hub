@@ -2,12 +2,12 @@ package src.model.transaction;
 
 import java.time.LocalDateTime;
 
-abstract public class transaction {
+abstract public class Transaction {
     private String idTransaction;
     private LocalDateTime transactionDate;
     private String idUser;
 
-    public transaction(String idTransaction, LocalDateTime transactionDate, String idUser) {
+    public Transaction(String idTransaction, LocalDateTime transactionDate, String idUser) {
         this.idTransaction = idTransaction;
         this.transactionDate = transactionDate;
         this.idUser = idUser;

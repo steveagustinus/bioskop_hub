@@ -437,7 +437,7 @@ public class Controller {
         try {
             int isNameExist = isNameExist(username);
             if (isNameExist == 1) {
-                return -6;
+                return 0;
             }
             
             conn.open();
@@ -458,7 +458,7 @@ public class Controller {
 
             conn.close();
 
-            return 0;
+            return 1;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;

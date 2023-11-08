@@ -43,7 +43,7 @@ public class RegisterScreen {
         panel.add(phoneNumField);
         panel.add(addressLabel);
         panel.add(addressField);
-        panel.add(new JLabel()); 
+        panel.add(new JLabel());
         panel.add(registerButton);
 
         registerButton.addActionListener(new ActionListener() {
@@ -55,11 +55,22 @@ public class RegisterScreen {
                 String phoneNum = phoneNumField.getText();
                 String address = addressField.getText();
                 int user = new Controller().register(username, password, email, phoneNum, address);
-                if(user == -6) {
+                if (user == -1) {
+                    JOptionPane.showMessageDialog(null, "Username tidak boleh kosong!");
+                } else if (user == -2) {
+                    JOptionPane.showMessageDialog(null, "Password tidak boleh kosong!");
+                } else if (user == -3) {
+                    JOptionPane.showMessageDialog(null, "Email tidak boleh kosong!");
+                } else if (user == -4) {
+                    JOptionPane.showMessageDialog(null, "Phone Number tidak boleh kosong!");
+                } else if (user == -5) {
+                    JOptionPane.showMessageDialog(null, "Address tidak boleh kosong!");
+                } else if (user == 0) {
                     JOptionPane.showMessageDialog(null, "Username already exists!");
                     return;
+                } else if (user == 1) {
+                    JOptionPane.showMessageDialog(null, "Registration " + username + " successful!");
                 }
-                JOptionPane.showMessageDialog(null, "Registration " + username +" successful!");
                 frame.dispose();
             }
         });
@@ -68,7 +79,7 @@ public class RegisterScreen {
 
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(300, 200);
-        frame.setLocationRelativeTo(null); 
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
 }

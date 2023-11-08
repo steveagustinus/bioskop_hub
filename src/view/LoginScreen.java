@@ -22,7 +22,6 @@ public class LoginScreen {
 
         JTextField usernameField;
         JPasswordField passwordField;
-        
 
         loginJFrame.setTitle("Login");
         loginJFrame.setSize(300, 150);

@@ -23,8 +23,8 @@ public class MainMenuScreen implements MainInterface {
         User user = controller.login("admin", "123");
         System.out.println(user.getUsername());
 
-        // Studio test = controller.getStudioById("LPSBAL-03");
-        // System.out.println(test.getStudioClass());
+        Studio test = controller.getStudioById("LPSBAL-03");
+        System.out.println(test.getStudioClass());
         // test area
 
         boolean exit = false;

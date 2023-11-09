@@ -501,7 +501,7 @@ public class Controller {
         }
     }
 
-    public int isNameExist(String username){
+    public int isNameExist(String username) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();

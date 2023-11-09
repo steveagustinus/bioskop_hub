@@ -46,7 +46,9 @@ public class LoginScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
-                String password = passwordField.getText();
+                String password = "";
+                char[] pass = passwordField.getPassword();
+                for (char chr : pass) { password += chr; }
                 User user = new Controller().login(username, password);
                 if(user == null) {
                     JOptionPane.showMessageDialog(null, "Invalid username or password!");

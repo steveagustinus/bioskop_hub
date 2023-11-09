@@ -476,8 +476,8 @@ public class Controller {
             }
             
             conn.open();
-            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `user_type`)" +
-                    "VALUES (?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
             PreparedStatement ps = conn.connection.prepareStatement(sql);
@@ -486,7 +486,8 @@ public class Controller {
             ps.setString(3, email);
             ps.setString(4, phoneNumber);
             ps.setString(5, alamat);
-            ps.setInt(6, 1);
+            ps.setString(6, username);
+            ps.setInt(7, 1);
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -501,11 +502,9 @@ public class Controller {
     }
 
     public int isNameExist(String username){
-        try{
-            Connection conn = null;
-            Class.forName(Config.Database.JDBC_DRIVER);
-            conn = DriverManager.getConnection(Config.Database.URL, Config.Database.USER, Config.Database.PASSWORD);
-            Statement statement = conn.createStatement();
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                 "SELECT * FROM `user` WHERE `username`='" + username + "'"
             );
@@ -513,6 +512,7 @@ public class Controller {
                 return 0;
             }
             result.next();
+            conn.close();
             return 1;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());

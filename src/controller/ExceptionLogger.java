@@ -23,7 +23,7 @@ public class ExceptionLogger {
         // }
 
         try {
-            File file = new File("src/controller/exception.log");
+            File file = new File("exception.log");
             file.createNewFile();
 
             String content = "[" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss")) + "]: " + message + "\r\n";

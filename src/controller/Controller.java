@@ -587,4 +587,26 @@ public class Controller {
             dir.mkdirs();
         }
     }
+    //Hitung pendapatan area
+    public int hitungPendapatanCabangFNB(String nama){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(`harga`) FROM `fnb` WHERE `id_cinema`='" + nama + "'");
+
+            result.next();
+
+            int total = result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return total;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return 0;
+        }
+    }
 }

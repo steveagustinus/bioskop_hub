@@ -53,7 +53,6 @@ public class MainMenuScreen implements MainInterface {
                 case "5": exit = true; break;
             }
         }
-
         mainFrame.dispose();
     }
 }

@@ -16,7 +16,7 @@ import net.sourceforge.jdatepicker.impl.SqlDateModel;
 
 public class PesanTiket {
 
-    public static void main(String[] args) {
+    public static void mainx(String[] args) {
         JFrame frame = new JFrame("Cinema Booking App");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 900);

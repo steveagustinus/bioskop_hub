@@ -609,4 +609,90 @@ public class Controller {
             return 0;
         }
     }
+    //Function tampilkan list
+
+    public String[] listCinema(String kota){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_cinema` FROM `cinema` WHERE `kota`='" + kota + "'");
+
+            ArrayList<String> listKota = new ArrayList<String>();
+            while (result.next()) {
+                listKota.add(result.getString("id_cinema"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listKota.toArray(new String[listKota.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listStudio(String id_cinema){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_studio` FROM `studio` WHERE `id_cinema`='" + id_cinema + "'");
+
+            ArrayList<String> listStudio = new ArrayList<String>();
+            while (result.next()) {
+                listStudio.add(result.getString("id_studio"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listStudio.toArray(new String[listStudio.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listFNB(){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `nama` FROM `fnb`");
+
+            ArrayList<String> listFNB = new ArrayList<String>();
+            while (result.next()) {
+                listFNB.add(result.getString("nama"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listFNB.toArray(new String[listFNB.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listMovie(String id_Studio){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "'");
+
+            ArrayList<String> listMovie = new ArrayList<String>();
+            while (result.next()) {
+                listMovie.add(result.getString("id_movie"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listMovie.toArray(new String[listMovie.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
 }

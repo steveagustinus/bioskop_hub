@@ -8,3 +8,5 @@ The last packet sent successfully to the server was 0 milliseconds ago. The driv
 [2023/11/04 13:22:50]: Unknown database 'bioskop_hub'
 [2023/11/04 13:22:50]: Cannot invoke "java.sql.Connection.createStatement()" because "src.controller.Controller.conn.connection" is null
 [2023/11/04 13:24:59]: Illegal operation on empty result set.
+[2023/11/09 17:59:38]: Illegal operation on empty result set.
+[2023/11/09 18:01:21]: Illegal operation on empty result set.

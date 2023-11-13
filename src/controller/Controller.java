@@ -610,6 +610,27 @@ public class Controller {
         }
     }
     //Function tampilkan list
+    public String[] listKota(){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT DISTINCT `kota` FROM `cinema` ");
+
+            ArrayList<String> listKota = new ArrayList<String>();
+            while (result.next()) {
+                listKota.add(result.getString("kota"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listKota.toArray(new String[listKota.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
 
     public String[] listCinema(String kota){
         try {

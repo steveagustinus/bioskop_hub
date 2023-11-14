@@ -29,9 +29,11 @@ import src.model.user.User;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
-    public Controller() { }
 
-    //Jadwal area
+    public Controller() {
+    }
+
+    // Jadwal area
     public Seat[] GenerateSeat(Jadwal jadwal) {
         return null;
     }
@@ -42,16 +44,14 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "';"
-            );
+                    "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "';");
 
             result.next();
 
             Studio studio = new Studio(
-                idStudio,
-                getStudioClassEnum(result.getString("studio_class")),
-                result.getInt("studio_type")
-            );
+                    idStudio,
+                    getStudioClassEnum(result.getString("studio_class")),
+                    result.getInt("studio_type"));
 
             result.close();
             statement.close();
@@ -79,7 +79,7 @@ public class Controller {
             while (result.next()) {
                 Studio studio = new Studio(
                         result.getString("id_studio"),
-                    getStudioClassEnum(result.getString("studio_class")),
+                        getStudioClassEnum(result.getString("studio_class")),
                         result.getInt("studio_type"));
                 studioList.add(studio);
             }
@@ -245,9 +245,8 @@ public class Controller {
             conn.connection.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 ps.setString(1, idCinema);
                 ps.setString(2, nama);
                 ps.setString(3, kota);
@@ -303,9 +302,8 @@ public class Controller {
             conn.connection.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 int count = 1;
                 if (!empty_nama) {
                     ps.setString(count, nama);
@@ -474,9 +472,10 @@ public class Controller {
             if (isNameExist == 1) {
                 return 0;
             }
-            
+
             conn.open();
-            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)" +
+            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)"
+                    +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
@@ -506,8 +505,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `user` WHERE `username`='" + username + "'"
-            );
+                    "SELECT * FROM `user` WHERE `username`='" + username + "'");
             if (!result.isBeforeFirst()) {
                 return 0;
             }
@@ -521,18 +519,20 @@ public class Controller {
         }
     }
 
-    //Line Ini Jangan dihapus yak sementara yak biar ga pusing
+    // Line Ini Jangan dihapus yak sementara yak biar ga pusing
     public int totalPoinMembership(User user) {
         if (user instanceof MembershipCustomer) {
             MembershipCustomer membershipCustomer = (MembershipCustomer) user;
             return membershipCustomer.getPoin();
         } else {
-            return 0; 
+            return 0;
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, null, poin);
+    public MembershipCustomer registerMembership(String username, String password, String profileName, String email,
+            String phoneNumber, String address, int poin) {
+        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email,
+                phoneNumber, address, null, poin);
         return membershipCustomer;
     }
 
@@ -587,26 +587,113 @@ public class Controller {
             dir.mkdirs();
         }
     }
-    //Hitung pendapatan area
-    public int hitungPendapatanCabangFNB(String nama){
+
+    // Hitung pendapatan area
+    public int hitungPendapatanCabang(String nama) {
+        int total = 0;
         try {
-            conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT SUM(`harga`) FROM `fnb` WHERE `id_cinema`='" + nama + "'");
-
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.nama = '"
+                            + nama + "';");
             result.next();
-
-            int total = result.getInt(1);
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.nama ='"
+                            + nama + "';");
+            result.next();
+            total += result.getInt(1);
 
             result.close();
             statement.close();
             conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
 
-            return total;
+    public int hitungPendapatanKota(String kota) {
+        int total = 0;
+        try {
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.kota = '"
+                            + kota + "';");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.kota ='"
+                            + kota + "';");
+            result.next();
+            total += result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
+
+    public int hitungPendapatanTotal() {
+        int total = 0;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb;");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT SUM(j.harga) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal;");
+            result.next();
+            total += result.getInt(1);
+            statement.close();
+            conn.close();
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
-            return 0;
+        }
+        return total;
+    }
+    public boolean isKotaExists(String kota) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `cinema` WHERE `kota`='" + kota + "'");
+            if (!result.isBeforeFirst()) {
+                return false;
+            }
+            result.next();
+            conn.close();
+            return true;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return false;
+        }
+    }
+    public boolean isCabangExists(String cabang) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `cinema` WHERE `nama`='" + cabang + "'");
+            if (!result.isBeforeFirst()) {
+                return false;
+            }
+            result.next();
+            conn.close();
+            return true;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return false;
         }
     }
 }

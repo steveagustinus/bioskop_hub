@@ -6,31 +6,31 @@ import javax.swing.JOptionPane;
 
 import src.controller.Controller;
 
-public class EditCinemaScreen {
+public class EditMovieScreen {
     private Controller controller = new Controller();
 
-    public EditCinemaScreen(Window parent) {
-        showCinemaScreen(parent);
+    public EditMovieScreen(Window parent) {
+        showEditMovieScreen(parent);
     }
 
-    public void showCinemaScreen(Window parent) {
+    public void showEditMovieScreen(Window parent) {
         String inputID = JOptionPane.showInputDialog(
             null,
-            "Masukkan id cinema: ",
-            "Admin: Edit cinema",
+            "Masukkan id movie: ",
+            "Admin: Edit movie",
             JOptionPane.QUESTION_MESSAGE
         );
 
-        if (!controller.isCinemaExists(inputID)) {
+        if (!controller.isMovieExists(inputID)) {
             JOptionPane.showMessageDialog(
                 parent,
-                "Cinema dengan id " + inputID + " tidak ada!",
-                "Admin: Edit cinema",
+                "Movie dengan id " + inputID + " tidak ada!",
+                "Admin: Edit movie",
                 JOptionPane.ERROR_MESSAGE
             );
             return;
         }
         
-        new EditCinemaDialog(parent, inputID);
+        new EditMovieDialog(parent, inputID);
     }
 }

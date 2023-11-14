@@ -12,7 +12,7 @@ public class NewMovieDialog extends MovieFormDialog {
         buttonSubmit.setText("Add new movie");
         buttonSubmit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                
+                // INSERT NEW MOVIE
             }
         });
         this.setVisible(true);

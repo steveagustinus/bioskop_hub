@@ -13,12 +13,17 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
 import src.model.Jadwal;
 import src.model.movie.Movie;
+import src.model.movie.MovieLanguageInterface;
 import src.model.seat.Seat;
 import src.model.studio.Studio;
 import src.model.studio.StudioClassEnum;
@@ -360,7 +365,7 @@ public class Controller {
             Movie movie = new Movie(
                     idMovie,
                     result.getString("judul"),
-                    result.getDate("release_date"),
+                    dateToLocalDate(result.getDate("release_date")),
                     result.getString("director"),
                     result.getInt("language"),
                     result.getInt("durasi"),
@@ -376,6 +381,79 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
+    }
+
+    public boolean isMovieExists(String idMovie) {
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
+
+            boolean exists = false;
+            if (result.isBeforeFirst()) {
+                exists = true;
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return exists;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return false;
+        }
+    }
+    
+    public int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+        if (idMovie == null || idMovie.equals("")) {
+            return -1;
+        }
+
+        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?" +
+            "WHERE `id_movie`=?;";
+
+        try {
+            conn.open();
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                FileInputStream fis = new FileInputStream(fotoMovie);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, judul);
+                ps.setDate(2, java.sql.Date.valueOf(releaseDate));
+                ps.setString(3, director);
+                ps.setInt(4, language);
+                ps.setInt(5, durasi);
+                ps.setString(6, sinopsis);
+                ps.setBinaryStream(7, fis, (int) fotoMovie.length());
+                ps.setString(8, idMovie);
+
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public String getMovieLanguage(int language) {
+        switch (language) {
+            case MovieLanguageInterface.ENGLISH: return "English";
+            case MovieLanguageInterface.JAPANESE: return "Japanese";
+            case MovieLanguageInterface.BAHASA_INDONESIA: return "Bahasa_Indonesia";
+        }
+        return "";
     }
 
     // User area
@@ -537,6 +615,27 @@ public class Controller {
     }
 
     // Common services
+    public LocalDate dateToLocalDate(java.util.Date date) {
+        return LocalDate.from(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()));
+    }
+
+    public LocalDate stringToLocalDate(String str, String pattern) {
+        if (str.equals("")) { return null; }
+        LocalDate output = null;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            output = LocalDate.parse(str, formatter);
+        } catch (Exception ex) {
+            return null;
+        }
+
+        return output;
+    }
+
+    public String localDateToString(LocalDate date, String pattern) {
+        return date.format(DateTimeFormatter.ofPattern(pattern));
+    }
+    
     public String sha256(String content) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");

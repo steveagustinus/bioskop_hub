@@ -716,4 +716,21 @@ public class Controller {
             return null;
         }
     }
+    public String deleteFnB(String fnbName){
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            int rowsAffected = statement.executeUpdate(
+                    "DELETE FROM `fnb` WHERE nama='" + fnbName + "'");
+            statement.close();
+            conn.close();
+            return "Berhasil!";
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+
 }

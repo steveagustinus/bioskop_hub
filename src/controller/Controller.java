@@ -407,6 +407,66 @@ public class Controller {
         }
     }
     
+    public int addNewMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+        if (idMovie == null || idMovie.equals("") || idMovie.length() != 10) {
+            return -1;
+        }
+        if (judul == null || judul.equals("")) {
+            return -2;
+        }
+        if (releaseDate == null) {
+            return -3;
+        }
+        if (director == null || director.equals("")) {
+            return -4;
+        }
+        if (language == 0) {
+            return -5;
+        }
+        if (durasi == 0) {
+            return -6;
+        }
+        if (sinopsis == null || sinopsis.equals("")) {
+            return -7;
+        }
+        if (fotoMovie == null) {
+            return -8;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `movie` (`id_movie`, `judul`, `release_date`, `director`, `language`, `durasi`, `sinopsis`, `img`)" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                FileInputStream fis = new FileInputStream(fotoMovie);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, idMovie);
+                ps.setString(2, judul);
+                ps.setDate(3, java.sql.Date.valueOf(releaseDate));
+                ps.setString(4, director);
+                ps.setInt(5, language);
+                ps.setInt(6, durasi);
+                ps.setString(7, sinopsis);
+                ps.setBinaryStream(8, fis, (int) fotoMovie.length());
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
     public int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
         if (idMovie == null || idMovie.equals("")) {
             return -1;

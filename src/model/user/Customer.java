@@ -5,14 +5,16 @@ import java.util.LinkedList;
 import src.model.transaction.Transaction;
 
 public class Customer extends User {
+    private String idUser;
     private String profileName;
     private String email;
     private String phoneNumber;
     private String address;
     private LinkedList<Transaction> transaction ;
 
-    public Customer(String username, String password, String profileName, String email, String phoneNumber, String address, LinkedList<Transaction> transaction) {
+    public Customer(String idUser, String username, String password, String profileName, String email, String phoneNumber, String address, LinkedList<Transaction> transaction) {
         super(username, password);
+        this.idUser = idUser;
         this.profileName = profileName;
         this.email = email;
         this.phoneNumber = phoneNumber;
@@ -20,6 +22,10 @@ public class Customer extends User {
         this.transaction = transaction;
     }
 
+    public String getIdUser() {
+        return this.idUser;
+    }
+    
     public String getProfileName() {
         return this.profileName;
     }

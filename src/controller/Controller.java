@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
+import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.seat.Seat;
 import src.model.seat.SeatStatusInterface;
@@ -33,7 +34,7 @@ public class Controller {
 
     public Controller() { }
 
-    //Seat area
+    // Seat area
     public int getLastSeatId() {
         int lastId = -1;
         try {
@@ -66,9 +67,9 @@ public class Controller {
         
         Seat[][] seats = new Seat[1][1];
         switch (studio.getStudioClass()) {
-            case REGULER: seats = new Seat[15][9]; break;
+            case REGULER: seats = new Seat[9][15]; break;
             case LUXE: seats = new Seat[8][8]; break;
-            case JUNIOR: seats = new Seat[10][9]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
             case VIP: seats = new Seat[5][5]; break;
         }
 
@@ -112,6 +113,77 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
+    }
+
+    public Seat[][] getSeatFromJadwal(Jadwal jadwal) {
+        Seat[][] seats = new Seat[1][1];
+
+        Studio studio = getStudioById(jadwal.getIdStudio());
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_seat`, `kode` FROM `seat` WHERE `id_studio`='" + studio.getIdStudio() + "'");
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    result.next();
+                    seats[i][j] = new Seat(
+                        result.getString("id_seat"),
+                        result.getString("kode"),
+                        SeatStatusInterface.AVAILABLE
+                    );
+                }
+            }
+
+            conn.close();
+
+            statement = conn.connection.createStatement();
+            result = statement.executeQuery(
+                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + jadwal.getIdJadwal() + 
+                    "' ORDER BY `id_seat` ASC;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return seats;
+            }
+
+            result.next();
+
+            mainloop:for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    if (seats[i][j].getIdSeat().equals(result.getString("id_seat"))) {
+                        seats[i][j].setSeatStatus(SeatStatusInterface.TAKEN);
+                        if (result.isLast()) {
+                            break mainloop;
+                        }
+                        else {
+                            result.next();
+                        }
+                    }
+                }
+            }
+
+            result.close();
+            conn.close();
+            
+            return seats;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+        }
+
+        return null;
     }
 
     // Studio area
@@ -635,23 +707,29 @@ public class Controller {
 
                 case 1:
                     user = new Customer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phoneNumber"),
-                            result.getString("address"), null);
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phoneNumber"),
+                        result.getString("address"),
+                        null
+                    );
                     break;
 
                 case 2:
                     user = new MembershipCustomer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phoneNumber"),
-                            result.getString("address"),
-                            null, result.getInt("poin"));
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phoneNumber"),
+                        result.getString("address"),
+                        null,
+                        result.getInt("poin")
+                    );
                     break;
             }
 
@@ -757,6 +835,73 @@ public class Controller {
         }
     }
 
+    // User action
+    public int pesanTiket(Customer customer, Jadwal jadwal, Seat[] bookedSeat) {
+        if (customer == null) {
+            return -1;
+        }
+
+        if (jadwal == null) {
+            return -2;
+        }
+
+        if (bookedSeat == null) {
+            return -3;
+        }
+
+        try {
+            conn.open();
+            
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES ('" + createTransactionId() + "', '" + customer.getIdUser() + "', now());"
+            );
+            
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    // Transaction
+    public String createTransactionId() {
+        String newId = "";
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_transaction` FROM `transaction` ORDER BY `id_transaction` DESC LIMIT 1;"
+            );
+
+            String lastId = "";
+            if (!result.isBeforeFirst()) {
+                lastId = "0";
+            } else {
+                result.next();
+                lastId = result.getString("id_transaction").replace("T-", "");
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            newId = String.valueOf(Integer.parseInt(lastId) + 1);
+
+            for (int i = newId.length(); i <= 18; i++) {
+                newId = "0" + newId;
+            }
+            
+            newId = "T-" + newId;
+
+            return newId;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
     //Line Ini Jangan dihapus yak sementara yak biar ga pusing
     public int totalPoinMembership(User user) {
         if (user instanceof MembershipCustomer) {
@@ -767,8 +912,8 @@ public class Controller {
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, null, poin);
+    public MembershipCustomer registerMembership(String idUser, String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
+        MembershipCustomer membershipCustomer = new MembershipCustomer(idUser, username, password, profileName, email, phoneNumber, address, null, poin);
         return membershipCustomer;
     }
 

@@ -16,7 +16,7 @@ import net.sourceforge.jdatepicker.impl.SqlDateModel;
 
 public class PesanTiket {
 
-    public static void mainx(String[] args) {
+    public static void main(String[] args) {
         JFrame frame = new JFrame("Cinema Booking App");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 900);
@@ -122,7 +122,7 @@ public class PesanTiket {
 
         frame.add(submitButton);
         frame.setLocationRelativeTo(null); 
-                frame.add(containerPanel, BorderLayout.CENTER);
+        frame.add(containerPanel, BorderLayout.CENTER);
         frame.add(controlPanel, BorderLayout.SOUTH);
 //        frame.add(frame);
         frame.setLayout(null);

@@ -6,6 +6,7 @@ import java.io.File;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -112,9 +113,13 @@ public abstract class MovieFormDialog extends JDialog {
             labelDisplayFoto.setIcon(new ImageIcon(
                 new ImageIcon(fotoMovie.getAbsolutePath())
                 .getImage()
-                .getScaledInstance(225, 400,java.awt.Image.SCALE_SMOOTH)
+                .getScaledInstance(225, 400, java.awt.Image.SCALE_SMOOTH)
             ));
         }
+
+
+        labelDisplayFoto = new JLabel();
+        labelDisplayFoto.setBounds(565, 30, 225, 400);
 
         fChooser = new JFileChooser();
         buttonSelectFoto.addActionListener(new ActionListener() {

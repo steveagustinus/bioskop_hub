@@ -21,12 +21,13 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
-import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.movie.MovieLanguageInterface;
 import src.model.seat.Seat;
+import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
 import src.model.studio.StudioClassEnum;
+import src.model.studio.StudioTypeInterface;
 import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
@@ -34,11 +35,88 @@ import src.model.user.User;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
+
     public Controller() { }
 
-    //Jadwal area
-    public Seat[] GenerateSeat(Jadwal jadwal) {
-        return null;
+    //Seat area
+    public int getLastSeatId() {
+        int lastId = -1;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_seat` FROM `seat` ORDER BY `id_seat` DESC LIMIT 1;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return 0;
+            }
+
+            result.next();
+
+            lastId = Integer.parseInt(result.getString("id_seat"));
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return lastId;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -1;
+        }
+    }
+
+    public int generateSeat(Studio studio) {
+        
+        Seat[][] seats = new Seat[1][1];
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[15][9]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[10][9]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        int idSeat = getLastSeatId() + 1;
+
+        for (int i = 0; i < seats.length; i++) {
+            for (int j = 0; j < seats[i].length; j++) {
+                seats[i][j] = new Seat(
+                    String.valueOf(idSeat),
+                    ((char)(i + 65)) + ((j + 1) < 10 ? "0" + String.valueOf(j + 1) : String.valueOf(j + 1)),
+                    SeatStatusInterface.AVAILABLE
+                );
+                idSeat++;
+            }
+        }
+
+        // Insert seats into database
+        String sql = "INSERT INTO `seat` (`id_seat`, `id_studio`, `kode`)" +
+            "VALUES ";
+
+        for (Seat[] arrSeat : seats) {
+            for (Seat seat : arrSeat) {
+                sql += "('" + seat.getIdSeat() + "', '" + studio.getIdStudio() + "', '" + seat.getSeatCode() + "'),";
+            }
+        }
+
+        sql = sql.substring(0, sql.length() - 1) + ";";
+
+        try {
+            conn.open();
+            conn.connection.setAutoCommit(false);
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
     }
 
     // Studio area
@@ -54,6 +132,7 @@ public class Controller {
 
             Studio studio = new Studio(
                 idStudio,
+                result.getString("id_cinema"),
                 getStudioClassEnum(result.getString("studio_class")),
                 result.getInt("studio_type")
             );
@@ -83,9 +162,11 @@ public class Controller {
             ArrayList<Studio> studioList = new ArrayList<Studio>();
             while (result.next()) {
                 Studio studio = new Studio(
-                        result.getString("id_studio"),
+                    result.getString("id_studio"),
+                    result.getString("id_cinema"),
                     getStudioClassEnum(result.getString("studio_class")),
-                        result.getInt("studio_type"));
+                    result.getInt("studio_type")
+                );
                 studioList.add(studio);
             }
 
@@ -101,19 +182,23 @@ public class Controller {
     }
 
     public StudioClassEnum getStudioClassEnum(String studioClass) {
-        switch (studioClass) {
-            case "vip":
+        switch (studioClass.toUpperCase()) {
+            case "VIP":
                 return StudioClassEnum.VIP;
-            case "junior":
+            case "JUNIOR":
                 return StudioClassEnum.JUNIOR;
-            case "luxe":
+            case "LUXE":
                 return StudioClassEnum.LUXE;
-            case "reguler":
+            case "REGULAR":
                 return StudioClassEnum.REGULER;
         }
         return null;
     }
 
+    public String[] getListStudioClass() {
+        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
+    }
+    
     public String getStudioClassString(StudioClassEnum studioClass) {
         switch (studioClass) {
             case VIP:
@@ -123,11 +208,138 @@ public class Controller {
             case LUXE:
                 return "Luxe";
             case REGULER:
-                return "Reguler";
+                return "Regular";
         }
         return "";
     }
 
+    public String[] getListStudioType() {
+        return new String[] { "2D", "3D", "4D", "5D" };
+    }
+
+    public int getStudioType(String studioType) {
+        switch (studioType) {
+            case "2D": return StudioTypeInterface.TYPE2D;
+            case "3D": return StudioTypeInterface.TYPE3D;
+            case "4D": return StudioTypeInterface.TYPE4D;
+            case "5D": return StudioTypeInterface.TYPE5D;
+        }
+
+        return -1;
+    }
+
+    public String getStudioTypeString(int studioType) {
+        switch (studioType) {
+            case StudioTypeInterface.TYPE2D: return "2D";
+            case StudioTypeInterface.TYPE3D: return "3D";
+            case StudioTypeInterface.TYPE4D: return "4D";
+            case StudioTypeInterface.TYPE5D: return "5D";
+        }
+
+        return "";
+    }
+
+    public int addNewStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        return addNewStudio(
+            idStudio,
+            idCinema, 
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
+    }
+
+    public int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+        if (idStudio == null || idStudio.equals("") || idStudio.length() != 10) {
+            return -1;
+        }
+        if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
+            return -2;
+        }
+        if (studioClass == null) {
+            return -3;
+        }
+        if (studioType < 0) {
+            return -4;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`)" +
+                    "VALUES (?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idStudio);
+            ps.setString(2, idCinema);
+            ps.setString(3, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(4, studioType);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+
+            // Generate seats on studio creation
+            if (generateSeat(new Studio(idStudio, idCinema, studioClass, studioType)) != 0) {
+                return -5;
+            }
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int editStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        return editStudio(
+            idStudio,
+            idCinema, 
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
+    }
+
+    public int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+        if (idStudio == null || idStudio.equals("")) {
+            return -1;
+        }
+
+        if (idCinema == null || idCinema.equals("")) {
+            return -2;
+        }
+
+        if (studioClass == null) {
+            return -3;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "UPDATE `studio` SET `id_cinema`=?, `studio_class`=?, `studio_type`=? WHERE `id_studio`=?;";
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idCinema);
+            ps.setString(2, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(3, studioType);
+            ps.setString(4, idStudio);
+
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -744,6 +956,135 @@ public class Controller {
         File dir = new File(Config.Path.TEMP_DIR);
         if (!dir.exists()) {
             dir.mkdirs();
+        }
+    }
+    //Hitung pendapatan area
+    public int hitungPendapatanCabangFNB(String nama){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(`harga`) FROM `fnb` WHERE `id_cinema`='" + nama + "'");
+
+            result.next();
+
+            int total = result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return total;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return 0;
+        }
+    }
+    //Function tampilkan list
+    public String[] listKota(){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT DISTINCT `kota` FROM `cinema` ");
+
+            ArrayList<String> listKota = new ArrayList<String>();
+            while (result.next()) {
+                listKota.add(result.getString("kota"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listKota.toArray(new String[listKota.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public String[] listCinema(String kota){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_cinema` FROM `cinema` WHERE `kota`='" + kota + "'");
+
+            ArrayList<String> listKota = new ArrayList<String>();
+            while (result.next()) {
+                listKota.add(result.getString("id_cinema"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listKota.toArray(new String[listKota.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listStudio(String id_cinema){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_studio` FROM `studio` WHERE `id_cinema`='" + id_cinema + "'");
+
+            ArrayList<String> listStudio = new ArrayList<String>();
+            while (result.next()) {
+                listStudio.add(result.getString("id_studio"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listStudio.toArray(new String[listStudio.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listFNB(){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `nama` FROM `fnb`");
+
+            ArrayList<String> listFNB = new ArrayList<String>();
+            while (result.next()) {
+                listFNB.add(result.getString("nama"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listFNB.toArray(new String[listFNB.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listMovie(String id_Studio){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "'");
+
+            ArrayList<String> listMovie = new ArrayList<String>();
+            while (result.next()) {
+                listMovie.add(result.getString("id_movie"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listMovie.toArray(new String[listMovie.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
         }
     }
 }

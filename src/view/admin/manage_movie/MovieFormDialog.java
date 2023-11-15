@@ -1,5 +1,6 @@
 package src.view.admin.manage_movie;
 
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.*;
 import java.io.File;
@@ -25,7 +26,7 @@ public abstract class MovieFormDialog extends JDialog {
     protected JTextField fieldJudul;
     protected JDatePickerImpl datePickerReleaseDate;
     protected JTextField fieldDirector;
-    protected JTextField fieldLanguage;
+    protected JComboBox<String> fieldLanguage;
     protected JTextField fieldDurasi;
     protected JTextArea fieldSinopsis;
     protected JFileChooser fChooser;
@@ -41,7 +42,7 @@ public abstract class MovieFormDialog extends JDialog {
 
     private void initializeComponent() {
         this.setLayout(null);
-        this.setSize(1280, 720);
+        this.setSize(555, 555);
 
         String[] labelText = { "ID", "Judul", "Tanggal Rilis", "Sutradara", "Bahasa", "Durasi", "Sinopsis" };
         JLabel[] labels = new JLabel[labelText.length];
@@ -64,50 +65,40 @@ public abstract class MovieFormDialog extends JDialog {
         }
 
         fieldID = new JTextField();
-        fieldID.setBounds(110, 5, 200, 25);
+        fieldID.setBounds(115, 5, 435, 25);
+        fieldID.setFont(new Font("Dialog", Font.PLAIN, 20));
 
         fieldJudul = new JTextField();
-        fieldJudul.setBounds(110, 35, 200, 25);
+        fieldJudul.setBounds(115, 35, 200, 25);
 
         UtilDateModel model = new UtilDateModel();
         JDatePanelImpl datePanel = new JDatePanelImpl(model);
         datePickerReleaseDate = new JDatePickerImpl(datePanel);
-        datePickerReleaseDate.setBounds(110, 65, 200, 30);
+        datePickerReleaseDate.setBounds(115, 65, 200, 30);
 
         fieldDirector = new JTextField();
-        fieldDirector.setBounds(110, 100, 200, 25);
+        fieldDirector.setBounds(115, 100, 200, 25);
 
-        fieldLanguage = new JTextField();
-        fieldLanguage.setBounds(110, 130, 200, 25);
+        fieldLanguage = new JComboBox<String>(controller.getMovieLanguageList());
+        fieldLanguage.setBounds(115, 130, 200, 25);
 
         fieldDurasi = new JTextField();
-        fieldDurasi.setBounds(110, 160, 200, 25);
+        fieldDurasi.setBounds(115, 160, 200, 25);
 
         fieldSinopsis = new JTextArea();
-        fieldSinopsis.setBounds(110, 190, 200, 100);
+        fieldSinopsis.setBounds(115, 190, 200, 270);
         fieldSinopsis.setLineWrap(true);
         fieldSinopsis.setWrapStyleWord(true);
 
-        JButton buttonSelectFoto = new JButton("Select file");
-        buttonSelectFoto.setBounds(320, 5, 225, 20);
+        JButton buttonSelectFoto = new JButton("Select photo");
+        buttonSelectFoto.setBounds(325, 35, 225, 20);
 
         labelDisplayFoto = new JLabel();
-        labelDisplayFoto.setBounds(320, 30, 225, 450);
+        labelDisplayFoto.setBounds(325, 60, 225, 400);
 
         buttonSubmit = new JButton();
-        buttonSubmit.setSize(305, 25);
-        buttonSubmit.setLocation(5, 295);
-
-        this.add(fieldID);
-        this.add(fieldJudul);
-        this.add(datePickerReleaseDate);
-        this.add(fieldDirector);
-        this.add(fieldLanguage);
-        this.add(fieldDurasi);
-        this.add(fieldSinopsis);
-        this.add(labelDisplayFoto);
-        this.add(buttonSelectFoto);
-        this.add(buttonSubmit);
+        buttonSubmit.setSize(545, 40);
+        buttonSubmit.setLocation(5, 480);
 
         if (fotoMovie != null) {
             labelDisplayFoto.setIcon(new ImageIcon(
@@ -116,10 +107,6 @@ public abstract class MovieFormDialog extends JDialog {
                 .getScaledInstance(225, 400, java.awt.Image.SCALE_SMOOTH)
             ));
         }
-
-
-        labelDisplayFoto = new JLabel();
-        labelDisplayFoto.setBounds(565, 30, 225, 400);
 
         fChooser = new JFileChooser();
         buttonSelectFoto.addActionListener(new ActionListener() {
@@ -138,5 +125,16 @@ public abstract class MovieFormDialog extends JDialog {
                 }
             }
         });
+
+        this.add(fieldID);
+        this.add(fieldJudul);
+        this.add(datePickerReleaseDate);
+        this.add(fieldDirector);
+        this.add(fieldLanguage);
+        this.add(fieldDurasi);
+        this.add(fieldSinopsis);
+        this.add(labelDisplayFoto);
+        this.add(buttonSelectFoto);
+        this.add(buttonSubmit);
     }
 }

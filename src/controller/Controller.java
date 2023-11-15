@@ -17,9 +17,9 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
-import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.seat.Seat;
+import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
 import src.model.studio.StudioClassEnum;
 import src.model.user.Admin;
@@ -31,9 +31,86 @@ public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
     public Controller() { }
 
-    //Jadwal area
-    public Seat[] GenerateSeat(Jadwal jadwal) {
-        return null;
+    //Seat area
+    public int getLastSeatId() {
+        int lastId = -1;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_seat` FROM `seat` ORDER BY `id_seat` DESC LIMIT 1;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return 0;
+            }
+
+            result.next();
+
+            lastId = Integer.parseInt(result.getString("id_seat"));
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return lastId;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -1;
+        }
+    }
+
+    public int generateSeat(Studio studio) {
+        
+        Seat[][] seats = new Seat[1][1];
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[15][9]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[10][9]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        int idSeat = getLastSeatId() + 1;
+
+        for (int i = 0; i < seats.length; i++) {
+            for (int j = 0; j < seats[i].length; j++) {
+                seats[i][j] = new Seat(
+                    String.valueOf(idSeat),
+                    ((char)(i + 65)) + ((j + 1) < 10 ? "0" + String.valueOf(j + 1) : String.valueOf(j + 1)),
+                    SeatStatusInterface.AVAILABLE
+                );
+                idSeat++;
+            }
+        }
+
+        // Insert seats into database
+        String sql = "INSERT INTO `seat` (`id_seat`, `id_studio`, `kode`)" +
+            "VALUES ";
+
+        for (Seat[] arrSeat : seats) {
+            for (Seat seat : arrSeat) {
+                sql += "('" + seat.getIdSeat() + "', '" + studio.getIdStudio() + "', '" + seat.getSeatCode() + "'),";
+            }
+        }
+
+        sql = sql.substring(0, sql.length() - 1) + ";";
+
+        System.out.println(sql);
+        try {
+            conn.open();
+            conn.connection.setAutoCommit(false);
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
     }
 
     // Studio area
@@ -96,14 +173,14 @@ public class Controller {
     }
 
     public StudioClassEnum getStudioClassEnum(String studioClass) {
-        switch (studioClass) {
-            case "vip":
+        switch (studioClass.toUpperCase()) {
+            case "VIP":
                 return StudioClassEnum.VIP;
-            case "junior":
+            case "JUNIOR":
                 return StudioClassEnum.JUNIOR;
-            case "luxe":
+            case "LUXE":
                 return StudioClassEnum.LUXE;
-            case "reguler":
+            case "REGULAR":
                 return StudioClassEnum.REGULER;
         }
         return null;
@@ -118,9 +195,56 @@ public class Controller {
             case LUXE:
                 return "Luxe";
             case REGULER:
-                return "Reguler";
+                return "Regular";
         }
         return "";
+    }
+
+    public int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+        if (idStudio == null || idStudio.equals("") || idStudio.length() != 10) {
+            return -1;
+        }
+        if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
+            return -2;
+        }
+        if (studioClass == null) {
+            return -3;
+        }
+        if (studioType < 0) {
+            return -4;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`)" +
+                    "VALUES (?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idStudio);
+            ps.setString(2, idCinema);
+            ps.setString(3, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(4, studioType);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+
+            // Generate seats on studio creation
+            if (generateSeat(new Studio(idStudio, studioClass, studioType)) != 0) {
+                return -5;
+            }
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
     }
 
     // Cinema area

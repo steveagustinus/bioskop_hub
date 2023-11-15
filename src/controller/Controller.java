@@ -97,7 +97,6 @@ public class Controller {
 
         sql = sql.substring(0, sql.length() - 1) + ";";
 
-        System.out.println(sql);
         try {
             conn.open();
             conn.connection.setAutoCommit(false);

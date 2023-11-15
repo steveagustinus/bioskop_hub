@@ -562,7 +562,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
+                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "' AND `is_deleted`=0");
 
             result.next();
 
@@ -596,12 +596,20 @@ public class Controller {
     }
 
     public boolean isMovieExists(String idMovie) {
+        return isMovieExists(idMovie, false);
+    }
+
+    public boolean isMovieExists(String idMovie, boolean includeDeleted) {
         try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
+            String sql =  "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'";
+
+            if (!includeDeleted) {
+                sql += " AND `is_deleted`=0";
+            }
+            ResultSet result = statement.executeQuery(sql);
 
             boolean exists = false;
             if (result.isBeforeFirst()) {
@@ -648,6 +656,10 @@ public class Controller {
             return -9;
         }
 
+        if (isMovieExists(idMovie, true)) {
+            return -10;
+        }
+
         return addNewMovie(
             idMovie,
             judul,
@@ -664,8 +676,8 @@ public class Controller {
         try {
             conn.open();
 
-            String sql = "INSERT INTO `movie` (`id_movie`, `judul`, `release_date`, `director`, `language`, `durasi`, `sinopsis`, `img`)" +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO `movie` (`id_movie`, `judul`, `release_date`, `director`, `language`, `durasi`, `sinopsis`, `img`, `is_deleted`)" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
 
@@ -681,6 +693,7 @@ public class Controller {
                 ps.setInt(6, durasi);
                 ps.setString(7, sinopsis);
                 ps.setBinaryStream(8, fis, (int) fotoMovie.length());
+                ps.setInt(9, 0);
                 ps.executeUpdate();
                 conn.connection.commit();
                 ps.close();
@@ -737,7 +750,7 @@ public class Controller {
     }
     
     private int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
-        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?" +
+        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?, `is_deleted`=0" +
             "WHERE `id_movie`=?;";
 
         try {
@@ -778,7 +791,7 @@ public class Controller {
             Statement statement = conn.connection.createStatement();
             
             statement.executeUpdate(
-                "DELETE FROM `movie` WHERE `id_movie`='" + idMovie + "';"
+                "UPDATE `movie` SET `is_deleted`=1 WHERE `id_movie`='" + idMovie + "';"
             );
 
             statement.close();

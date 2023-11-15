@@ -52,6 +52,7 @@ public class OperationCode {
         public final static int INVALIDDURASI = -7;
         public final static int EMPTYSINOPSIS = -8;
         public final static int EMPTYFOTO = -9;
+        public final static int IDMOVIEEXISTS = -10;
         public final static int ANYEXCEPTION = -99;
     }
 

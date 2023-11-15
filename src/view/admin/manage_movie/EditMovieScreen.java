@@ -10,10 +10,10 @@ public class EditMovieScreen {
     private Controller controller = new Controller();
 
     public EditMovieScreen(Window parent) {
-        showMovieScreen(parent);
+        showEditMovieScreen(parent);
     }
 
-    public void showMovieScreen(Window parent) {
+    public void showEditMovieScreen(Window parent) {
         String inputID = JOptionPane.showInputDialog(
             null,
             "Masukkan id movie: ",

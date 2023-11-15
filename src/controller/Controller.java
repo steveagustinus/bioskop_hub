@@ -17,9 +17,9 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
-import src.model.Jadwal;
+// import src.model.Jadwal;
 import src.model.movie.Movie;
-import src.model.seat.Seat;
+// import src.model.seat.Seat;
 import src.model.studio.Studio;
 import src.model.studio.StudioClassEnum;
 import src.model.user.Admin;
@@ -29,12 +29,14 @@ import src.model.user.User;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
-    public Controller() { }
 
-    //Jadwal area
-    public Seat[] GenerateSeat(Jadwal jadwal) {
-        return null;
+    public Controller() {
     }
+
+    // Jadwal area
+    // public Seat[] GenerateSeat(Jadwal jadwal) {
+    //     return null;
+    // }
 
     // Studio area
     public Studio getStudioById(String idStudio) {
@@ -42,16 +44,14 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "';"
-            );
+                    "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "';");
 
             result.next();
 
             Studio studio = new Studio(
-                idStudio,
-                getStudioClassEnum(result.getString("studio_class")),
-                result.getInt("studio_type")
-            );
+                    idStudio,
+                    getStudioClassEnum(result.getString("studio_class")),
+                    result.getInt("studio_type"));
 
             result.close();
             statement.close();
@@ -79,7 +79,7 @@ public class Controller {
             while (result.next()) {
                 Studio studio = new Studio(
                         result.getString("id_studio"),
-                    getStudioClassEnum(result.getString("studio_class")),
+                        getStudioClassEnum(result.getString("studio_class")),
                         result.getInt("studio_type"));
                 studioList.add(studio);
             }
@@ -245,9 +245,8 @@ public class Controller {
             conn.connection.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 ps.setString(1, idCinema);
                 ps.setString(2, nama);
                 ps.setString(3, kota);
@@ -303,9 +302,8 @@ public class Controller {
             conn.connection.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 int count = 1;
                 if (!empty_nama) {
                     ps.setString(count, nama);
@@ -377,7 +375,7 @@ public class Controller {
             return null;
         }
     }
-    
+
     public boolean isMovieExists(String idMovie) {
         try {
             conn.open();
@@ -401,7 +399,7 @@ public class Controller {
             return false;
         }
     }
-    
+
     // User area
     private User getUserById(String idUser) {
         try {
@@ -498,9 +496,10 @@ public class Controller {
             if (isNameExist == 1) {
                 return 0;
             }
-            
+
             conn.open();
-            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)" +
+            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)"
+                    +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
@@ -530,8 +529,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `user` WHERE `username`='" + username + "'"
-            );
+                    "SELECT * FROM `user` WHERE `username`='" + username + "'");
             if (!result.isBeforeFirst()) {
                 return 0;
             }
@@ -545,18 +543,20 @@ public class Controller {
         }
     }
 
-    //Line Ini Jangan dihapus yak sementara yak biar ga pusing
+    // Line Ini Jangan dihapus yak sementara yak biar ga pusing
     public int totalPoinMembership(User user) {
         if (user instanceof MembershipCustomer) {
             MembershipCustomer membershipCustomer = (MembershipCustomer) user;
             return membershipCustomer.getPoin();
         } else {
-            return 0; 
+            return 0;
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, null, poin);
+    public MembershipCustomer registerMembership(String username, String password, String profileName, String email,
+            String phoneNumber, String address, int poin) {
+        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email,
+                phoneNumber, address, null, poin);
         return membershipCustomer;
     }
 
@@ -611,8 +611,9 @@ public class Controller {
             dir.mkdirs();
         }
     }
-    //Hitung pendapatan area
-    public int hitungPendapatanCabangFNB(String nama){
+
+    // Hitung pendapatan area
+    public int hitungPendapatanCabangFNB(String nama) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -633,9 +634,31 @@ public class Controller {
             return 0;
         }
     }
-    //Function tampilkan list
+    // Function tampilkan list
 
-    public String[] listCinema(String kota){
+    public String[] listKota() {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT DISTINCT `kota` FROM `cinema` ");
+
+            ArrayList<String> listKota = new ArrayList<String>();
+            while (result.next()) {
+                listKota.add(result.getString("kota"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listKota.toArray(new String[listKota.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public String[] listCinema(String kota) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -656,7 +679,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listStudio(String id_cinema){
+
+    public String[] listStudio(String id_cinema) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -677,7 +701,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listFNB(){
+
+    public String[] listFNB() {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -698,7 +723,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listMovie(String id_Studio){
+
+    public String[] listMovie(String id_Studio) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -719,4 +745,61 @@ public class Controller {
             return null;
         }
     }
+
+    public long hargaPerFnb(String namaFnb) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery("SELECT `harga` FROM `fnb` WHERE `nama` ='" + namaFnb + "'");
+            long harga = 0;
+            harga = result.getLong("harga");
+            result.close();
+            statement.close();
+            conn.close();
+            return harga;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return 0;
+        }
+    }
+
+    public long totalHasilTransaksiFnb(long harga, int quantity) {
+        long total = 0;
+        total = harga * quantity;
+        return total;
+    }
+
+    public String insertTransaksiFnb(String pilihan, int quantity, long harga, String idCinema) {
+        try {
+            // Execute a SELECT statement to get the current auto-increment value
+            conn.open();
+            String selectQuery = "SELECT AUTO_INCREMENT FROM information_schema.TABLES " +
+                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaction'";
+            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            long autoIncrementValue = 0;
+            if (resultSet.next()) {
+                autoIncrementValue = resultSet.getLong("AUTO_INCREMENT");
+            }
+
+            // Execute an INSERT statement to add a new transaction with the formatted id
+            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES (?, ?, NOW())";
+            PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
+            insertStatement.setString(1, "T-" + String.format("%018d", autoIncrementValue));
+            insertStatement.setInt(2, 5); // Example value for id_user, replace as needed
+            int rowsAffected = insertStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                return "Transaksi berhasil";
+            } else {
+               return "Transaksi Gagal";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

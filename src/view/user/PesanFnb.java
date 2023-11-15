@@ -14,10 +14,6 @@ public class PesanFnb {
         viewPesanFnb();
     }
 
-    public static void main(String[] args) {
-        new PesanFnb();
-    }
-
     private void viewPesanFnb(){
         Controller controller = new Controller();
         JFrame f = new JFrame("Pesan FNB");

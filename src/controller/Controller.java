@@ -22,6 +22,7 @@ import src.model.seat.Seat;
 import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
 import src.model.studio.StudioClassEnum;
+import src.model.studio.StudioTypeInterface;
 import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
@@ -29,6 +30,7 @@ import src.model.user.User;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
+
     public Controller() { }
 
     //Seat area
@@ -126,6 +128,7 @@ public class Controller {
 
             Studio studio = new Studio(
                 idStudio,
+                result.getString("id_cinema"),
                 getStudioClassEnum(result.getString("studio_class")),
                 result.getInt("studio_type")
             );
@@ -155,9 +158,11 @@ public class Controller {
             ArrayList<Studio> studioList = new ArrayList<Studio>();
             while (result.next()) {
                 Studio studio = new Studio(
-                        result.getString("id_studio"),
+                    result.getString("id_studio"),
+                    result.getString("id_cinema"),
                     getStudioClassEnum(result.getString("studio_class")),
-                        result.getInt("studio_type"));
+                    result.getInt("studio_type")
+                );
                 studioList.add(studio);
             }
 
@@ -186,6 +191,10 @@ public class Controller {
         return null;
     }
 
+    public String[] getListStudioClass() {
+        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
+    }
+    
     public String getStudioClassString(StudioClassEnum studioClass) {
         switch (studioClass) {
             case VIP:
@@ -198,6 +207,41 @@ public class Controller {
                 return "Regular";
         }
         return "";
+    }
+
+    public String[] getListStudioType() {
+        return new String[] { "2D", "3D", "4D", "5D" };
+    }
+
+    public int getStudioType(String studioType) {
+        switch (studioType) {
+            case "2D": return StudioTypeInterface.TYPE2D;
+            case "3D": return StudioTypeInterface.TYPE3D;
+            case "4D": return StudioTypeInterface.TYPE4D;
+            case "5D": return StudioTypeInterface.TYPE5D;
+        }
+
+        return -1;
+    }
+
+    public String getStudioTypeString(int studioType) {
+        switch (studioType) {
+            case StudioTypeInterface.TYPE2D: return "2D";
+            case StudioTypeInterface.TYPE3D: return "3D";
+            case StudioTypeInterface.TYPE4D: return "4D";
+            case StudioTypeInterface.TYPE5D: return "5D";
+        }
+
+        return "";
+    }
+
+    public int addNewStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        return addNewStudio(
+            idStudio,
+            idCinema, 
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
     }
 
     public int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
@@ -236,7 +280,7 @@ public class Controller {
             conn.close();
 
             // Generate seats on studio creation
-            if (generateSeat(new Studio(idStudio, studioClass, studioType)) != 0) {
+            if (generateSeat(new Studio(idStudio, idCinema, studioClass, studioType)) != 0) {
                 return -5;
             }
 
@@ -247,6 +291,51 @@ public class Controller {
         }
     }
 
+    public int editStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        return editStudio(
+            idStudio,
+            idCinema, 
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
+    }
+
+    public int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+        if (idStudio == null || idStudio.equals("")) {
+            return -1;
+        }
+
+        if (idCinema == null || idCinema.equals("")) {
+            return -2;
+        }
+
+        if (studioClass == null) {
+            return -3;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "UPDATE `studio` SET `id_cinema`=?, `studio_class`=?, `studio_type`=? WHERE `id_studio`=?;";
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idCinema);
+            ps.setString(2, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(3, studioType);
+            ps.setString(4, idStudio);
+
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -501,7 +590,7 @@ public class Controller {
             return null;
         }
     }
-
+    
     // User area
     private User getUserById(String idUser) {
         try {

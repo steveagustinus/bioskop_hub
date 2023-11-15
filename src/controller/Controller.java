@@ -590,6 +590,30 @@ public class Controller {
         }
     }
     
+    public boolean isMovieExists(String idMovie) {
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
+
+            boolean exists = false;
+            if (result.isBeforeFirst()) {
+                exists = true;
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return exists;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return false;
+        }
+    }
+    
     // User area
     private User getUserById(String idUser) {
         try {

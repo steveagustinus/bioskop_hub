@@ -1015,5 +1015,54 @@ public class Controller {
             return null;
         }
     }
-
+    // User Profile area
+    public int editProfile(String username, String oldPassword, String newPassword, String profileName, String email,
+            String phoneNo, String address) {
+        if (username == null) {
+            return -1;
+        }
+        if (oldPassword == null) {
+            return -2;
+        }
+        if (email == null) {
+            return -3;
+        }
+        if (phoneNo == null) {
+            return -4;
+        }
+        if (address == null) {
+            return -5;
+        }
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `user` WHERE `username`='" + UserDataSingleton.getInstance().getUsername() + "' AND `password`='" + sha256(oldPassword)
+                            + "'");
+            if (!result.isBeforeFirst()) {
+                return 0;
+            }
+            result.next();
+            String sql = "UPDATE `user` SET `username`=?, `password`=?, `profile_name`=?, `email`=?, `phoneNo`=?, `address`=? WHERE `username`=?;";
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setString(2, sha256(newPassword));
+            ps.setString(3, profileName);
+            ps.setString(4, email);
+            ps.setString(5, phoneNo);
+            ps.setString(6, address);
+            ps.setString(7, UserDataSingleton.getInstance().getUsername());
+            
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+        UserDataSingleton.getInstance().setUsername(username);
+        UserDataSingleton.getInstance().setPassword(sha256(newPassword));
+        UserDataSingleton.getInstance().setProfile_name(profileName);
+        UserDataSingleton.getInstance().setEmail(email);
+        UserDataSingleton.getInstance().setPhone_no(phoneNo);
+        UserDataSingleton.getInstance().setAddress(address);
+        return 1;
+    }
 }

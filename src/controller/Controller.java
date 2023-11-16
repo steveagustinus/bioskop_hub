@@ -20,8 +20,10 @@ import src.model.Cinema;
 import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.seat.Seat;
+import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
 import src.model.studio.StudioClassEnum;
+import src.model.studio.StudioTypeInterface;
 import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
@@ -29,10 +31,158 @@ import src.model.user.User;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
+
     public Controller() { }
 
-    //Jadwal area
-    public Seat[] GenerateSeat(Jadwal jadwal) {
+    // Seat area
+    public int getLastSeatId() {
+        int lastId = -1;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_seat` FROM `seat` ORDER BY `id_seat` DESC LIMIT 1;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return 0;
+            }
+
+            result.next();
+
+            lastId = Integer.parseInt(result.getString("id_seat"));
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return lastId;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -1;
+        }
+    }
+
+    public int generateSeat(Studio studio) {
+        
+        Seat[][] seats = new Seat[1][1];
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        int idSeat = getLastSeatId() + 1;
+
+        for (int i = 0; i < seats.length; i++) {
+            for (int j = 0; j < seats[i].length; j++) {
+                seats[i][j] = new Seat(
+                    String.valueOf(idSeat),
+                    ((char)(i + 65)) + ((j + 1) < 10 ? "0" + String.valueOf(j + 1) : String.valueOf(j + 1)),
+                    SeatStatusInterface.AVAILABLE
+                );
+                idSeat++;
+            }
+        }
+
+        // Insert seats into database
+        String sql = "INSERT INTO `seat` (`id_seat`, `id_studio`, `kode`)" +
+            "VALUES ";
+
+        for (Seat[] arrSeat : seats) {
+            for (Seat seat : arrSeat) {
+                sql += "('" + seat.getIdSeat() + "', '" + studio.getIdStudio() + "', '" + seat.getSeatCode() + "'),";
+            }
+        }
+
+        sql = sql.substring(0, sql.length() - 1) + ";";
+
+        try {
+            conn.open();
+            conn.connection.setAutoCommit(false);
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public Seat[][] getSeatFromJadwal(Jadwal jadwal) {
+        Seat[][] seats = new Seat[1][1];
+
+        Studio studio = getStudioById(jadwal.getIdStudio());
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_seat`, `kode` FROM `seat` WHERE `id_studio`='" + studio.getIdStudio() + "'");
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    result.next();
+                    seats[i][j] = new Seat(
+                        result.getString("id_seat"),
+                        result.getString("kode"),
+                        SeatStatusInterface.AVAILABLE
+                    );
+                }
+            }
+
+            conn.close();
+
+            statement = conn.connection.createStatement();
+            result = statement.executeQuery(
+                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + jadwal.getIdJadwal() + 
+                    "' ORDER BY `id_seat` ASC;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return seats;
+            }
+
+            result.next();
+
+            mainloop:for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    if (seats[i][j].getIdSeat().equals(result.getString("id_seat"))) {
+                        seats[i][j].setSeatStatus(SeatStatusInterface.TAKEN);
+                        if (result.isLast()) {
+                            break mainloop;
+                        }
+                        else {
+                            result.next();
+                        }
+                    }
+                }
+            }
+
+            result.close();
+            conn.close();
+            
+            return seats;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+        }
+
         return null;
     }
 
@@ -49,6 +199,7 @@ public class Controller {
 
             Studio studio = new Studio(
                 idStudio,
+                result.getString("id_cinema"),
                 getStudioClassEnum(result.getString("studio_class")),
                 result.getInt("studio_type")
             );
@@ -78,9 +229,11 @@ public class Controller {
             ArrayList<Studio> studioList = new ArrayList<Studio>();
             while (result.next()) {
                 Studio studio = new Studio(
-                        result.getString("id_studio"),
+                    result.getString("id_studio"),
+                    result.getString("id_cinema"),
                     getStudioClassEnum(result.getString("studio_class")),
-                        result.getInt("studio_type"));
+                    result.getInt("studio_type")
+                );
                 studioList.add(studio);
             }
 
@@ -96,19 +249,23 @@ public class Controller {
     }
 
     public StudioClassEnum getStudioClassEnum(String studioClass) {
-        switch (studioClass) {
-            case "vip":
+        switch (studioClass.toUpperCase()) {
+            case "VIP":
                 return StudioClassEnum.VIP;
-            case "junior":
+            case "JUNIOR":
                 return StudioClassEnum.JUNIOR;
-            case "luxe":
+            case "LUXE":
                 return StudioClassEnum.LUXE;
-            case "reguler":
+            case "REGULAR":
                 return StudioClassEnum.REGULER;
         }
         return null;
     }
 
+    public String[] getListStudioClass() {
+        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
+    }
+    
     public String getStudioClassString(StudioClassEnum studioClass) {
         switch (studioClass) {
             case VIP:
@@ -118,11 +275,138 @@ public class Controller {
             case LUXE:
                 return "Luxe";
             case REGULER:
-                return "Reguler";
+                return "Regular";
         }
         return "";
     }
 
+    public String[] getListStudioType() {
+        return new String[] { "2D", "3D", "4D", "5D" };
+    }
+
+    public int getStudioType(String studioType) {
+        switch (studioType) {
+            case "2D": return StudioTypeInterface.TYPE2D;
+            case "3D": return StudioTypeInterface.TYPE3D;
+            case "4D": return StudioTypeInterface.TYPE4D;
+            case "5D": return StudioTypeInterface.TYPE5D;
+        }
+
+        return -1;
+    }
+
+    public String getStudioTypeString(int studioType) {
+        switch (studioType) {
+            case StudioTypeInterface.TYPE2D: return "2D";
+            case StudioTypeInterface.TYPE3D: return "3D";
+            case StudioTypeInterface.TYPE4D: return "4D";
+            case StudioTypeInterface.TYPE5D: return "5D";
+        }
+
+        return "";
+    }
+
+    public int addNewStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        return addNewStudio(
+            idStudio,
+            idCinema, 
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
+    }
+
+    public int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+        if (idStudio == null || idStudio.equals("") || idStudio.length() != 10) {
+            return -1;
+        }
+        if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
+            return -2;
+        }
+        if (studioClass == null) {
+            return -3;
+        }
+        if (studioType < 0) {
+            return -4;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`)" +
+                    "VALUES (?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idStudio);
+            ps.setString(2, idCinema);
+            ps.setString(3, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(4, studioType);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+
+            // Generate seats on studio creation
+            if (generateSeat(new Studio(idStudio, idCinema, studioClass, studioType)) != 0) {
+                return -5;
+            }
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int editStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        return editStudio(
+            idStudio,
+            idCinema, 
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
+    }
+
+    public int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+        if (idStudio == null || idStudio.equals("")) {
+            return -1;
+        }
+
+        if (idCinema == null || idCinema.equals("")) {
+            return -2;
+        }
+
+        if (studioClass == null) {
+            return -3;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "UPDATE `studio` SET `id_cinema`=?, `studio_class`=?, `studio_type`=? WHERE `id_studio`=?;";
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idCinema);
+            ps.setString(2, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(3, studioType);
+            ps.setString(4, idStudio);
+
+            ps.executeUpdate();
+            ps.close();
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -377,7 +661,31 @@ public class Controller {
             return null;
         }
     }
+    
+    public boolean isMovieExists(String idMovie) {
+        try {
+            conn.open();
 
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
+
+            boolean exists = false;
+            if (result.isBeforeFirst()) {
+                exists = true;
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return exists;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return false;
+        }
+    }
+    
     // User area
     private User getUserById(String idUser) {
         try {
@@ -399,23 +707,29 @@ public class Controller {
 
                 case 1:
                     user = new Customer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phoneNumber"),
-                            result.getString("address"), null);
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phoneNumber"),
+                        result.getString("address"),
+                        null
+                    );
                     break;
 
                 case 2:
                     user = new MembershipCustomer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phoneNumber"),
-                            result.getString("address"),
-                            null, result.getInt("poin"));
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phoneNumber"),
+                        result.getString("address"),
+                        null,
+                        result.getInt("poin")
+                    );
                     break;
             }
 
@@ -521,6 +835,73 @@ public class Controller {
         }
     }
 
+    // User action
+    public int pesanTiket(Customer customer, Jadwal jadwal, Seat[] bookedSeat) {
+        if (customer == null) {
+            return -1;
+        }
+
+        if (jadwal == null) {
+            return -2;
+        }
+
+        if (bookedSeat == null) {
+            return -3;
+        }
+
+        try {
+            conn.open();
+            
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES ('" + createTransactionId() + "', '" + customer.getIdUser() + "', now());"
+            );
+            
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    // Transaction
+    public String createTransactionId() {
+        String newId = "";
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_transaction` FROM `transaction` ORDER BY `id_transaction` DESC LIMIT 1;"
+            );
+
+            String lastId = "";
+            if (!result.isBeforeFirst()) {
+                lastId = "0";
+            } else {
+                result.next();
+                lastId = result.getString("id_transaction").replace("T-", "");
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            newId = String.valueOf(Integer.parseInt(lastId) + 1);
+
+            for (int i = newId.length(); i <= 18; i++) {
+                newId = "0" + newId;
+            }
+            
+            newId = "T-" + newId;
+
+            return newId;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
     //Line Ini Jangan dihapus yak sementara yak biar ga pusing
     public int totalPoinMembership(User user) {
         if (user instanceof MembershipCustomer) {
@@ -531,8 +912,8 @@ public class Controller {
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, null, poin);
+    public MembershipCustomer registerMembership(String idUser, String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
+        MembershipCustomer membershipCustomer = new MembershipCustomer(idUser, username, password, profileName, email, phoneNumber, address, null, poin);
         return membershipCustomer;
     }
 
@@ -587,7 +968,28 @@ public class Controller {
             dir.mkdirs();
         }
     }
+    //Hitung pendapatan area
+    public int hitungPendapatanCabangFNB(String nama){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(`harga`) FROM `fnb` WHERE `id_cinema`='" + nama + "'");
 
+            result.next();
+
+            int total = result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return total;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return 0;
+        }
+    }
     //Function tampilkan list
     public String[] listKota(){
         try {
@@ -695,5 +1097,4 @@ public class Controller {
             return null;
         }
     }
-
 }

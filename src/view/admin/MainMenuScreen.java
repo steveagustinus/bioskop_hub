@@ -3,12 +3,15 @@ package src.view.admin;
 import javax.swing.JOptionPane;
 
 import src.controller.Controller;
-import src.model.studio.Studio;
 import src.model.user.User;
 import src.view.MainInterface;
 import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
+import src.view.admin.manage_movie.EditMovieDialog;
+import src.view.admin.manage_movie.EditMovieScreen;
 import src.view.admin.manage_movie.NewMovieDialog;
+import src.view.admin.manage_studio.EditStudioScreen;
+import src.view.admin.manage_studio.NewStudioDialog;
 
 public class MainMenuScreen implements MainInterface {
     Controller controller = new Controller();
@@ -23,8 +26,7 @@ public class MainMenuScreen implements MainInterface {
         User user = controller.login("admin", "123");
         System.out.println(user.getUsername());
 
-        Studio test = controller.getStudioById("LPSBAL-03");
-        System.out.println(test.getStudioClass());
+        System.out.println(controller.createTransactionId());
         // test area
 
         boolean exit = false;
@@ -36,6 +38,8 @@ public class MainMenuScreen implements MainInterface {
                     "2. Edit cinema\r\n" +
                     "3. Tambah movie baru\r\n" +
                     "4. Edit movie\r\n" +
+                    "5. Tambah studio baru\r\n" +
+                    "6. Edit studio\r\n" + 
                 "Admin",
                 JOptionPane.QUESTION_MESSAGE
             );
@@ -50,7 +54,10 @@ public class MainMenuScreen implements MainInterface {
                 case "2": new EditCinemaScreen(mainFrame); break;
                 case "3": new NewMovieDialog(mainFrame); break;
                 case "4": new EditCinemaScreen(mainFrame); break;
-                case "5": exit = true; break;
+                case "5": new NewStudioDialog(mainFrame); break;
+                case "6": new EditStudioScreen(mainFrame); break;
+                case "7": exit = true; break;
+
             }
         }
         mainFrame.dispose();

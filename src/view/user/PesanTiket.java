@@ -151,7 +151,7 @@ public class PesanTiket {
 
         frame.add(submitButton);
         frame.setLocationRelativeTo(null); 
-                frame.add(containerPanel, BorderLayout.CENTER);
+        frame.add(containerPanel, BorderLayout.CENTER);
         frame.add(controlPanel, BorderLayout.SOUTH);
 //        frame.add(frame);
         frame.setLayout(null);

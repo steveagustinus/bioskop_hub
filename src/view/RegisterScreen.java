@@ -3,6 +3,7 @@ package src.view;
 import javax.swing.*;
 
 import src.controller.Controller;
+import src.view.admin.MainMenuScreen;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -70,8 +71,8 @@ public class RegisterScreen {
                     return;
                 } else if (user == 1) {
                     JOptionPane.showMessageDialog(null, "Registration " + username + " successful!");
+                    frame.dispose();
                 }
-                frame.dispose();
             }
         });
 
@@ -81,9 +82,5 @@ public class RegisterScreen {
         frame.setSize(300, 200);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        new RegisterScreen();
     }
 }

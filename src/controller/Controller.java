@@ -13,12 +13,17 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
 import src.model.Jadwal;
 import src.model.movie.Movie;
+import src.model.movie.MovieLanguageInterface;
 import src.model.seat.Seat;
 import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
@@ -325,7 +330,7 @@ public class Controller {
         if (studioClass == null) {
             return -3;
         }
-        if (studioType < 0) {
+        if (studioType < 1) {
             return -4;
         }
 
@@ -644,7 +649,7 @@ public class Controller {
             Movie movie = new Movie(
                     idMovie,
                     result.getString("judul"),
-                    result.getDate("release_date"),
+                    dateToLocalDate(result.getDate("release_date")),
                     result.getString("director"),
                     result.getInt("language"),
                     result.getInt("durasi"),
@@ -661,7 +666,7 @@ public class Controller {
             return null;
         }
     }
-    
+
     public boolean isMovieExists(String idMovie) {
         try {
             conn.open();
@@ -686,6 +691,201 @@ public class Controller {
         }
     }
     
+    public int addNewMovie(String idMovie, String judul, String releaseDate, String director, String language, String durasi, String sinopsis, File fotoMovie) {
+        if (idMovie == null || idMovie.equals("")) {
+            return -1;
+        }
+        if (judul == null || judul.equals("")) {
+            return -2;
+        }
+        if (releaseDate == null || releaseDate.equals("")) {
+            return -3;
+        }
+        if (director == null || director.equals("")) {
+            return -4;
+        }
+        if (language == null || language.equals("")) {
+            return -5;
+        }
+        if (durasi == null || durasi.equals("")) {
+            return -6;
+        }
+        if (!isNumber(durasi)) {
+            return -7;
+        }
+        if (sinopsis == null || sinopsis.equals("")) {
+            return -8;
+        }
+        if (fotoMovie == null) {
+            return -9;
+        }
+
+        return addNewMovie(
+            idMovie,
+            judul,
+            stringToLocalDate(releaseDate, "MMM d, yyyy"),
+            director,
+            getMovieLanguage(language),
+            Integer.parseInt(durasi),
+            sinopsis,
+            fotoMovie
+        );
+    }
+
+    private int addNewMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `movie` (`id_movie`, `judul`, `release_date`, `director`, `language`, `durasi`, `sinopsis`, `img`)" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                FileInputStream fis = new FileInputStream(fotoMovie);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, idMovie);
+                ps.setString(2, judul);
+                ps.setDate(3, java.sql.Date.valueOf(releaseDate));
+                ps.setString(4, director);
+                ps.setInt(5, language);
+                ps.setInt(6, durasi);
+                ps.setString(7, sinopsis);
+                ps.setBinaryStream(8, fis, (int) fotoMovie.length());
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int editMovie(String idMovie, String judul, String releaseDate, String director, String language, String durasi, String sinopsis, File fotoMovie) {
+        if (idMovie == null || idMovie.equals("")) {
+            return -1;
+        }
+        if (judul == null || judul.equals("")) {
+            return -2;
+        }
+        if (releaseDate == null || releaseDate.equals("")) {
+            return -3;
+        }
+        if (director == null || director.equals("")) {
+            return -4;
+        }
+        if (language == null || language.equals("")) {
+            return -5;
+        }
+        if (durasi == null || durasi.equals("")) {
+            return -6;
+        }
+        if (!isNumber(durasi)) {
+            return -7;
+        }
+        if (sinopsis == null || sinopsis.equals("")) {
+            return -8;
+        }
+        if (fotoMovie == null) {
+            return -9;
+        }
+        
+        return editMovie(
+            idMovie,
+            judul,
+            stringToLocalDate(releaseDate, "MMM d, yyyy"),
+            director,
+            getMovieLanguage(language),
+            Integer.parseInt(durasi),
+            sinopsis,
+            fotoMovie
+        );
+    }
+    
+    private int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?" +
+            "WHERE `id_movie`=?;";
+
+        try {
+            conn.open();
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                FileInputStream fis = new FileInputStream(fotoMovie);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, judul);
+                ps.setDate(2, java.sql.Date.valueOf(releaseDate));
+                ps.setString(3, director);
+                ps.setInt(4, language);
+                ps.setInt(5, durasi);
+                ps.setString(6, sinopsis);
+                ps.setBinaryStream(7, fis, (int) fotoMovie.length());
+                ps.setString(8, idMovie);
+
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int deleteMovie(String idMovie) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            
+            statement.executeUpdate(
+                "DELETE FROM `movie` WHERE `id_movie`='" + idMovie + "';"
+            );
+
+            statement.close();
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public String[] getMovieLanguageList() {
+        return new String[] { "English", "Japanese", "Bahasa_Indonesia" };
+    }
+
+    public String getMovieLanguageString(int language) {
+        switch (language) {
+            case MovieLanguageInterface.ENGLISH: return "English";
+            case MovieLanguageInterface.JAPANESE: return "Japanese";
+            case MovieLanguageInterface.BAHASA_INDONESIA: return "Bahasa_Indonesia";
+        }
+        return "";
+    }
+
+    public int getMovieLanguage(String language) {
+        switch (language) {
+            case "English": return MovieLanguageInterface.ENGLISH;
+            case "Japanese": return MovieLanguageInterface.JAPANESE;
+            case "Bahasa_Indonesia": return MovieLanguageInterface.BAHASA_INDONESIA;
+        }
+
+        return -1;
+    }
+
     // User area
     private User getUserById(String idUser) {
         try {
@@ -918,6 +1118,43 @@ public class Controller {
     }
 
     // Common services
+    public boolean isNumber(String string) {
+        for (int i = 0; i < string.length(); i++) {
+            int chr = (char) string.charAt(i);
+
+            if (i == 0 && chr == 45) {
+                continue;
+            }
+
+            if (!(chr >= 48 && chr <= 57)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public LocalDate dateToLocalDate(java.util.Date date) {
+        return LocalDate.from(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()));
+    }
+
+    public LocalDate stringToLocalDate(String str, String pattern) {
+        if (str.equals("")) { return null; }
+        LocalDate output = null;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            output = LocalDate.parse(str, formatter);
+        } catch (Exception ex) {
+            return null;
+        }
+
+        return output;
+    }
+
+    public String localDateToString(LocalDate date, String pattern) {
+        return date.format(DateTimeFormatter.ofPattern(pattern));
+    }
+    
     public String sha256(String content) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");

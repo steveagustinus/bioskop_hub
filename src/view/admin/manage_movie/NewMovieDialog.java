@@ -85,6 +85,11 @@ public class NewMovieDialog extends MovieFormDialog {
                             owner, "Harap memasukkan foto untuk film!", title, JOptionPane.ERROR_MESSAGE
                         );
                     }
+                    else if (status == OperationCode.AddNewMovie.IDMOVIEEXISTS) {
+                        JOptionPane.showMessageDialog(
+                            owner, "ID movie sudah digunakan", title, JOptionPane.ERROR_MESSAGE
+                        );
+                    }
                     else if (status == OperationCode.AddNewMovie.ANYEXCEPTION) {
                         JOptionPane.showMessageDialog(
                             owner, "Terjadi error", title, JOptionPane.ERROR_MESSAGE

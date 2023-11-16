@@ -39,7 +39,7 @@ public class EditMovieDialog extends MovieFormDialog {
 
         buttonSubmit.setText("Update movie");
         buttonSubmit.setSize(
-            buttonSubmit.getWidth() / 2,
+            (this.getWidth() - 15) / 2,
             buttonSubmit.getHeight()
         );
         buttonSubmit.addActionListener(new ActionListener() {
@@ -129,25 +129,33 @@ public class EditMovieDialog extends MovieFormDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                int status = controller.deleteMovie(idMovie);
-
-                if (status == OperationCode.DeleteMovie.SUCCESS) {
-                    JOptionPane.showMessageDialog(
+                if (JOptionPane.showConfirmDialog(
                         owner,
-                        "Film \"" + movie.getJudul() + "\" berhasil dihapus!",
+                        "Apakah anda yakin ingin menghapus film " + movie.getJudul(),
                         title,
-                        JOptionPane.INFORMATION_MESSAGE
-                    );
-                    close();
-                }
-                else {
-                    if (status == OperationCode.DeleteMovie.ANYEXCEPTION) {
+                        JOptionPane.YES_NO_OPTION 
+                    ) == JOptionPane.YES_OPTION
+                ) {
+                    int status = controller.deleteMovie(idMovie);
+
+                    if (status == OperationCode.DeleteMovie.SUCCESS) {
                         JOptionPane.showMessageDialog(
                             owner,
-                            "Terjadi error!",
+                            "Film \"" + movie.getJudul() + "\" berhasil dihapus!",
                             title,
-                            JOptionPane.ERROR_MESSAGE
+                            JOptionPane.INFORMATION_MESSAGE
                         );
+                        close();
+                    }
+                    else {
+                        if (status == OperationCode.DeleteMovie.EMPTYIDMOVIE) {
+                            JOptionPane.showMessageDialog(owner, "ID Movie tidak boleh kosong!", title, JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                        else if (status == OperationCode.DeleteMovie.ANYEXCEPTION) {
+                            JOptionPane.showMessageDialog(owner, "Terjadi error!", title, JOptionPane.ERROR_MESSAGE
+                            );
+                        }
                     }
                 }
             }

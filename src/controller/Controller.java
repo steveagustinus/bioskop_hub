@@ -119,6 +119,11 @@ public class Controller {
         }
     }
 
+    // Jadwal area
+    // public Seat[] GenerateSeat(Jadwal jadwal) {
+    //     return null;
+    // }
+
     // Studio area
     public boolean isStudioExists(String idStudio) {
         return isStudioExists(idStudio, false);
@@ -1252,7 +1257,7 @@ public class Controller {
         }
     }
     //Function tampilkan list
-    public String[] listKota(){
+    public String[] listKota() {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1274,7 +1279,7 @@ public class Controller {
         }
     }
 
-    public String[] listCinema(String kota){
+    public String[] listCinema(String kota) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1295,7 +1300,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listStudio(String id_cinema){
+
+    public String[] listStudio(String id_cinema) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1316,7 +1322,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listFNB(){
+
+    public String[] listFNB() {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1337,7 +1344,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listMovie(String id_Studio){
+
+    public String[] listMovie(String id_Studio) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1357,5 +1365,110 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
+    }
+
+    public long hargaPerFnb(String namaFnb) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery("SELECT `harga` FROM `fnb` WHERE `nama` ='" + namaFnb + "'");
+            long harga = 0;
+            harga = result.getLong("harga");
+            result.close();
+            statement.close();
+            conn.close();
+            return harga;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return 0;
+        }
+    }
+
+    public long totalHasilTransaksiFnb(long harga, int quantity) {
+        long total = 0;
+        total = harga * quantity;
+        return total;
+    }
+
+    public String insertTransaksiFnb(String pilihan, int quantity, long harga, String idCinema) {
+        try {
+            // Execute a SELECT statement to get the current auto-increment value
+            conn.open();
+            String selectQuery = "SELECT AUTO_INCREMENT FROM information_schema.TABLES " +
+                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaction'";
+            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            long autoIncrementValue = 0;
+            if (resultSet.next()) {
+                autoIncrementValue = resultSet.getLong("AUTO_INCREMENT");
+            }
+
+            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES (?, ?, NOW())";
+            PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
+            insertStatement.setString(1, "T-" + String.format("%018d", autoIncrementValue));
+            insertStatement.setInt(2, 5);
+            int rowsAffected = insertStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                return "Transaksi berhasil";
+            } else {
+               return "Transaksi Gagal";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    // User Profile area
+    public int editProfile(String username, String oldPassword, String newPassword, String profileName, String email,
+            String phoneNo, String address) {
+        if (username == null) {
+            return -1;
+        }
+        if (oldPassword == null) {
+            return -2;
+        }
+        if (email == null) {
+            return -3;
+        }
+        if (phoneNo == null) {
+            return -4;
+        }
+        if (address == null) {
+            return -5;
+        }
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `user` WHERE `username`='" + UserDataSingleton.getInstance().getUsername() + "' AND `password`='" + sha256(oldPassword)
+                            + "'");
+            if (!result.isBeforeFirst()) {
+                return 0;
+            }
+            result.next();
+            String sql = "UPDATE `user` SET `username`=?, `password`=?, `profile_name`=?, `email`=?, `phoneNo`=?, `address`=? WHERE `username`=?;";
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setString(2, sha256(newPassword));
+            ps.setString(3, profileName);
+            ps.setString(4, email);
+            ps.setString(5, phoneNo);
+            ps.setString(6, address);
+            ps.setString(7, UserDataSingleton.getInstance().getUsername());
+            
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+        UserDataSingleton.getInstance().setUsername(username);
+        UserDataSingleton.getInstance().setPassword(sha256(newPassword));
+        UserDataSingleton.getInstance().setProfile_name(profileName);
+        UserDataSingleton.getInstance().setEmail(email);
+        UserDataSingleton.getInstance().setPhone_no(phoneNo);
+        UserDataSingleton.getInstance().setAddress(address);
+        return 1;
     }
 }

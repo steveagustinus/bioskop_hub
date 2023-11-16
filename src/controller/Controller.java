@@ -472,6 +472,7 @@ public class Controller {
             return -99;
         }
     }
+    
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -993,7 +994,7 @@ public class Controller {
                         result.getString("password"),
                         result.getString("profile_name"),
                         result.getString("email"),
-                        result.getString("phoneNumber"),
+                        result.getString("phone_no"),
                         result.getString("address"),
                         null
                     );
@@ -1006,7 +1007,7 @@ public class Controller {
                         result.getString("password"),
                         result.getString("profile_name"),
                         result.getString("email"),
-                        result.getString("phoneNumber"),
+                        result.getString("phone_no"),
                         result.getString("address"),
                         null,
                         result.getInt("poin")
@@ -1131,13 +1132,26 @@ public class Controller {
         }
 
         try {
+            String idTransaction = createTransactionId();
             conn.open();
             
             Statement statement = conn.connection.createStatement();
             statement.executeUpdate(
                 "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES ('" + createTransactionId() + "', '" + customer.getIdUser() + "', now());"
+                    "VALUES ('" + idTransaction + "', '" + customer.getIdUser() + "', now());"
             );
+
+            String sql = "INSERT INTO `transaction_jadwal` (`id_transaction`, `id_jadwal`, `id_seat`) VALUES ";
+
+            for (Seat seat : bookedSeat) {
+                sql += "('" + idTransaction + "', '" + jadwal.getIdJadwal() + "', '" + seat.getIdSeat() + "'),";
+            }
+
+            sql = sql.substring(0, sql.length() - 1) + ";";
+
+            statement.executeUpdate(sql);
+            statement.close();
+            conn.close();
             
             return 0;
         } catch (Exception ex) {
@@ -1170,7 +1184,7 @@ public class Controller {
 
             newId = String.valueOf(Integer.parseInt(lastId) + 1);
 
-            for (int i = newId.length(); i <= 18; i++) {
+            for (int i = newId.length(); i < 18; i++) {
                 newId = "0" + newId;
             }
             

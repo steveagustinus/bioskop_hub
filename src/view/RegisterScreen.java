@@ -3,7 +3,7 @@ package src.view;
 import javax.swing.*;
 
 import src.controller.Controller;
-import src.view.admin.MainMenuScreen;
+import src.model.user.User;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -51,10 +51,14 @@ public class RegisterScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String username = usernameField.getText();
-                String password = passwordField.getText();
+                String password = "";
+                char[] pass = passwordField.getPassword();
                 String email = emailField.getText();
                 String phoneNum = phoneNumField.getText();
                 String address = addressField.getText();
+                for (char chr : pass) {
+                    password += chr;
+                }
                 int user = new Controller().register(username, password, email, phoneNum, address);
                 if (user == -1) {
                     JOptionPane.showMessageDialog(null, "Username tidak boleh kosong!");
@@ -70,6 +74,11 @@ public class RegisterScreen {
                     JOptionPane.showMessageDialog(null, "Username already exists!");
                     return;
                 } else if (user == 1) {
+                    int singleton = new Controller().insertToSingelton(username);
+                    if (singleton == -1) {
+                        JOptionPane.showMessageDialog(null, "Failed to insert to singleton!");
+                        return;
+                    }
                     JOptionPane.showMessageDialog(null, "Registration " + username + " successful!");
                     frame.dispose();
                 }

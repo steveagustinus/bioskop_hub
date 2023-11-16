@@ -616,8 +616,8 @@ public class Controller {
         }
     }
 
-    // User area
-    private User getUserById(String idUser) {
+     // User area
+     private User getUserById(String idUser) {
         try {
             conn.open();
 
@@ -641,7 +641,7 @@ public class Controller {
                             result.getString("password"),
                             result.getString("profile_name"),
                             result.getString("email"),
-                            result.getString("phoneNumber"),
+                            result.getString("phone_no"),
                             result.getString("address"), null);
                     break;
 
@@ -651,7 +651,7 @@ public class Controller {
                             result.getString("password"),
                             result.getString("profile_name"),
                             result.getString("email"),
-                            result.getString("phoneNumber"),
+                            result.getString("phone_no"),
                             result.getString("address"),
                             null, result.getInt("poin"));
                     break;
@@ -674,7 +674,7 @@ public class Controller {
 
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `id_user` FROM `user` WHERE `username`='" + username + "' AND `password`='"
+                    "SELECT id_user, user_type FROM `user` WHERE `username`='" + username + "' AND `password`='"
                             + sha256(password) + "'");
 
             if (!result.isBeforeFirst()) {
@@ -687,7 +687,6 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
-
     }
 
     public int register(String username, String password, String email, String phoneNumber, String alamat) {
@@ -756,6 +755,45 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             System.out.println(ex.getMessage());
             return -99;
+        }
+    }
+
+    public int checkUserType(User user){
+        try{
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT user_type FROM `user` WHERE `username`='" + user.getUsername() + "'");
+            result.next();
+            int userType = result.getInt("user_type");
+            conn.close();
+            return userType;
+        }catch(Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    public int insertToSingelton(String nama){
+        try{
+            UserDataSingleton userDataSingleton = UserDataSingleton.getInstance();
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `user` WHERE `username`='" + nama + "'");
+            result.next();
+            userDataSingleton.setId(result.getInt("id_user"));
+            userDataSingleton.setUsername(result.getString("username"));
+            userDataSingleton.setPassword(result.getString("password"));
+            userDataSingleton.setProfile_name(result.getString("profile_name"));
+            userDataSingleton.setEmail(result.getString("email"));
+            userDataSingleton.setPhone_no(result.getString("phone_no"));
+            userDataSingleton.setAddress(result.getString("address"));
+            userDataSingleton.setUser_type(result.getInt("user_type"));
+            conn.close();
+            return 1;
+        }catch(Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return -1;
         }
     }
 

@@ -39,7 +39,7 @@ public class EditMovieDialog extends MovieFormDialog {
 
         buttonSubmit.setText("Update movie");
         buttonSubmit.setSize(
-            buttonSubmit.getWidth() / 2,
+            (this.getWidth() - 15) / 2,
             buttonSubmit.getHeight()
         );
         buttonSubmit.addActionListener(new ActionListener() {

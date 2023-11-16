@@ -23,9 +23,14 @@ public class OperationCode {
     public class EditStudio {
         public final static int SUCCESS = 0;
         public final static int EMPTYIDSTUDIO = -1;
-        public final static int EMPTYIDCINEMA = -2;
-        public final static int EMPTYSTUDIOCLASS = -3;
-        public final static int EMPTYSTUDIOTYPE = -4;
+        public final static int EMPTYSTUDIOCLASS = -2;
+        public final static int EMPTYSTUDIOTYPE = -3;
+        public final static int ANYEXCEPTION = -99;
+    }
+
+    public class DeleteStudio {
+        public final static int SUCCESS = 0;
+        public final static int EMPTYIDSTUDIO = -1;
         public final static int ANYEXCEPTION = -99;
     }
 

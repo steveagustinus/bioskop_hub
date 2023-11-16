@@ -336,42 +336,36 @@ public class Controller {
         }
     }
 
-    public int editStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+    public int editStudio(String idStudio, String studioClass, String studioType) {
         if (idStudio == null || idStudio.equals("")) {
             return -1;
         }
 
-        if (idCinema == null || idCinema.equals("")) {
+        if (studioClass == null || studioClass.equals("")) {
             return -2;
         }
 
-        if (studioClass == null || studioClass.equals("")) {
-            return -3;
-        }
-
         if (studioType == null || studioType.equals("")) {
-            return -4;
+            return -3;
         }
 
         return editStudio(
             idStudio,
-            idCinema, 
             getStudioClassEnum(studioClass),
             getStudioType(studioType)
         );
     }
 
-    private int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+    private int editStudio(String idStudio, StudioClassEnum studioClass, int studioType) {
         try {
             conn.open();
 
-            String sql = "UPDATE `studio` SET `id_cinema`=?, `studio_class`=?, `studio_type`=? WHERE `id_studio`=?;";
+            String sql = "UPDATE `studio` SET `studio_class`=?, `studio_type`=? WHERE `id_studio`=?;";
             PreparedStatement ps = conn.connection.prepareStatement(sql);
 
-            ps.setString(1, idCinema);
-            ps.setString(2, getStudioClassString(studioClass).toUpperCase());
-            ps.setInt(3, studioType);
-            ps.setString(4, idStudio);
+            ps.setString(1, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(2, studioType);
+            ps.setString(3, idStudio);
 
             ps.executeUpdate();
             ps.close();
@@ -385,6 +379,27 @@ public class Controller {
         }
     }
     
+    public int deleteStudio(String idStudio) {
+        if (idStudio == null || idStudio.equals("")) {
+            return -1;
+        }
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            
+            statement.executeUpdate(
+                "UPDATE `studio` SET `is_deleted`=1 WHERE `id_studio`='" + idStudio + "';"
+            );
+
+            statement.close();
+            conn.close();
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -648,7 +663,7 @@ public class Controller {
         return isMovieExists(idMovie, false);
     }
 
-    public boolean isMovieExists(String idMovie, boolean includeDeleted) {
+    private boolean isMovieExists(String idMovie, boolean includeDeleted) {
         try {
             conn.open();
 

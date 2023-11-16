@@ -754,8 +754,8 @@ public class Controller {
     }
     
     private int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
-        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?, `is_deleted`=0" +
-            "WHERE `id_movie`=?;";
+        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?, `is_deleted`=0 " +
+            "WHERE `id_movie`=?";
 
         try {
             conn.open();
@@ -790,6 +790,10 @@ public class Controller {
     }
 
     public int deleteMovie(String idMovie) {
+        if (idMovie == null || idMovie.equals("")) {
+            return -1;
+        }
+
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();

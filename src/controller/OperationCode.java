@@ -84,6 +84,7 @@ public class OperationCode {
 
     public class DeleteMovie {
         public final static int SUCCESS = 0;
+        public final static int EMPTYIDMOVIE = -1;
         public final static int ANYEXCEPTION = -99;
     }
 }

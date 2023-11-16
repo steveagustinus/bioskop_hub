@@ -998,12 +998,11 @@ public class Controller {
                 autoIncrementValue = resultSet.getLong("AUTO_INCREMENT");
             }
 
-            // Execute an INSERT statement to add a new transaction with the formatted id
             String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
                     "VALUES (?, ?, NOW())";
             PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
             insertStatement.setString(1, "T-" + String.format("%018d", autoIncrementValue));
-            insertStatement.setInt(2, 5); // Example value for id_user, replace as needed
+            insertStatement.setInt(2, 5);
             int rowsAffected = insertStatement.executeUpdate();
 
             if (rowsAffected > 0) {

@@ -43,7 +43,6 @@ public class PesanFnb {
         labelCinema.setBounds(10, 60, 200, 30);
         boxCinema.setBounds(170, 60, 200, 30);
 
-
         JLabel studio =  new JLabel("Studio : ");
         JComboBox<String> boxStudio = new JComboBox<>();
         boxCinema.addActionListener(new ActionListener() {

@@ -1,4 +1,4 @@
-package src.view.common;
+package src.view.admin.common;
 
 import javax.swing.JOptionPane;
 

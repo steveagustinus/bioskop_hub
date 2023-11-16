@@ -120,12 +120,43 @@ public class Controller {
     }
 
     // Studio area
+    public boolean isStudioExists(String idStudio) {
+        return isStudioExists(idStudio, false);
+    }
+
+    private boolean isStudioExists(String idStudio, boolean includeDeleted) {
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            String sql = "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "'";
+            if (!includeDeleted) {
+                sql += " AND `is_deleted`=0";
+            }
+            ResultSet result = statement.executeQuery(sql);
+
+            boolean exists = false;
+            if (result.isBeforeFirst()) {
+                exists = true;
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return exists;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return false;
+        }
+    }
+
     public Studio getStudioById(String idStudio) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "';"
+                "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "' AND `is_deleted`=0;"
             );
 
             result.next();
@@ -148,12 +179,12 @@ public class Controller {
         }
     }
 
-    public ArrayList<Studio> getStudio(String idCinema, boolean getJadwalData) {
+    public ArrayList<Studio> getStudio(String idCinema) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "'");
+                    "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "' AND `is_deleted`=0");
 
             if (!result.isBeforeFirst()) {
                 return null;
@@ -181,6 +212,10 @@ public class Controller {
         }
     }
 
+    public String[] getListStudioClass() {
+        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
+    }
+    
     public StudioClassEnum getStudioClassEnum(String studioClass) {
         switch (studioClass.toUpperCase()) {
             case "VIP":
@@ -195,10 +230,6 @@ public class Controller {
         return null;
     }
 
-    public String[] getListStudioClass() {
-        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
-    }
-    
     public String getStudioClassString(StudioClassEnum studioClass) {
         switch (studioClass) {
             case VIP:
@@ -240,6 +271,28 @@ public class Controller {
     }
 
     public int addNewStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        if (idStudio == null || idStudio.equals("")) {
+            return -1;
+        }
+        if (idStudio.length() != 10) {
+            return -2;
+        }
+        if (isStudioExists(idStudio, true)) {
+            return -3;
+        }
+        if (idCinema == null || idCinema.equals("")) {
+            return -4;
+        }
+        if (idCinema.length() != 10) {
+            return -5;
+        }
+        if (studioClass == null || studioClass.equals("")) {
+            return -6;
+        }
+        if (studioType == null || studioType.equals("")) {
+            return -7;
+        }
+
         return addNewStudio(
             idStudio,
             idCinema, 
@@ -248,25 +301,12 @@ public class Controller {
         );
     }
 
-    public int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
-        if (idStudio == null || idStudio.equals("") || idStudio.length() != 10) {
-            return -1;
-        }
-        if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
-            return -2;
-        }
-        if (studioClass == null) {
-            return -3;
-        }
-        if (studioType < 1) {
-            return -4;
-        }
-
+    private int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
         try {
             conn.open();
 
-            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`)" +
-                    "VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`, `is_deleted`)" +
+                    "VALUES (?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
 
@@ -276,6 +316,7 @@ public class Controller {
             ps.setString(2, idCinema);
             ps.setString(3, getStudioClassString(studioClass).toUpperCase());
             ps.setInt(4, studioType);
+            ps.setInt(5, 0);
             
             ps.executeUpdate();
             conn.connection.commit();
@@ -285,7 +326,7 @@ public class Controller {
 
             // Generate seats on studio creation
             if (generateSeat(new Studio(idStudio, idCinema, studioClass, studioType)) != 0) {
-                return -5;
+                return -8;
             }
 
             return 0;
@@ -296,15 +337,6 @@ public class Controller {
     }
 
     public int editStudio(String idStudio, String idCinema, String studioClass, String studioType) {
-        return editStudio(
-            idStudio,
-            idCinema, 
-            getStudioClassEnum(studioClass),
-            getStudioType(studioType)
-        );
-    }
-
-    public int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
         if (idStudio == null || idStudio.equals("")) {
             return -1;
         }
@@ -313,10 +345,23 @@ public class Controller {
             return -2;
         }
 
-        if (studioClass == null) {
+        if (studioClass == null || studioClass.equals("")) {
             return -3;
         }
 
+        if (studioType == null || studioType.equals("")) {
+            return -4;
+        }
+
+        return editStudio(
+            idStudio,
+            idCinema, 
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
+    }
+
+    private int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
         try {
             conn.open();
 

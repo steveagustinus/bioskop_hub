@@ -13,26 +13,62 @@ import java.awt.event.ItemListener;
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
 import net.sourceforge.jdatepicker.impl.SqlDateModel;
+import src.controller.Controller;
 
 public class PesanTiket {
 
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Cinema Booking App");
+        Controller controller = new Controller();
+        JFrame frame = new JFrame("Pesan Tiket");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(600, 900);
 
-//        JPanel frame = new JPanel();
-//        panel.setLayout(new GridLayout(5, 2));
+        JLabel labelKota = new JLabel("Kota : ");
+        String kota[] = controller.listKota();
+        JComboBox<String> boxKota = new JComboBox<>(kota);
+        labelKota.setBounds(10, 15, 200, 30);
+        boxKota.setBounds(170, 15, 200, 30);
 
-        JLabel pilihKota = new JLabel("Pilih Kota:");
-        JComboBox<String> listKota = new JComboBox<>(new String[]{"Jakarta", "Bandung"});
-        pilihKota.setBounds(10, 15, 200, 30);
-        listKota.setBounds(170, 15, 200, 30);
-        
-        JLabel pilihCabang = new JLabel("Pilih Cabang:");
-        JComboBox<String> listCabang = new JComboBox<>(new String[]{"Mall Istana Plaza", "Mall Festival Citylink"});
-        pilihCabang.setBounds(10, 50, 200, 30);
-        listCabang.setBounds(170, 50, 200, 30);
+
+        JLabel labelCinema = new JLabel("Cabang : ");
+        JComboBox<String> boxCinema = new JComboBox<>();
+        final String[] tempCinema = {""}; 
+
+        boxCinema.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String[] idCinema = controller.listCinema(boxCinema.getSelectedItem().toString());
+                boxCinema.setModel(new DefaultComboBoxModel<>(idCinema));
+                tempCinema[0] = (String) boxCinema.getSelectedItem();
+            }
+        });
+
+        labelCinema.setBounds(10, 60, 200, 30);
+        boxCinema.setBounds(170, 60, 200, 30);
+
+        JLabel studio =  new JLabel("Studio : ");
+        JComboBox<String> boxStudio = new JComboBox<>();
+        boxCinema.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String[] idStudio = controller.listStudio(boxCinema.getSelectedItem().toString());
+                boxStudio.setModel(new DefaultComboBoxModel<>(idStudio));
+            }
+        });        
+        studio.setBounds(10, 105, 200, 30);
+        boxStudio.setBounds(170, 105, 200, 30);
+
+        JLabel labelFilm =  new JLabel("Film : ");
+        JComboBox<String> boxFilm = new JComboBox<>();
+        boxFilm.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String[] idFilm = controller.listStudio(boxStudio.getSelectedItem().toString());
+                boxFilm.setModel(new DefaultComboBoxModel<>(idFilm));
+            }
+        });        
+        labelFilm.setBounds(10, 105, 200, 30);
+        boxFilm.setBounds(170, 105, 200, 30);
         
         JLabel tanggalLabel = new JLabel("Pilih Tanggal:");
         SqlDateModel dateModel2 = new SqlDateModel();
@@ -41,32 +77,26 @@ public class PesanTiket {
         tanggalLabel.setBounds(10, 85, 200, 30);
         inputTanggalPembuatan.setBounds(170, 85, 200, 30);
         
-        JLabel filmLabel = new JLabel("Pilih Film:");
-        JRadioButton film1 = new JRadioButton("Iron Man");
-        JRadioButton film2 = new JRadioButton("Iron Man 2");
-        filmLabel.setBounds(10, 155, 200, 30);
-        film1.setBounds(170, 155, 100, 30);
-        film2.setBounds(270, 155, 100, 30);
         
         JLabel jamLabel = new JLabel("Pilih Jam Tayang:");
         JRadioButton jam1 = new JRadioButton("08.00");
         JRadioButton jam2 = new JRadioButton("10.00");
 
         ButtonGroup filmGroup = new ButtonGroup();
-        filmGroup.add(film1);
-        filmGroup.add(film2);
+
         filmGroup.add(jam1);
         filmGroup.add(jam2);
 
-        frame.add(pilihKota);
-        frame.add(listKota);
-        frame.add(pilihCabang);
-        frame.add(listCabang);
+        frame.add(labelKota);
+        frame.add(boxKota);
+        frame.add(labelCinema);
+        frame.add(boxCinema);
+        frame.add(labelCinema);
+        frame.add(boxCinema);
         frame.add(tanggalLabel);
         frame.add(inputTanggalPembuatan);
-        frame.add(filmLabel);
-        frame.add(film1);
-        frame.add(film2);
+        frame.add(labelFilm);
+        
         frame.add(jamLabel);
         frame.add(jam1);
         frame.add(jam2);
@@ -74,7 +104,6 @@ public class PesanTiket {
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(5, 5));
 
-       // Create an array of toggleable seat buttons
         JToggleButton[][] seatButtons = new JToggleButton[5][5];
         JLabel counterLabel = new JLabel("Seats Toggled: 0");
         final int toggleCount = 0;
@@ -88,7 +117,7 @@ public class PesanTiket {
                         if (e.getStateChange() == ItemEvent.SELECTED) {
                             // Set background to red when selected
                             seatButton.setBackground(Color.RED);
-                             counterLabel.setText("Seats Toggled: " + (toggleCount+1));
+                            counterLabel.setText("Seats Toggled: " + (toggleCount+1));
                         } else {
                             // Set background to default (transparent) when deselected
                             seatButton.setBackground(null);

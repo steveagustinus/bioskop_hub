@@ -348,7 +348,7 @@ public class Controller {
 
             Statement statement = conn.connection.createStatement();
             ResultSet rows = statement.executeQuery(
-                    "SELECT `nama` FROM `cinema`");
+                    "SELECT `nama` FROM `cinema` AND `is_deleted`=0;");
 
             while (rows.next()) {
                 cinemaList.add(rows.getString("nama"));
@@ -365,13 +365,21 @@ public class Controller {
     }
 
     public boolean isCinemaExists(String idCinema) {
+        return isCinemaExists(idCinema, false);
+    }
+
+    private boolean isCinemaExists(String idCinema, boolean includeDeleted) {
         try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
 
+            String sql = "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'";
+            if (!includeDeleted) {
+                sql += " AND `is_deleted`=0";
+            }
+
+            ResultSet result = statement.executeQuery(sql);
             boolean exists = false;
             if (result.isBeforeFirst()) {
                 exists = true;
@@ -388,13 +396,13 @@ public class Controller {
         }
     }
 
-    public Cinema getCinemaById(String idCinema, boolean getStudioData) {
+    public Cinema getCinemaById(String idCinema) {
         try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
+                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "' AND `is_deleted`=0;");
 
             result.next();
 
@@ -407,23 +415,14 @@ public class Controller {
             fotoCinema = new File(Config.Path.TEMP_DIR + "img.png");
 
             Cinema cinema = null;
-            if (getStudioData) {
-                cinema = new Cinema(
-                        idCinema,
-                        result.getString("nama"),
-                        result.getString("alamat"),
-                        result.getString("kota"),
-                        fotoCinema,
-                        getStudio(idCinema, true));
-            } else {
-                cinema = new Cinema(
-                        idCinema,
-                        result.getString("nama"),
-                        result.getString("alamat"),
-                        result.getString("kota"),
-                        fotoCinema,
-                        null);
-            }
+            cinema = new Cinema(
+                idCinema,
+                result.getString("nama"),
+                result.getString("alamat"),
+                result.getString("kota"),
+                fotoCinema,
+                null
+            );
 
             result.close();
             statement.close();
@@ -437,6 +436,62 @@ public class Controller {
     }
 
     public int addNewCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
+        if (idCinema == null || idCinema.equals("")) {
+            return -1;
+        }
+        if (idCinema.length() != 10) {
+            return -2;
+        }
+        if (nama == null || nama.equals("")) {
+            return -3;
+        }
+        if (alamat == null || alamat.equals("")) {
+            return -4;
+        }
+        if (kota == null || kota.equals("")) {
+            return -5;
+        }
+        if (fotoCinema == null) {
+            return -6;
+        }
+        if (isCinemaExists(idCinema, true)) {
+            return -7;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `cinema` (`id_cinema`, `nama`, `kota`, `alamat`, `img`, `is_deleted`)" +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                FileInputStream fis = new FileInputStream(fotoCinema);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, idCinema);
+                ps.setString(2, nama);
+                ps.setString(3, kota);
+                ps.setString(4, alamat);
+                ps.setBinaryStream(5, fis, (int) fotoCinema.length());
+                ps.setInt(6, 0);
+
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int editCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
         if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
             return -1;
         }
@@ -455,21 +510,20 @@ public class Controller {
 
         try {
             conn.open();
-
-            String sql = "INSERT INTO `cinema` (`id_cinema`, `nama`, `kota`, `alamat`, `img`)" +
-                    "VALUES (?, ?, ?, ?, ?)";
-
             conn.connection.setAutoCommit(false);
+
+            String sql = "UPDATE `cinema` SET `nama`=?, `alamat`=?, `kota`=?, `img`=? WHERE `id_cinema`=?;";
 
             try (
                 FileInputStream fis = new FileInputStream(fotoCinema);
                 PreparedStatement ps = conn.connection.prepareStatement(sql);
             ) {
-                ps.setString(1, idCinema);
-                ps.setString(2, nama);
+                ps.setString(1, nama);
+                ps.setString(2, alamat);
                 ps.setString(3, kota);
-                ps.setString(4, alamat);
-                ps.setBinaryStream(5, fis, (int) fotoCinema.length());
+                ps.setBinaryStream(4, fis, (int) fotoCinema.length());
+                ps.setString(5, idCinema);
+
                 ps.executeUpdate();
                 conn.connection.commit();
                 ps.close();
@@ -484,78 +538,28 @@ public class Controller {
         }
     }
 
-    public int editCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
+    public int deleteCinema(String idCinema) {
         if (idCinema == null || idCinema.equals("")) {
             return -1;
         }
 
-        boolean empty_nama = nama == null || nama.equals("");
-        boolean empty_alamat = alamat == null || alamat.equals("");
-        boolean empty_kota = kota == null || kota.equals("");
-        boolean empty_foto = fotoCinema == null;
-
-        if (empty_nama && empty_alamat && empty_kota && empty_foto) {
-            return -2;
-        }
-
-        String sql = "UPDATE `cinema` SET ";
-        if (!empty_nama) {
-            sql += "`nama` = ?, ";
-        }
-        if (!empty_alamat) {
-            sql += "`alamat` = ?, ";
-        }
-        if (!empty_kota) {
-            sql += "`kota` = ?, ";
-        }
-        if (!empty_foto) {
-            sql += "`img` = ?,";
-        }
-        sql = sql.substring(0, sql.length() - 1);
-        sql += " WHERE `id_cinema` = ?";
-
         try {
             conn.open();
+            Statement statement = conn.connection.createStatement();
+            
+            statement.executeUpdate(
+                "UPDATE `cinema` SET `is_deleted`=1 WHERE `id_cinema`='" + idCinema + "';"
+            );
 
-            conn.connection.setAutoCommit(false);
-
-            try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
-                int count = 1;
-                if (!empty_nama) {
-                    ps.setString(count, nama);
-                    count++;
-                }
-                if (!empty_alamat) {
-                    ps.setString(count, alamat);
-                    count++;
-                }
-                if (!empty_kota) {
-                    ps.setString(count, kota);
-                    count++;
-                }
-                if (!empty_foto) {
-                    ps.setBinaryStream(count, fis, (int) fotoCinema.length());
-                    count++;
-                }
-                ps.setString(count, idCinema);
-
-                ps.executeUpdate();
-                conn.connection.commit();
-                ps.close();
-            }
-
+            statement.close();
             conn.close();
-
             return 0;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
-
+    
     // Movie area
     public Movie getMovieById(String idMovie) {
         try {

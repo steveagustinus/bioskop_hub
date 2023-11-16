@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import src.controller.Controller;
+import src.controller.OperationCode;
 import src.view.admin.MainMenuScreen;
 
 public class DeleteFnBScreen {
@@ -56,11 +57,18 @@ public class DeleteFnBScreen {
               int input = JOptionPane.showConfirmDialog(null,"Apakah anda yakin untuk menghapus FnB : "+foodsnbevs.getSelectedItem().toString()+" ?");
                 if(input == 0){
                     String data = foodsnbevs.getSelectedItem().toString();
-                    String konfirmasi = controller.deleteFnB(data);
-                    JOptionPane.showMessageDialog(null,konfirmasi);
-                    frame.dispose();
-
-
+                    int konfirmasi = controller.deleteFnB(data);
+                    String status="";
+                    if(konfirmasi==OperationCode.addFnB.SUCCESS){
+                        status="Berhasil!";
+                        JOptionPane.showMessageDialog(null,status);
+                        frame.dispose();
+                        new MainMenuScreen();
+                    }else if(konfirmasi==OperationCode.addFnB.ANYEXCEPTION){
+                        status="Error!";
+                    }
+                    JOptionPane.showMessageDialog(null,status);
+                    
                 }else if (input==1){
 
                 }else {
@@ -72,9 +80,5 @@ public class DeleteFnBScreen {
 
     }
 
-    //test area
-    public static void main(String[] args) {
-        new DeleteFnBScreen();
-    }
-    //test area
+    
 }

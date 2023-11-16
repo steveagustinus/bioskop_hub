@@ -1,4 +1,4 @@
-package src.view.admin.manage_movie;
+package src.view.admin.manage_jadwal;
 
 import java.awt.Window;
 import java.awt.event.ActionEvent;
@@ -12,7 +12,7 @@ import src.controller.Controller;
 import src.controller.OperationCode;
 import src.model.movie.Movie;
 
-public class EditMovieDialog extends MovieFormDialog {
+public class EditMovieDialog extends JadwalFormDialog {
     Controller controller = new Controller();
     
     public EditMovieDialog(Window owner, String idMovie) {

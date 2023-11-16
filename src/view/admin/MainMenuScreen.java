@@ -7,8 +7,8 @@ import src.model.user.User;
 import src.view.MainInterface;
 import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
-import src.view.admin.manage_movie.EditMovieScreen;
-import src.view.admin.manage_movie.NewMovieDialog;
+import src.view.admin.manage_jadwal.EditJadwalScreen;
+import src.view.admin.manage_jadwal.NewJadwalDialog;
 import src.view.admin.manage_studio.EditStudioScreen;
 import src.view.admin.manage_studio.NewStudioDialog;
 
@@ -38,6 +38,8 @@ public class MainMenuScreen implements MainInterface {
                     "4. Edit movie\r\n" +
                     "5. Tambah studio baru\r\n" +
                     "6. Edit studio\r\n" + 
+                    "7. Tambah jadwal baru\r\n" +
+                    "8. Edit jadwal\r\n" + 
                 "Admin",
                 JOptionPane.QUESTION_MESSAGE
             );
@@ -50,11 +52,13 @@ public class MainMenuScreen implements MainInterface {
             switch (userInput) {
                 case "1": new NewCinemaDialog(mainFrame); break;
                 case "2": new EditCinemaScreen(mainFrame); break;
-                case "3": new NewMovieDialog(mainFrame); break;
-                case "4": new EditMovieScreen(mainFrame); break;
+                case "3": new NewJadwalDialog(mainFrame); break;
+                case "4": new EditJadwalScreen(mainFrame); break;
                 case "5": new NewStudioDialog(mainFrame); break;
                 case "6": new EditStudioScreen(mainFrame); break;
-                case "7": exit = true; break;
+                case "7": new NewJadwalDialog(mainFrame); break;
+                case "8": new EditStudioScreen(mainFrame); break;
+                case "9": exit = true; break;
             }
         }
         mainFrame.dispose();

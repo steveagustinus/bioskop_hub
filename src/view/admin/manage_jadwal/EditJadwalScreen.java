@@ -1,4 +1,4 @@
-package src.view.admin.manage_movie;
+package src.view.admin.manage_jadwal;
 
 import java.awt.Window;
 
@@ -6,18 +6,18 @@ import javax.swing.JOptionPane;
 
 import src.controller.Controller;
 
-public class EditMovieScreen {
+public class EditJadwalScreen {
     private Controller controller = new Controller();
 
-    public EditMovieScreen(Window parent) {
-        showEditMovieScreen(parent);
+    public EditJadwalScreen(Window parent) {
+        showEditJadwalScreen(parent);
     }
 
-    public void showEditMovieScreen(Window parent) {
+    public void showEditJadwalScreen(Window parent) {
         String inputID = JOptionPane.showInputDialog(
-            null,
-            "Masukkan id movie: ",
-            "Admin: Edit movie",
+            parent,
+            "Masukkan id jadwal: ",
+            "Admin: Edit jadwal",
             JOptionPane.QUESTION_MESSAGE
         );
 

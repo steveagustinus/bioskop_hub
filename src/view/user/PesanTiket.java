@@ -32,74 +32,93 @@ public class PesanTiket {
 
         JLabel labelCinema = new JLabel("Cabang : ");
         JComboBox<String> boxCinema = new JComboBox<>();
-        final String[] tempCinema = {""}; 
 
-        boxCinema.addActionListener(new ActionListener() {
+        boxKota.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] idCinema = controller.listCinema(boxCinema.getSelectedItem().toString());
-                boxCinema.setModel(new DefaultComboBoxModel<>(idCinema));
-                tempCinema[0] = (String) boxCinema.getSelectedItem();
+            public void actionPerformed(ActionEvent arg0) {
+                boxCinema.removeAllItems();
+                
+                String[] listCinema = controller.listCinema((String) boxKota.getSelectedItem());
+                for (String cinema : listCinema) {
+                    boxCinema.addItem(cinema);
+                }
             }
         });
 
         labelCinema.setBounds(10, 60, 200, 30);
         boxCinema.setBounds(170, 60, 200, 30);
 
-        JLabel studio =  new JLabel("Studio : ");
-        JComboBox<String> boxStudio = new JComboBox<>();
-        boxCinema.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] idStudio = controller.listStudio(boxCinema.getSelectedItem().toString());
-                boxStudio.setModel(new DefaultComboBoxModel<>(idStudio));
-            }
-        });        
-        studio.setBounds(10, 105, 200, 30);
-        boxStudio.setBounds(170, 105, 200, 30);
-
         JLabel labelFilm =  new JLabel("Film : ");
         JComboBox<String> boxFilm = new JComboBox<>();
-        boxFilm.addActionListener(new ActionListener() {
+        boxCinema.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] idFilm = controller.listStudio(boxStudio.getSelectedItem().toString());
-                boxFilm.setModel(new DefaultComboBoxModel<>(idFilm));
+            public void actionPerformed(ActionEvent arg0) {
+                boxFilm.removeAllItems();
+                String[] listFilm= controller.listMovie((String) boxCinema.getSelectedItem());
+                for (String film : listFilm) {
+                    boxFilm.addItem(film);
+                }
             }
-        });        
+        });       
         labelFilm.setBounds(10, 105, 200, 30);
         boxFilm.setBounds(170, 105, 200, 30);
         
-        JLabel tanggalLabel = new JLabel("Pilih Tanggal:");
-        SqlDateModel dateModel2 = new SqlDateModel();
-        JDatePanelImpl datePanel2 = new JDatePanelImpl(dateModel2);
-        JDatePickerImpl inputTanggalPembuatan = new JDatePickerImpl(datePanel2);
-        tanggalLabel.setBounds(10, 85, 200, 30);
-        inputTanggalPembuatan.setBounds(170, 85, 200, 30);
+        JLabel labelJam =  new JLabel("Pilih Jam Tayang: ");
+        JComboBox<String> boxJam= new JComboBox<>();
+        boxFilm.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                boxJam.removeAllItems();
+                String[] listJam= controller.listCinema((String) boxFilm.getSelectedItem());
+                for (String jam : listJam) {
+                    boxFilm.addItem(jam);
+                }
+            }
+        });       
+        labelFilm.setBounds(10, 105, 200, 30);
+        boxFilm.setBounds(170, 105, 200, 30);
+
+        // JLabel labelFilm =  new JLabel("Film : ");
+        // JComboBox<String> boxFilm = new JComboBox<>();
+        // boxFilm.addActionListener(new ActionListener() {
+        //     @Override
+        //     public void actionPerformed(ActionEvent e) {
+        //         String[] idFilm = controller.listStudio(boxStudio.getSelectedItem().toString());
+        //         boxFilm.setModel(new DefaultComboBoxModel<>(idFilm));
+        //     }
+        // });        
+        // labelFilm.setBounds(10, 105, 200, 30);
+        // boxFilm.setBounds(170, 105, 200, 30);
+        
+        // JLabel tanggalLabel = new JLabel("Pilih Tanggal:");
+        // SqlDateModel dateModel2 = new SqlDateModel();
+        // JDatePanelImpl datePanel2 = new JDatePanelImpl(dateModel2);
+        // JDatePickerImpl inputTanggalPembuatan = new JDatePickerImpl(datePanel2);
+        // tanggalLabel.setBounds(10, 85, 200, 30);
+        // inputTanggalPembuatan.setBounds(170, 85, 200, 30);
         
         
-        JLabel jamLabel = new JLabel("Pilih Jam Tayang:");
-        JRadioButton jam1 = new JRadioButton("08.00");
-        JRadioButton jam2 = new JRadioButton("10.00");
+        // JLabel jamLabel = new JLabel("Pilih Jam Tayang:");
+        // JRadioButton jam1 = new JRadioButton("08.00");
+        // JRadioButton jam2 = new JRadioButton("10.00");
 
-        ButtonGroup filmGroup = new ButtonGroup();
+        // ButtonGroup filmGroup = new ButtonGroup();
 
-        filmGroup.add(jam1);
-        filmGroup.add(jam2);
 
+        frame.add(labelJam);
+        frame.add(boxJam);
+        frame.add(labelFilm);
+        frame.add(boxFilm);
         frame.add(labelKota);
         frame.add(boxKota);
         frame.add(labelCinema);
         frame.add(boxCinema);
         frame.add(labelCinema);
         frame.add(boxCinema);
-        frame.add(tanggalLabel);
-        frame.add(inputTanggalPembuatan);
+
         frame.add(labelFilm);
         
-        frame.add(jamLabel);
-        frame.add(jam1);
-        frame.add(jam2);
+
         
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(5, 5));

@@ -1076,12 +1076,12 @@ public class Controller {
             return null;
         }
     }
-    public String[] listMovie(String id_Studio){
+    public String[] listMovie(String id_cinema){
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "'");
+                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_cinema + "'");
 
             ArrayList<String> listMovie = new ArrayList<String>();
             while (result.next()) {
@@ -1092,6 +1092,28 @@ public class Controller {
             conn.close();
 
             return listMovie.toArray(new String[listMovie.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public String[] listJam(String movie){
+        try{
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `waktu` FROM `jadwal` WHERE `id_movie`='" + movie + "'");
+
+            ArrayList<String> listJam = new ArrayList<String>();
+            while (result.next()) {
+                listJam.add(result.getString("jam"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listJam.toArray(new String[listJam.size()]);
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return null;

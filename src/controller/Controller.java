@@ -31,17 +31,17 @@ import src.model.user.User;
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
 
-    public Controller() { }
+    public Controller() {
+    }
 
-    //Seat area
+    // Seat area
     public int getLastSeatId() {
         int lastId = -1;
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT `id_seat` FROM `seat` ORDER BY `id_seat` DESC LIMIT 1;"
-            );
+                    "SELECT `id_seat` FROM `seat` ORDER BY `id_seat` DESC LIMIT 1;");
 
             if (!result.isBeforeFirst()) {
                 return 0;
@@ -63,13 +63,21 @@ public class Controller {
     }
 
     public int generateSeat(Studio studio) {
-        
+
         Seat[][] seats = new Seat[1][1];
         switch (studio.getStudioClass()) {
-            case REGULER: seats = new Seat[15][9]; break;
-            case LUXE: seats = new Seat[8][8]; break;
-            case JUNIOR: seats = new Seat[10][9]; break;
-            case VIP: seats = new Seat[5][5]; break;
+            case REGULER:
+                seats = new Seat[15][9];
+                break;
+            case LUXE:
+                seats = new Seat[8][8];
+                break;
+            case JUNIOR:
+                seats = new Seat[10][9];
+                break;
+            case VIP:
+                seats = new Seat[5][5];
+                break;
         }
 
         int idSeat = getLastSeatId() + 1;
@@ -77,17 +85,16 @@ public class Controller {
         for (int i = 0; i < seats.length; i++) {
             for (int j = 0; j < seats[i].length; j++) {
                 seats[i][j] = new Seat(
-                    String.valueOf(idSeat),
-                    ((char)(i + 65)) + ((j + 1) < 10 ? "0" + String.valueOf(j + 1) : String.valueOf(j + 1)),
-                    SeatStatusInterface.AVAILABLE
-                );
+                        String.valueOf(idSeat),
+                        ((char) (i + 65)) + ((j + 1) < 10 ? "0" + String.valueOf(j + 1) : String.valueOf(j + 1)),
+                        SeatStatusInterface.AVAILABLE);
                 idSeat++;
             }
         }
 
         // Insert seats into database
         String sql = "INSERT INTO `seat` (`id_seat`, `id_studio`, `kode`)" +
-            "VALUES ";
+                "VALUES ";
 
         for (Seat[] arrSeat : seats) {
             for (Seat seat : arrSeat) {
@@ -101,7 +108,7 @@ public class Controller {
             conn.open();
             conn.connection.setAutoCommit(false);
             PreparedStatement ps = conn.connection.prepareStatement(sql);
-            
+
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -116,7 +123,7 @@ public class Controller {
 
     // Jadwal area
     // public Seat[] GenerateSeat(Jadwal jadwal) {
-    //     return null;
+    // return null;
     // }
 
     // Studio area
@@ -130,11 +137,10 @@ public class Controller {
             result.next();
 
             Studio studio = new Studio(
-                idStudio,
-                result.getString("id_cinema"),
-                getStudioClassEnum(result.getString("studio_class")),
-                result.getInt("studio_type")
-            );
+                    idStudio,
+                    result.getString("id_cinema"),
+                    getStudioClassEnum(result.getString("studio_class")),
+                    result.getInt("studio_type"));
 
             result.close();
             statement.close();
@@ -161,11 +167,10 @@ public class Controller {
             ArrayList<Studio> studioList = new ArrayList<Studio>();
             while (result.next()) {
                 Studio studio = new Studio(
-                    result.getString("id_studio"),
-                    result.getString("id_cinema"),
-                    getStudioClassEnum(result.getString("studio_class")),
-                    result.getInt("studio_type")
-                );
+                        result.getString("id_studio"),
+                        result.getString("id_cinema"),
+                        getStudioClassEnum(result.getString("studio_class")),
+                        result.getInt("studio_type"));
                 studioList.add(studio);
             }
 
@@ -197,7 +202,7 @@ public class Controller {
     public String[] getListStudioClass() {
         return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
     }
-    
+
     public String getStudioClassString(StudioClassEnum studioClass) {
         switch (studioClass) {
             case VIP:
@@ -218,10 +223,14 @@ public class Controller {
 
     public int getStudioType(String studioType) {
         switch (studioType) {
-            case "2D": return StudioTypeInterface.TYPE2D;
-            case "3D": return StudioTypeInterface.TYPE3D;
-            case "4D": return StudioTypeInterface.TYPE4D;
-            case "5D": return StudioTypeInterface.TYPE5D;
+            case "2D":
+                return StudioTypeInterface.TYPE2D;
+            case "3D":
+                return StudioTypeInterface.TYPE3D;
+            case "4D":
+                return StudioTypeInterface.TYPE4D;
+            case "5D":
+                return StudioTypeInterface.TYPE5D;
         }
 
         return -1;
@@ -229,10 +238,14 @@ public class Controller {
 
     public String getStudioTypeString(int studioType) {
         switch (studioType) {
-            case StudioTypeInterface.TYPE2D: return "2D";
-            case StudioTypeInterface.TYPE3D: return "3D";
-            case StudioTypeInterface.TYPE4D: return "4D";
-            case StudioTypeInterface.TYPE5D: return "5D";
+            case StudioTypeInterface.TYPE2D:
+                return "2D";
+            case StudioTypeInterface.TYPE3D:
+                return "3D";
+            case StudioTypeInterface.TYPE4D:
+                return "4D";
+            case StudioTypeInterface.TYPE5D:
+                return "5D";
         }
 
         return "";
@@ -240,11 +253,10 @@ public class Controller {
 
     public int addNewStudio(String idStudio, String idCinema, String studioClass, String studioType) {
         return addNewStudio(
-            idStudio,
-            idCinema, 
-            getStudioClassEnum(studioClass),
-            getStudioType(studioType)
-        );
+                idStudio,
+                idCinema,
+                getStudioClassEnum(studioClass),
+                getStudioType(studioType));
     }
 
     public int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
@@ -275,7 +287,7 @@ public class Controller {
             ps.setString(2, idCinema);
             ps.setString(3, getStudioClassString(studioClass).toUpperCase());
             ps.setInt(4, studioType);
-            
+
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -296,11 +308,10 @@ public class Controller {
 
     public int editStudio(String idStudio, String idCinema, String studioClass, String studioType) {
         return editStudio(
-            idStudio,
-            idCinema, 
-            getStudioClassEnum(studioClass),
-            getStudioType(studioType)
-        );
+                idStudio,
+                idCinema,
+                getStudioClassEnum(studioClass),
+                getStudioType(studioType));
     }
 
     public int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
@@ -338,7 +349,7 @@ public class Controller {
             return -99;
         }
     }
-    
+
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -616,8 +627,8 @@ public class Controller {
         }
     }
 
-     // User area
-     private User getUserById(String idUser) {
+    // User area
+    private User getUserById(String idUser) {
         try {
             conn.open();
 
@@ -758,8 +769,8 @@ public class Controller {
         }
     }
 
-    public int checkUserType(User user){
-        try{
+    public int checkUserType(User user) {
+        try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
@@ -768,13 +779,14 @@ public class Controller {
             int userType = result.getInt("user_type");
             conn.close();
             return userType;
-        }catch(Exception ex){
+        } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
-    public int insertToSingelton(String nama){
-        try{
+
+    public int insertToSingelton(String nama) {
+        try {
             UserDataSingleton userDataSingleton = UserDataSingleton.getInstance();
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -791,7 +803,7 @@ public class Controller {
             userDataSingleton.setUser_type(result.getInt("user_type"));
             conn.close();
             return 1;
-        }catch(Exception ex){
+        } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -1;
         }
@@ -888,7 +900,8 @@ public class Controller {
             return 0;
         }
     }
-    //Function tampilkan list
+
+    // Function tampilkan list
     public String[] listKota() {
         try {
             conn.open();
@@ -1046,13 +1059,14 @@ public class Controller {
             if (rowsAffected > 0) {
                 return "Transaksi berhasil";
             } else {
-               return "Transaksi Gagal";
+                return "Transaksi Gagal";
             }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
     // User Profile area
     public int editProfile(String username, String oldPassword, String newPassword, String profileName, String email,
             String phoneNo, String address) {
@@ -1075,13 +1089,16 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `user` WHERE `username`='" + UserDataSingleton.getInstance().getUsername() + "' AND `password`='" + sha256(oldPassword)
+                    "SELECT * FROM `user` WHERE `username`='" + UserDataSingleton.getInstance().getUsername()
+                            + "' AND `password`='" + sha256(oldPassword)
                             + "'");
             if (!result.isBeforeFirst()) {
                 return 0;
             }
             result.next();
-            String sql = "UPDATE `user` SET `username`=?, `password`=?, `profile_name`=?, `email`=?, `phoneNo`=?, `address`=? WHERE `username`=?;";
+            int id_user = result.getInt("id_user");
+            System.out.println(id_user);
+            String sql = "UPDATE `user` SET `username`=?, `password`=?, `profile_name`=?, `email`=?, `phoneNo`=?, `address`=? WHERE `id_user`=?;";
             PreparedStatement ps = conn.connection.prepareStatement(sql);
             ps.setString(1, username);
             ps.setString(2, sha256(newPassword));
@@ -1089,8 +1106,8 @@ public class Controller {
             ps.setString(4, email);
             ps.setString(5, phoneNo);
             ps.setString(6, address);
-            ps.setString(7, UserDataSingleton.getInstance().getUsername());
-            
+            ps.setString(7, String.valueOf(id_user));
+
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
@@ -1103,4 +1120,9 @@ public class Controller {
         UserDataSingleton.getInstance().setAddress(address);
         return 1;
     }
+    // Main menu user area
+
+    // public int checkMembership(String username){
+
+    // }
 }

@@ -14,8 +14,8 @@ import javax.swing.JTextField;
 
 import src.model.user.User;
 import src.view.admin.MainMenuScreen;
+import src.view.user.MainMenuUser;
 import src.controller.Controller;
-import src.controller.UserDataSingleton;
 
 public class LoginScreen {
     public LoginScreen() {
@@ -68,7 +68,8 @@ public class LoginScreen {
                     JOptionPane.showMessageDialog(null, "Failed to insert to singleton!");
                     return;
                 }
-                JOptionPane.showMessageDialog(null, "Welcome, " + username + "!");
+                JOptionPane.showMessageDialog(null, "Welcome, " + usernameField.getText() + "!");
+                new MainMenuUser();
                 loginJFrame.dispose();
             }
         });

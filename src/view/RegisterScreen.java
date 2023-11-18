@@ -92,4 +92,8 @@ public class RegisterScreen {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
+    //test area
+    public static void main(String[] args) {
+        new RegisterScreen();
+    }
 }

@@ -20,7 +20,7 @@ public class CheckUserProfile {
         usernameLabel.setBounds(10, 50, 100, 25);
 
         JLabel mainlabel = new JLabel("Check Profile Menu");
-        mainlabel.setBounds(175, 10, 500, 50);
+        mainlabel.setBounds(125, 10, 500, 50);
         panel.add(mainlabel);
         mainlabel.setFont(new Font("Arial", Font.BOLD, 24));
 

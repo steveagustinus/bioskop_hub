@@ -1,5 +1,8 @@
 package src.controller;
 
+import java.awt.Color;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -15,6 +18,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.swing.JPasswordField;
 
 import src.model.Cinema;
 import src.model.movie.Movie;
@@ -807,6 +812,31 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return -1;
         }
+    }
+    public void setPlaceholder(JPasswordField passwordField, String placeholder) {
+        passwordField.setEchoChar((char) 0); // Tampilkan teks normal untuk menampilkan placeholder
+        passwordField.setText(placeholder);
+        passwordField.setForeground(Color.GRAY);
+
+        passwordField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
+                    passwordField.setText("");
+                    passwordField.setEchoChar('*'); // Set echo character ke '*' setelah fokus
+                    passwordField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (String.valueOf(passwordField.getPassword()).isEmpty()) {
+                    passwordField.setText(placeholder);
+                    passwordField.setEchoChar((char) 0);
+                    passwordField.setForeground(Color.GRAY);
+                }
+            }
+        });
     }
 
     // Line Ini Jangan dihapus yak sementara yak biar ga pusing

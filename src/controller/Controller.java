@@ -816,7 +816,7 @@ public class Controller {
     }
 
     public void setPlaceholder(JPasswordField passwordField, String placeholder) {
-        passwordField.setEchoChar((char) 0); // Tampilkan teks normal untuk menampilkan placeholder
+        passwordField.setEchoChar((char) 0); 
         passwordField.setText(placeholder);
         passwordField.setForeground(Color.GRAY);
 
@@ -825,7 +825,7 @@ public class Controller {
             public void focusGained(FocusEvent e) {
                 if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
                     passwordField.setText("");
-                    passwordField.setEchoChar('*'); // Set echo character ke '*' setelah fokus
+                    passwordField.setEchoChar('*'); 
                     passwordField.setForeground(Color.BLACK);
                 }
             }
@@ -1162,4 +1162,7 @@ public class Controller {
     // public int checkMembership(String username){
 
     // }
+    public void printTable(){
+        
+    }
 }

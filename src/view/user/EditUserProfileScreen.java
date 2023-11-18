@@ -14,8 +14,8 @@ import javax.swing.JTextField;
 import src.controller.Controller;
 import src.controller.UserDataSingleton;
 
-public class EditUserProfile {
-    public EditUserProfile() {
+public class EditUserProfileScreen {
+    public EditUserProfileScreen() {
         JFrame frame = new JFrame("Edit User Profile");
         frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -74,7 +74,7 @@ public class EditUserProfile {
         cancelButton.setBounds(10, 280, 80, 25);
 
         cancelButton.addActionListener(e -> {
-            new CheckUserProfile();
+            new CheckUserProfileScreen();
             frame.dispose();
         });
 
@@ -110,7 +110,7 @@ public class EditUserProfile {
             } else if (user == 1) {
                 JOptionPane.showMessageDialog(null,
                         "Update " + UserDataSingleton.getInstance().getUsername() + " successful!");
-                new CheckUserProfile();
+                new CheckUserProfileScreen();
                 frame.dispose();
             }
         });

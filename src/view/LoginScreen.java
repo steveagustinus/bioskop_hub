@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 
 import src.model.user.User;
 import src.view.admin.MainMenuScreen;
-import src.view.user.MainMenuUser;
+import src.view.user.MainMenuUserScreen;
 import src.controller.Controller;
 
 public class LoginScreen {
@@ -116,7 +116,7 @@ public class LoginScreen {
                     loginJFrame.dispose();
                 }else{
                     JOptionPane.showMessageDialog(null, "Welcome, " + usernameField.getText() + "!");
-                    new MainMenuUser();
+                    new MainMenuUserScreen();
                     loginJFrame.dispose();
                 }
             }

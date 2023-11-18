@@ -3,19 +3,22 @@ package src.view.user;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
+
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 
 import src.controller.UserDataSingleton;
-import src.model.button.RoundedBorder;
+import src.model.button.MyButton;
+import src.model.button.MyButton;
 import src.view.LoginScreen;
 
-public class MainMenuUser {
+public class MainMenuUserScreen {
     UserDataSingleton userData = UserDataSingleton.getInstance();
 
-    public MainMenuUser() {
+    public MainMenuUserScreen() {
         JFrame frame = new JFrame();
         frame.setTitle("Main Menu");
         frame.setSize(720, 480);
@@ -61,7 +64,7 @@ public class MainMenuUser {
         transactionHitoryButton.setBounds(370, 220, 150, 50);
         panel.add(transactionHitoryButton);
         transactionHitoryButton.addActionListener(e -> {
-            // new TransactionHistory();
+            new TransactionHistoryScreen();
             frame.dispose();
         });
 
@@ -73,22 +76,21 @@ public class MainMenuUser {
             frame.dispose();
         });
 
-        //background color
+        // background color
         float[] hsb = Color.RGBtoHSB(238, 238, 238, null);
         Color backgroundColor = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
 
-        JButton roundButton = new JButton(userData.getUsername().substring(0, 1).toUpperCase());
-        roundButton.setFont(new Font("Arial", Font.PLAIN, 12));
-        roundButton.setPreferredSize(new Dimension(50, 50));
-        roundButton.setBorder(new RoundedBorder(120));
+        MyButton roundButton = new MyButton();
+        roundButton.setText(userData.getUsername().substring(0, 1).toUpperCase());
+        roundButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        roundButton.setPreferredSize(new Dimension(120, 120));
         roundButton.setBackground(backgroundColor);
         roundButton.setBounds(620, 20, 50, 50);
         panel.add(roundButton);
         roundButton.addActionListener(e -> {
-            new CheckUserProfile();
+            new CheckUserProfileScreen();
             frame.dispose();
         });
-
 
         frame.add(panel);
         frame.setVisible(true);
@@ -97,6 +99,6 @@ public class MainMenuUser {
 
     // test area
     public static void main(String[] args) {
-        new MainMenuUser();
+        new MainMenuUserScreen();
     }
 }

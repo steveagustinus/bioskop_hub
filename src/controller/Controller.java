@@ -707,22 +707,6 @@ public class Controller {
     }
 
     public int register(String username, String password, String email, String phoneNumber, String alamat) {
-        if (username == null || username.equals("")) {
-            return -1;
-        }
-        if (password == null || password.equals("")) {
-            return -2;
-        }
-        if (email == null || email.equals("")) {
-            return -3;
-        }
-        if (phoneNumber == null || phoneNumber.equals("")) {
-            return -4;
-        }
-        if (alamat == null || alamat.equals("")) {
-            return -5;
-        }
-
         try {
             int isNameExist = isNameExist(username);
             if (isNameExist == 1) {
@@ -754,6 +738,13 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
+    }
+    public int checkEmptyFields(String username, String password, String email, String phoneNumber, String alamat) {
+        if (username.equals("") || password.equals("") || email.equals("") || phoneNumber.equals("")
+                || alamat.equals("") || username.equals("Enter your Username") || password.equals("Enter your Password") || email.equals("Enter your Email") || phoneNumber.equals("Enter your Phone Number") || alamat.equals("Enter your Address")) {
+            return 0;
+        }
+        return 1;
     }
 
     public int isNameExist(String username) {

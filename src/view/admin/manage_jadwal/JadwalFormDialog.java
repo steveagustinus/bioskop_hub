@@ -105,7 +105,7 @@ public abstract class JadwalFormDialog extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                fieldIDMovie.setText(GetObjectDialog.getMovie());
+                fieldIDMovie.setText(showGetMovieDialog());
             }
             
         });
@@ -119,5 +119,9 @@ public abstract class JadwalFormDialog extends JDialog {
         this.add(buttonSelectMovie);
         this.add(fieldHarga);
         this.add(buttonSubmit);
+    }
+
+    public String showGetMovieDialog() {
+        return GetObjectDialog.getMovie(this);
     }
 }

@@ -38,6 +38,10 @@ public class Controller {
 
     public Controller() { }
 
+    public void fetchData() {
+        Data.movies = getMovies();
+    }
+
     //Seat area
     public int getLastSeatId() {
         int lastId = -1;
@@ -400,6 +404,7 @@ public class Controller {
             return -99;
         }
     }
+    
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -657,6 +662,75 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
+    }
+
+    public Movie[] getMovies() {
+        ArrayList<Movie> movieList = new ArrayList<Movie>();
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `movie` WHERE `is_deleted`=0");
+
+            while (result.next()) {
+                File fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
+                fotoMovie.createNewFile();
+
+                Path target = fotoMovie.toPath();
+                Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
+
+                fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
+
+                Movie movie = new Movie(
+                    result.getString("id_movie"),
+                    result.getString("judul"),
+                    dateToLocalDate(result.getDate("release_date")),
+                    result.getString("director"),
+                    result.getInt("language"),
+                    result.getInt("durasi"),
+                    result.getString("sinopsis"),
+                    fotoMovie
+                );
+
+                movieList.add(movie);
+            }
+
+            
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return movieList.toArray(new Movie[movieList.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public Movie[] searchMovie(String input, int limit) {
+        if (Data.movies == null) { return null; }
+
+        ArrayList<Movie> movieList = new ArrayList<Movie>();
+
+        if (input.equals("")) {
+            for (int i = 0; i < limit && i < Data.movies.length; i++) {
+                movieList.add(Data.movies[i]);
+            }
+
+            return movieList.toArray(new Movie[movieList.size()]);
+        }
+
+        for (Movie movie : Data.movies) {
+            if (movie.getJudul().toLowerCase().contains(input.toLowerCase())) {
+                movieList.add(movie);
+            }
+        }
+
+        if (movieList.isEmpty()) { return null; }
+
+        return movieList.toArray(new Movie[movieList.size()]);
     }
 
     public boolean isMovieExists(String idMovie) {
@@ -1140,6 +1214,8 @@ public class Controller {
         if (!dir.exists()) {
             dir.mkdirs();
         }
+
+        fetchData();
     }
     //Hitung pendapatan area
     public int hitungPendapatanCabangFNB(String nama){

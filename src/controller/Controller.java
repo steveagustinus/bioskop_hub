@@ -123,6 +123,11 @@ public class Controller {
         }
     }
 
+    // Jadwal area
+    // public Seat[] GenerateSeat(Jadwal jadwal) {
+    //     return null;
+    // }
+
     // Studio area
     public boolean isStudioExists(String idStudio) {
         return isStudioExists(idStudio, false);
@@ -532,9 +537,8 @@ public class Controller {
             conn.connection.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 ps.setString(1, idCinema);
                 ps.setString(2, nama);
                 ps.setString(3, kota);
@@ -1065,9 +1069,10 @@ public class Controller {
             if (isNameExist == 1) {
                 return 0;
             }
-            
+
             conn.open();
-            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)" +
+            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)"
+                    +
                     "VALUES (?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
@@ -1097,8 +1102,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `user` WHERE `username`='" + username + "'"
-            );
+                    "SELECT * FROM `user` WHERE `username`='" + username + "'");
             if (!result.isBeforeFirst()) {
                 return 0;
             }
@@ -1112,18 +1116,20 @@ public class Controller {
         }
     }
 
-    //Line Ini Jangan dihapus yak sementara yak biar ga pusing
+    // Line Ini Jangan dihapus yak sementara yak biar ga pusing
     public int totalPoinMembership(User user) {
         if (user instanceof MembershipCustomer) {
             MembershipCustomer membershipCustomer = (MembershipCustomer) user;
             return membershipCustomer.getPoin();
         } else {
-            return 0; 
+            return 0;
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email, String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email, phoneNumber, address, null, poin);
+    public MembershipCustomer registerMembership(String username, String password, String profileName, String email,
+            String phoneNumber, String address, int poin) {
+        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email,
+                phoneNumber, address, null, poin);
         return membershipCustomer;
     }
 
@@ -1217,30 +1223,117 @@ public class Controller {
 
         fetchData();
     }
-    //Hitung pendapatan area
-    public int hitungPendapatanCabangFNB(String nama){
+
+    // Hitung pendapatan area
+    public int hitungPendapatanCabang(String nama) {
+        int total = 0;
         try {
-            conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT SUM(`harga`) FROM `fnb` WHERE `id_cinema`='" + nama + "'");
-
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.nama = '"
+                            + nama + "';");
             result.next();
-
-            int total = result.getInt(1);
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.nama ='"
+                            + nama + "';");
+            result.next();
+            total += result.getInt(1);
 
             result.close();
             statement.close();
             conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
 
-            return total;
+    public int hitungPendapatanKota(String kota) {
+        int total = 0;
+        try {
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.kota = '"
+                            + kota + "';");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.kota ='"
+                            + kota + "';");
+            result.next();
+            total += result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
+
+    public int hitungPendapatanTotal() {
+        int total = 0;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb;");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT SUM(j.harga) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal;");
+            result.next();
+            total += result.getInt(1);
+            statement.close();
+            conn.close();
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
-            return 0;
+        }
+        return total;
+    }
+    public boolean isKotaExists(String kota) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `cinema` WHERE `kota`='" + kota + "'");
+            if (!result.isBeforeFirst()) {
+                return false;
+            }
+            result.next();
+            conn.close();
+            return true;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return false;
+        }
+    }
+    public boolean isCabangExists(String cabang) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `cinema` WHERE `nama`='" + cabang + "'");
+            if (!result.isBeforeFirst()) {
+                return false;
+            }
+            result.next();
+            conn.close();
+            return true;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return false;
         }
     }
     //Function tampilkan list
-    public String[] listKota(){
+    public String[] listKota() {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1262,7 +1355,7 @@ public class Controller {
         }
     }
 
-    public String[] listCinema(String kota){
+    public String[] listCinema(String kota) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1283,7 +1376,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listStudio(String id_cinema){
+
+    public String[] listStudio(String id_cinema) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1304,7 +1398,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listFNB(){
+
+    public String[] listFNB() {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1325,7 +1420,8 @@ public class Controller {
             return null;
         }
     }
-    public String[] listMovie(String id_Studio){
+
+    public String[] listMovie(String id_Studio) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1345,5 +1441,110 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
+    }
+
+    public long hargaPerFnb(String namaFnb) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery("SELECT `harga` FROM `fnb` WHERE `nama` ='" + namaFnb + "'");
+            long harga = 0;
+            harga = result.getLong("harga");
+            result.close();
+            statement.close();
+            conn.close();
+            return harga;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return 0;
+        }
+    }
+
+    public long totalHasilTransaksiFnb(long harga, int quantity) {
+        long total = 0;
+        total = harga * quantity;
+        return total;
+    }
+
+    public String insertTransaksiFnb(String pilihan, int quantity, long harga, String idCinema) {
+        try {
+            // Execute a SELECT statement to get the current auto-increment value
+            conn.open();
+            String selectQuery = "SELECT AUTO_INCREMENT FROM information_schema.TABLES " +
+                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaction'";
+            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+            ResultSet resultSet = selectStatement.executeQuery();
+
+            long autoIncrementValue = 0;
+            if (resultSet.next()) {
+                autoIncrementValue = resultSet.getLong("AUTO_INCREMENT");
+            }
+
+            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES (?, ?, NOW())";
+            PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
+            insertStatement.setString(1, "T-" + String.format("%018d", autoIncrementValue));
+            insertStatement.setInt(2, 5);
+            int rowsAffected = insertStatement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                return "Transaksi berhasil";
+            } else {
+               return "Transaksi Gagal";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    // User Profile area
+    public int editProfile(String username, String oldPassword, String newPassword, String profileName, String email,
+            String phoneNo, String address) {
+        if (username == null) {
+            return -1;
+        }
+        if (oldPassword == null) {
+            return -2;
+        }
+        if (email == null) {
+            return -3;
+        }
+        if (phoneNo == null) {
+            return -4;
+        }
+        if (address == null) {
+            return -5;
+        }
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `user` WHERE `username`='" + UserDataSingleton.getInstance().getUsername() + "' AND `password`='" + sha256(oldPassword)
+                            + "'");
+            if (!result.isBeforeFirst()) {
+                return 0;
+            }
+            result.next();
+            String sql = "UPDATE `user` SET `username`=?, `password`=?, `profile_name`=?, `email`=?, `phoneNo`=?, `address`=? WHERE `username`=?;";
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ps.setString(1, username);
+            ps.setString(2, sha256(newPassword));
+            ps.setString(3, profileName);
+            ps.setString(4, email);
+            ps.setString(5, phoneNo);
+            ps.setString(6, address);
+            ps.setString(7, UserDataSingleton.getInstance().getUsername());
+            
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+        UserDataSingleton.getInstance().setUsername(username);
+        UserDataSingleton.getInstance().setPassword(sha256(newPassword));
+        UserDataSingleton.getInstance().setProfile_name(profileName);
+        UserDataSingleton.getInstance().setEmail(email);
+        UserDataSingleton.getInstance().setPhone_no(phoneNo);
+        UserDataSingleton.getInstance().setAddress(address);
+        return 1;
     }
 }

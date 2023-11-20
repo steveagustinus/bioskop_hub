@@ -1152,7 +1152,7 @@ public class Controller {
     }
     // Main menu user area
 
-    // public int checkMembership(String username){
-
-    // }
+    public boolean checkMembership(String username){
+        return true;   
+    }
 }

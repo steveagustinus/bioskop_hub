@@ -1,6 +1,7 @@
 package src.view.user;
 
 import java.awt.Font;
+import java.util.Arrays;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -13,8 +14,8 @@ import javax.swing.JTextField;
 import src.controller.Controller;
 import src.controller.UserDataSingleton;
 
-public class EditUserProfile {
-    public EditUserProfile(){
+public class EditUserProfileScreen {
+    public EditUserProfileScreen() {
         JFrame frame = new JFrame("Edit User Profile");
         frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,13 +69,13 @@ public class EditUserProfile {
 
         JTextField address = new JTextField(UserDataSingleton.getInstance().getAddress());
         address.setBounds(150, 230, 165, 25);
-    
+
         JButton cancelButton = new JButton("Cancel");
         cancelButton.setBounds(10, 280, 80, 25);
 
         cancelButton.addActionListener(e -> {
-            new CheckUserProfile();
-            frame.dispose(); 
+            new CheckUserProfileScreen();
+            frame.dispose();
         });
 
         JButton saveButton = new JButton("Save");
@@ -82,13 +83,17 @@ public class EditUserProfile {
 
         saveButton.addActionListener(e -> {
             String usernameText = username.getText();
-            String oldPasswordText = oldPassword.getText();
-            String newPasswordText = newPassword.getText();
+            char[] oldPasswordChars = oldPassword.getPassword();
+            char[] newPasswordChars = newPassword.getPassword();
+            String oldPasswordText = new String(oldPasswordChars);
+            String newPasswordText = new String(newPasswordChars);
             String profileNameText = profileName.getText();
             String emailText = email.getText();
             String phoneNoText = phoneNo.getText();
             String addressText = address.getText();
-            int user = new Controller().editProfile(usernameText, oldPasswordText, newPasswordText, profileNameText, emailText, phoneNoText, addressText);
+            int user = new Controller().editProfile(usernameText, oldPasswordText, newPasswordText, profileNameText,
+                    emailText, phoneNoText, addressText);
+            System.out.println(user);
             if (user == -1) {
                 JOptionPane.showMessageDialog(null, "Username tidak boleh kosong!");
             } else if (user == -2) {
@@ -99,11 +104,13 @@ public class EditUserProfile {
                 JOptionPane.showMessageDialog(null, "Phone Number tidak boleh kosong!");
             } else if (user == -5) {
                 JOptionPane.showMessageDialog(null, "Address tidak boleh kosong!");
-            } else if(user == 0){
-                JOptionPane.showMessageDialog(null, "Password lama salah!", "Password salah!", JOptionPane.ERROR_MESSAGE);
-            }else if (user == 1) {
-                JOptionPane.showMessageDialog(null, "Update " + UserDataSingleton.getInstance().getUsername() + " successful!");
-                new CheckUserProfile();
+            } else if (user == 0) {
+                JOptionPane.showMessageDialog(null, "Password lama salah!", "Password salah!",
+                        JOptionPane.ERROR_MESSAGE);
+            } else if (user == 1) {
+                JOptionPane.showMessageDialog(null,
+                        "Update " + UserDataSingleton.getInstance().getUsername() + " successful!");
+                new CheckUserProfileScreen();
                 frame.dispose();
             }
         });

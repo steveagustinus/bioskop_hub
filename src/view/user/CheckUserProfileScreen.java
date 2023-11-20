@@ -9,8 +9,8 @@ import javax.swing.JPanel;
 
 import src.controller.UserDataSingleton;
 
-public class CheckUserProfile {
-    public CheckUserProfile(){
+public class CheckUserProfileScreen {
+    public CheckUserProfileScreen(){
         JFrame frame = new JFrame("Check User Profile");
         frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -20,7 +20,7 @@ public class CheckUserProfile {
         usernameLabel.setBounds(10, 50, 100, 25);
 
         JLabel mainlabel = new JLabel("Check Profile Menu");
-        mainlabel.setBounds(175, 10, 500, 50);
+        mainlabel.setBounds(125, 10, 500, 50);
         panel.add(mainlabel);
         mainlabel.setFont(new Font("Arial", Font.BOLD, 24));
 
@@ -61,7 +61,7 @@ public class CheckUserProfile {
         backButton.setBounds(10, 280, 80, 25);
 
         backButton.addActionListener(e -> {
-            new MainMenuUser();
+            new MainMenuUserScreen();
             frame.dispose();
         });
 
@@ -70,7 +70,7 @@ public class CheckUserProfile {
 
         editButton.addActionListener(e -> {
             frame.dispose();
-            new EditUserProfile();
+            new EditUserProfileScreen();
         });
 
         panel.add(usernameLabel);

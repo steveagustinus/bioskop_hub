@@ -19,6 +19,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 
 import src.model.Cinema;
@@ -706,22 +707,6 @@ public class Controller {
     }
 
     public int register(String username, String password, String email, String phoneNumber, String alamat) {
-        if (username == null || username.equals("")) {
-            return -1;
-        }
-        if (password == null || password.equals("")) {
-            return -2;
-        }
-        if (email == null || email.equals("")) {
-            return -3;
-        }
-        if (phoneNumber == null || phoneNumber.equals("")) {
-            return -4;
-        }
-        if (alamat == null || alamat.equals("")) {
-            return -5;
-        }
-
         try {
             int isNameExist = isNameExist(username);
             if (isNameExist == 1) {
@@ -753,6 +738,13 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
+    }
+    public int checkEmptyFields(String username, String password, String email, String phoneNumber, String alamat) {
+        if (username.equals("") || password.equals("") || email.equals("") || phoneNumber.equals("")
+                || alamat.equals("") || username.equals("Enter your Username") || password.equals("Enter your Password") || email.equals("Enter your Email") || phoneNumber.equals("Enter your Phone Number") || alamat.equals("Enter your Address")) {
+            return 0;
+        }
+        return 1;
     }
 
     public int isNameExist(String username) {
@@ -813,8 +805,9 @@ public class Controller {
             return -1;
         }
     }
+
     public void setPlaceholder(JPasswordField passwordField, String placeholder) {
-        passwordField.setEchoChar((char) 0); // Tampilkan teks normal untuk menampilkan placeholder
+        passwordField.setEchoChar((char) 0); 
         passwordField.setText(placeholder);
         passwordField.setForeground(Color.GRAY);
 
@@ -823,7 +816,7 @@ public class Controller {
             public void focusGained(FocusEvent e) {
                 if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
                     passwordField.setText("");
-                    passwordField.setEchoChar('*'); // Set echo character ke '*' setelah fokus
+                    passwordField.setEchoChar('*'); 
                     passwordField.setForeground(Color.BLACK);
                 }
             }
@@ -1117,29 +1110,34 @@ public class Controller {
         }
         try {
             conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `user` WHERE `username`='" + UserDataSingleton.getInstance().getUsername()
-                            + "' AND `password`='" + sha256(oldPassword)
-                            + "'");
+            String selectQuery = "SELECT * FROM user WHERE username=? AND password=?";
+            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+            selectStatement.setString(1, UserDataSingleton.getInstance().getUsername());
+            selectStatement.setString(2, sha256(oldPassword));
+
+            ResultSet result = selectStatement.executeQuery();
+
             if (!result.isBeforeFirst()) {
                 return 0;
             }
+
             result.next();
             int id_user = result.getInt("id_user");
-            System.out.println(id_user);
-            String sql = "UPDATE `user` SET `username`=?, `password`=?, `profile_name`=?, `email`=?, `phoneNo`=?, `address`=? WHERE `id_user`=?;";
-            PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ps.setString(1, username);
-            ps.setString(2, sha256(newPassword));
-            ps.setString(3, profileName);
-            ps.setString(4, email);
-            ps.setString(5, phoneNo);
-            ps.setString(6, address);
-            ps.setString(7, String.valueOf(id_user));
+
+            String updateQuery = "UPDATE user SET username=?, password=?, profile_name=?, email=?, phone_no=?, address=? WHERE id_user=?";
+            PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
+            updateStatement.setString(1, username);
+            updateStatement.setString(2, sha256(newPassword));
+            updateStatement.setString(3, profileName);
+            updateStatement.setString(4, email);
+            updateStatement.setString(5, phoneNo);
+            updateStatement.setString(6, address);
+            updateStatement.setInt(7, id_user);
+            updateStatement.executeUpdate();
 
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
             return -99;
         }
         UserDataSingleton.getInstance().setUsername(username);
@@ -1154,5 +1152,8 @@ public class Controller {
 
     public boolean checkMembership(String username){
         return true;   
+    }
+    public void printTable(){
+        
     }
 }

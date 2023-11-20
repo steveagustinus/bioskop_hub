@@ -15,7 +15,7 @@ import javax.swing.JTextField;
 
 import src.model.user.User;
 import src.view.admin.MainMenuScreen;
-import src.view.user.MainMenuUser;
+import src.view.user.MainMenuUserScreen;
 import src.controller.Controller;
 
 public class LoginScreen {
@@ -25,7 +25,7 @@ public class LoginScreen {
         JFrame loginJFrame = new JFrame();
 
         loginJFrame.setTitle("Login");
-        loginJFrame.setSize(350, 270);
+        loginJFrame.setSize(350, 290);
         loginJFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JLabel mainlabel = new JLabel("Welcome to Bioskop HUB!");
@@ -78,6 +78,20 @@ public class LoginScreen {
             }
         });
 
+        JButton exiButton = new JButton("Exit");
+        exiButton.setBounds(120, 210, 80, 25);
+        exiButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int temp = JOptionPane.showOptionDialog(null, "Are you sure you want to exit?", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+                if (temp == 0 ) {
+                    JOptionPane.showMessageDialog(null, "Thank you for using Bioskop HUB!");
+                    loginJFrame.dispose();
+                    System.exit(0);
+                }
+            }
+        });
+
         JPanel panel = new JPanel();
         panel.setLayout(null);
 
@@ -88,6 +102,7 @@ public class LoginScreen {
         panel.add(loginButton);
         panel.add(registerButton);
         panel.add(registerLabel);
+        panel.add(exiButton);
         panel.add(mainlabel);
 
         loginButton.addActionListener(new ActionListener() {
@@ -101,13 +116,13 @@ public class LoginScreen {
                 }
                 User user = new Controller().login(username, password);
                 if (user == null) {
-                    JOptionPane.showMessageDialog(null, "Invalid username or password!");
+                    JOptionPane.showMessageDialog(null, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 int checkUserType = new Controller().checkUserType(user);
                 int insertToSingelton = new Controller().insertToSingelton(user.getUsername());
                 if (insertToSingelton == -1) {
-                    JOptionPane.showMessageDialog(null, "Failed to insert to singleton!");
+                    JOptionPane.showMessageDialog(null, "Failed to insert to singleton!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 if (checkUserType == 0) {
@@ -116,7 +131,7 @@ public class LoginScreen {
                     loginJFrame.dispose();
                 }else{
                     JOptionPane.showMessageDialog(null, "Welcome, " + usernameField.getText() + "!");
-                    new MainMenuUser();
+                    new MainMenuUserScreen();
                     loginJFrame.dispose();
                 }
             }

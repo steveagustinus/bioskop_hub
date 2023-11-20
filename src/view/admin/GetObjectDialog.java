@@ -25,6 +25,21 @@ public class GetObjectDialog {
     private static Controller controller = new Controller();
 
     private static void rearrangeMovie(Movie[] movies, JDialog dialog) {
+        for (Component comp : dialog.getContentPane().getComponents()) {
+            if (comp instanceof JPanel) {
+                if (comp.getName() == null) { continue; }
+                if (comp.getName().contains("panel_")) {
+                    JPanel panel = (JPanel) comp;
+
+                    for (Component panelComp : panel.getComponents()) {
+                        if (panelComp.getName().equals("label_movie")) {
+                            ((JLabel) panelComp).setText("");
+                        }
+                    }
+                }
+            }
+        }
+
         if (movies == null) { return; }
 
         for (Movie movie : movies) {
@@ -37,23 +52,23 @@ public class GetObjectDialog {
         for (Component comp : dialog.getContentPane().getComponents()) {
             if (movieCounter >= movies.length - 1) { break; }
             if (comp instanceof JPanel) {
-                //System.out.println(comp.getName() != null ? comp.getName() : "null");
                 if (comp.getName() == null) { continue; }
                 if (comp.getName().equals("panel_" + movieCounter)) {
-                    System.out.print(comp.getName() + ",");
                     JPanel panel = (JPanel) comp;
+                    panels[movieCounter] = panel;
 
                     for (Component panelComp : panel.getComponents()) {
                         if (panelComp.getName().equals("label_movie")) {
-                            System.out.println("here");
+                            System.out.println("Here " + movies[movieCounter].getJudul());
                             ((JLabel) panelComp).setText(movies[movieCounter].getJudul());
+                            movieCounter++;
                         }
                     }
                 }
             }
         }
 
-        for (int i = movieCounter; i < panels.length; i++) {
+        for (int i = movieCounter; i < movies.length; i++) {
             JPanel panel = new JPanel();
             panel.setName("panel_" + i);
             panel.setLayout(null);
@@ -77,8 +92,6 @@ public class GetObjectDialog {
 
             panel.setBackground(Color.CYAN);
             panels[i] = panel;
-            dialog.add(panel);
-
 
             JLabel movieLabel = new JLabel(movies[i].getJudul());
             movieLabel.setName("label_movie");
@@ -87,6 +100,8 @@ public class GetObjectDialog {
 
             movieLabel.setText(movies[i].getJudul());
             panel.add(movieLabel);
+
+            dialog.add(panel);
         }
     }
 

@@ -1151,7 +1151,8 @@ public class Controller {
     // Main menu user area
 
     public boolean checkMembership(String username){
-        return true;   
+        
+        return true;
     }
     public void printTable(){
         

@@ -13,9 +13,7 @@ public class RegisterMembership {
     }
 
     private void regisMembership(){
-        // UserDataSingleton userData = UserDataSingleton.getInstance();
         Controller controller = new Controller();
-        
         boolean checkStatus = controller.checkMembership(UserDataSingleton.getInstance().getUsername());
 
         if(checkStatus == true){
@@ -45,9 +43,6 @@ public class RegisterMembership {
                 new MainMenuUserScreen();
                 f.dispose();
             });
-
         }
-        
-
     }
 }

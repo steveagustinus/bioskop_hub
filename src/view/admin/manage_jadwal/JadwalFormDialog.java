@@ -61,7 +61,7 @@ public abstract class JadwalFormDialog extends JDialog {
 
         fieldID = new JTextField();
         fieldID.setBounds(115, 5, 435, 25);
-        fieldID.setFont(new Font("Dialog", Font.PLAIN, 20));
+        fieldID.setFont(new Font("Dialog", Font.PLAIN, 18));
 
         fieldIDStudio = new JTextField();
         fieldIDStudio.setBounds(115, 35, 300, 25);

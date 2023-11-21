@@ -21,11 +21,11 @@ public class EditJadwalScreen {
             JOptionPane.QUESTION_MESSAGE
         );
 
-        if (!controller.isMovieExists(inputID)) {
+        if (controller.getJadwalById(inputID) == null) {
             JOptionPane.showMessageDialog(
                 parent,
-                "Movie dengan id " + inputID + " tidak ada!",
-                "Admin: Edit movie",
+                "Jadwal dengan id " + inputID + " tidak ada!",
+                "Admin: Edit jadwal",
                 JOptionPane.ERROR_MESSAGE
             );
             return;

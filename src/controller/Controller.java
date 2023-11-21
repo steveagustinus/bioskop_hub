@@ -15,8 +15,10 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -124,6 +126,77 @@ public class Controller {
         }
     }
 
+    public Seat[][] getSeatFromJadwal(Jadwal jadwal) {
+        Seat[][] seats = new Seat[1][1];
+
+        Studio studio = getStudioById(jadwal.getIdStudio());
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_seat`, `kode` FROM `seat` WHERE `id_studio`='" + studio.getIdStudio() + "'");
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    result.next();
+                    seats[i][j] = new Seat(
+                        result.getString("id_seat"),
+                        result.getString("kode"),
+                        SeatStatusInterface.AVAILABLE
+                    );
+                }
+            }
+
+            conn.close();
+
+            statement = conn.connection.createStatement();
+            result = statement.executeQuery(
+                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + jadwal.getIdJadwal() + 
+                    "' ORDER BY `id_seat` ASC;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return seats;
+            }
+
+            result.next();
+
+            mainloop:for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    if (seats[i][j].getIdSeat().equals(result.getString("id_seat"))) {
+                        seats[i][j].setSeatStatus(SeatStatusInterface.TAKEN);
+                        if (result.isLast()) {
+                            break mainloop;
+                        }
+                        else {
+                            result.next();
+                        }
+                    }
+                }
+            }
+
+            result.close();
+            conn.close();
+            
+            return seats;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+        }
+
+        return null;
+    }
+    
     // Jadwal area
     public Jadwal getJadwalById(String idJadwal) {
         try {
@@ -144,6 +217,8 @@ public class Controller {
                 null
             );
 
+            jadwal.setSeat(getSeatFromJadwal(jadwal));
+
             result.close();
             statement.close();
             conn.close();
@@ -152,6 +227,113 @@ public class Controller {
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return null;
+        }
+    }
+
+    public String generateJadwalID(String idStudio, String idMovie, String tanggal, String jam) {
+        if (idStudio == null || idStudio.equals("")) {
+            return "";
+        }
+        if (idMovie == null || idMovie.equals("")) {
+            return "";
+        }
+
+        LocalDateTime tanggalWaktu = null;
+        try {
+            tanggalWaktu = LocalDateTime.parse(tanggal + " " + jam, DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
+        } catch (DateTimeParseException ex) {
+            return "";
+        }
+
+        String output = "SH_" + idStudio + "_";
+
+        String movieString = idMovie;
+        for (int i = idMovie.length(); i < 10; i++) {
+            movieString += "X";
+        }
+
+        output += movieString + "_";
+
+        output += tanggalWaktu.format(DateTimeFormatter.ofPattern("yyMMddHHmm"));
+
+        return output;
+    }
+
+    public int addNewJadwal(String idJadwal, String idStudio, String idMovie, String harga, String tanggal, String jam) {
+        if (idJadwal == null || idJadwal.equals("")) {
+            return -1;
+        }
+        if (idJadwal.length() != 35) {
+            return -2;
+        }
+        if (idStudio == null || idStudio.equals("")) {
+            return -3;
+        }
+        if (!isStudioExists(idStudio)) {
+            return -4;
+        }
+        if (idMovie == null || idMovie.equals("")) {
+            return -5;
+        }
+        if (!isMovieExists(idMovie)) {
+            return -6;
+        }
+        if (harga == null || harga.equals("")) {
+            return -7;
+        }
+        if (!isNumber(harga)) {
+            return -8;
+        }
+        if (tanggal == null || tanggal.equals("")) {
+            return -9;
+        }
+        if (jam == null || jam.equals("")) {
+            return -10;
+        }
+
+        LocalDateTime tanggalWaktu = null;
+        try {
+            tanggalWaktu = LocalDateTime.parse(tanggal + " " + jam, DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
+        } catch (DateTimeParseException ex) {
+            return -11;
+        }
+
+        return addNewJadwal(
+            idJadwal,
+            idStudio,
+            idMovie,
+            Integer.parseInt(harga),
+            tanggalWaktu
+        );
+    }
+
+    private int addNewJadwal(String idJadwal, String idStudio, String idMovie, int harga, LocalDateTime waktu) {
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `jadwal` (`id_jadwal`, `id_studio`, `id_movie`, `waktu`, `harga`)" +
+                    "VALUES (?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idJadwal);
+            ps.setString(2, idStudio);
+            ps.setString(3, idMovie);
+            ps.setString(4, waktu.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            ps.setInt(5, harga);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
         }
     }
 

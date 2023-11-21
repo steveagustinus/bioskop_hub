@@ -3,7 +3,6 @@ package src.view.admin;
 import javax.swing.JOptionPane;
 
 import src.controller.Controller;
-import src.model.user.User;
 import src.view.MainInterface;
 import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
@@ -21,11 +20,6 @@ public class MainMenuScreen implements MainInterface {
     }
 
     public void showMainMenuScreen() {
-        // test area
-        User user = controller.login("admin", "123");
-        System.out.println(user.getUsername());
-        // test area
-
         boolean exit = false;
 
         while (!exit) {
@@ -57,7 +51,7 @@ public class MainMenuScreen implements MainInterface {
                 case "5": new NewStudioDialog(mainFrame); break;
                 case "6": new EditStudioScreen(mainFrame); break;
                 case "7": new NewJadwalDialog(mainFrame); break;
-                case "8": new EditStudioScreen(mainFrame); break;
+                case "8": new EditJadwalScreen(mainFrame); break;
                 case "9": exit = true; break;
             }
         }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
+import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.movie.MovieLanguageInterface;
 import src.model.seat.Seat;
@@ -124,6 +125,35 @@ public class Controller {
     }
 
     // Jadwal area
+    public Jadwal getJadwalById(String idJadwal) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';"
+            );
+
+            result.next();
+
+            Jadwal jadwal = new Jadwal(
+                result.getString("id_jadwal"),
+                result.getString("id_movie"),
+                result.getString("id_studio"),
+                result.getInt("harga"),
+                result.getTimestamp("waktu").toLocalDateTime(),
+                null
+            );
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return jadwal;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
 
     // Studio area
     public boolean isStudioExists(String idStudio) {

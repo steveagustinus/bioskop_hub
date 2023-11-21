@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
+import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.movie.MovieLanguageInterface;
 import src.model.seat.Seat;
@@ -1412,86 +1413,6 @@ public class Controller {
         }
     }
 
-    // User action
-    public int pesanTiket(Customer customer, Jadwal jadwal, Seat[] bookedSeat) {
-        if (customer == null) {
-            return -1;
-        }
-
-        if (jadwal == null) {
-            return -2;
-        }
-
-        if (bookedSeat == null) {
-            return -3;
-        }
-
-        try {
-            String idTransaction = createTransactionId();
-            conn.open();
-            
-            Statement statement = conn.connection.createStatement();
-            statement.executeUpdate(
-                "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES ('" + idTransaction + "', '" + customer.getIdUser() + "', now());"
-            );
-
-            String sql = "INSERT INTO `transaction_jadwal` (`id_transaction`, `id_jadwal`, `id_seat`) VALUES ";
-
-            for (Seat seat : bookedSeat) {
-                sql += "('" + idTransaction + "', '" + jadwal.getIdJadwal() + "', '" + seat.getIdSeat() + "'),";
-            }
-
-            sql = sql.substring(0, sql.length() - 1) + ";";
-
-            statement.executeUpdate(sql);
-            statement.close();
-            conn.close();
-            
-            return 0;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return -99;
-        }
-    }
-
-    // Transaction
-    public String createTransactionId() {
-        String newId = "";
-        try {
-            conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                "SELECT `id_transaction` FROM `transaction` ORDER BY `id_transaction` DESC LIMIT 1;"
-            );
-
-            String lastId = "";
-            if (!result.isBeforeFirst()) {
-                lastId = "0";
-            } else {
-                result.next();
-                lastId = result.getString("id_transaction").replace("T-", "");
-            }
-
-            result.close();
-            statement.close();
-            conn.close();
-
-            newId = String.valueOf(Integer.parseInt(lastId) + 1);
-
-            for (int i = newId.length(); i < 18; i++) {
-                newId = "0" + newId;
-            }
-            
-            newId = "T-" + newId;
-
-            return newId;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return null;
-        }
-    }
-
     // Line Ini Jangan dihapus yak sementara yak biar ga pusing
     public int totalPoinMembership(User user) {
         if (user instanceof MembershipCustomer) {
@@ -1502,9 +1423,9 @@ public class Controller {
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email,
+    public MembershipCustomer registerMembership(String idUser, String username, String password, String profileName, String email,
             String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email,
+        MembershipCustomer membershipCustomer = new MembershipCustomer(idUser, username, password, profileName, email,
                 phoneNumber, address, null, poin);
         return membershipCustomer;
     }
@@ -1801,7 +1722,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_cinema + "'");
+                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "'");
 
             ArrayList<String> listMovie = new ArrayList<String>();
             while (result.next()) {

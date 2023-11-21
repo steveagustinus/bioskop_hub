@@ -15,12 +15,15 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.*;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 import src.model.Cinema;
+import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.movie.MovieLanguageInterface;
 import src.model.seat.Seat;
@@ -38,7 +41,11 @@ public class Controller {
 
     public Controller() { }
 
-    //Seat area
+    public void fetchData() {
+        Data.movies = getMovies();
+    }
+
+    // Seat area
     public int getLastSeatId() {
         int lastId = -1;
         try {
@@ -119,10 +126,216 @@ public class Controller {
         }
     }
 
+    public Seat[][] getSeatFromJadwal(Jadwal jadwal) {
+        Seat[][] seats = new Seat[1][1];
+
+        Studio studio = getStudioById(jadwal.getIdStudio());
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_seat`, `kode` FROM `seat` WHERE `id_studio`='" + studio.getIdStudio() + "'");
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    result.next();
+                    seats[i][j] = new Seat(
+                        result.getString("id_seat"),
+                        result.getString("kode"),
+                        SeatStatusInterface.AVAILABLE
+                    );
+                }
+            }
+
+            conn.close();
+
+            statement = conn.connection.createStatement();
+            result = statement.executeQuery(
+                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + jadwal.getIdJadwal() + 
+                    "' ORDER BY `id_seat` ASC;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return seats;
+            }
+
+            result.next();
+
+            mainloop:for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    if (seats[i][j].getIdSeat().equals(result.getString("id_seat"))) {
+                        seats[i][j].setSeatStatus(SeatStatusInterface.TAKEN);
+                        if (result.isLast()) {
+                            break mainloop;
+                        }
+                        else {
+                            result.next();
+                        }
+                    }
+                }
+            }
+
+            result.close();
+            conn.close();
+            
+            return seats;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+        }
+
+        return null;
+    }
+    
     // Jadwal area
-    // public Seat[] GenerateSeat(Jadwal jadwal) {
-    //     return null;
-    // }
+    public Jadwal getJadwalById(String idJadwal) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';"
+            );
+
+            result.next();
+
+            Jadwal jadwal = new Jadwal(
+                result.getString("id_jadwal"),
+                result.getString("id_movie"),
+                result.getString("id_studio"),
+                result.getInt("harga"),
+                result.getTimestamp("waktu").toLocalDateTime(),
+                null
+            );
+
+            jadwal.setSeat(getSeatFromJadwal(jadwal));
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return jadwal;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public String generateJadwalID(String idStudio, String idMovie, String tanggal, String jam) {
+        if (idStudio == null || idStudio.equals("")) {
+            return "";
+        }
+        if (idMovie == null || idMovie.equals("")) {
+            return "";
+        }
+
+        LocalDateTime tanggalWaktu = null;
+        try {
+            tanggalWaktu = LocalDateTime.parse(tanggal + " " + jam, DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
+        } catch (DateTimeParseException ex) {
+            return "";
+        }
+
+        String output = "SH_" + idStudio + "_";
+
+        String movieString = idMovie;
+        for (int i = idMovie.length(); i < 10; i++) {
+            movieString += "X";
+        }
+
+        output += movieString + "_";
+
+        output += tanggalWaktu.format(DateTimeFormatter.ofPattern("yyMMddHHmm"));
+
+        return output;
+    }
+
+    public int addNewJadwal(String idJadwal, String idStudio, String idMovie, String harga, String tanggal, String jam) {
+        if (idJadwal == null || idJadwal.equals("")) {
+            return -1;
+        }
+        if (idJadwal.length() != 35) {
+            return -2;
+        }
+        if (idStudio == null || idStudio.equals("")) {
+            return -3;
+        }
+        if (!isStudioExists(idStudio)) {
+            return -4;
+        }
+        if (idMovie == null || idMovie.equals("")) {
+            return -5;
+        }
+        if (!isMovieExists(idMovie)) {
+            return -6;
+        }
+        if (harga == null || harga.equals("")) {
+            return -7;
+        }
+        if (!isNumber(harga)) {
+            return -8;
+        }
+        if (tanggal == null || tanggal.equals("")) {
+            return -9;
+        }
+        if (jam == null || jam.equals("")) {
+            return -10;
+        }
+
+        LocalDateTime tanggalWaktu = null;
+        try {
+            tanggalWaktu = LocalDateTime.parse(tanggal + " " + jam, DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
+        } catch (DateTimeParseException ex) {
+            return -11;
+        }
+
+        return addNewJadwal(
+            idJadwal,
+            idStudio,
+            idMovie,
+            Integer.parseInt(harga),
+            tanggalWaktu
+        );
+    }
+
+    private int addNewJadwal(String idJadwal, String idStudio, String idMovie, int harga, LocalDateTime waktu) {
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `jadwal` (`id_jadwal`, `id_studio`, `id_movie`, `waktu`, `harga`)" +
+                    "VALUES (?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idJadwal);
+            ps.setString(2, idStudio);
+            ps.setString(3, idMovie);
+            ps.setString(4, waktu.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            ps.setInt(5, harga);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
 
     // Studio area
     public boolean isStudioExists(String idStudio) {
@@ -405,6 +618,7 @@ public class Controller {
             return -99;
         }
     }
+    
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -661,6 +875,77 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
+    }
+
+    public Movie[] getMovies() {
+        ArrayList<Movie> movieList = new ArrayList<Movie>();
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `movie` WHERE `is_deleted`=0");
+
+            int counter = 0;
+            while (result.next()) {
+                File fotoMovie = new File(Config.Path.TEMP_DIR + "img_" + counter + ".png");
+                fotoMovie.createNewFile();
+
+                Path target = fotoMovie.toPath();
+                Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
+
+                fotoMovie = new File(Config.Path.TEMP_DIR + "img_" + counter + ".png");
+
+                Movie movie = new Movie(
+                    result.getString("id_movie"),
+                    result.getString("judul"),
+                    dateToLocalDate(result.getDate("release_date")),
+                    result.getString("director"),
+                    result.getInt("language"),
+                    result.getInt("durasi"),
+                    result.getString("sinopsis"),
+                    fotoMovie
+                );
+
+                movieList.add(movie);
+                counter++;
+            }
+
+            
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return movieList.toArray(new Movie[movieList.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public Movie[] searchMovie(String input, int limit) {
+        if (Data.movies == null) { return null; }
+
+        ArrayList<Movie> movieList = new ArrayList<Movie>();
+
+        if (input.equals("")) {
+            for (int i = 0; i < limit && i < Data.movies.length; i++) {
+                movieList.add(Data.movies[i]);
+            }
+
+            return movieList.toArray(new Movie[movieList.size()]);
+        }
+
+        for (Movie movie : Data.movies) {
+            if (movie.getJudul().toLowerCase().contains(input.toLowerCase())) {
+                movieList.add(movie);
+            }
+        }
+
+        if (movieList.isEmpty()) { return null; }
+
+        return movieList.toArray(new Movie[movieList.size()]);
     }
 
     public boolean isMovieExists(String idMovie) {
@@ -1146,6 +1431,8 @@ public class Controller {
         if (!dir.exists()) {
             dir.mkdirs();
         }
+
+        fetchData();
     }
 
     // Hitung pendapatan area

@@ -21,22 +21,22 @@ public class EditJadwalDialog extends JadwalFormDialog {
         String title = "Admin: Update jadwal";
         this.setTitle(title);
 
-        Jadwal jadwal = controller.getJadwalByID(idJadwal);
-        fieldID.setText(movie.getIdMovie()); 
-        fieldID.setEditable(false);
-        fieldJudul.setText(movie.getJudul());
-        datePickerReleaseDate.getJFormattedTextField().setText(controller.localDateToString(movie.getReleaseDate(), "MMM dd, yyyy"));
-        fieldDirector.setText(movie.getDirector());
-        fieldLanguage.setSelectedItem(controller.getMovieLanguageString(movie.getLanguage()));
-        fieldDurasi.setText(String.valueOf(movie.getDurasi()));
-        fieldSinopsis.setText(movie.getSinopsis());
-        fotoMovie = movie.getFotoMovie();
-        fChooser.setSelectedFile(fotoMovie);
-        labelDisplayFoto.setIcon(new ImageIcon(
-            new ImageIcon(fotoMovie.getAbsolutePath())
-            .getImage()
-            .getScaledInstance(225, 400,java.awt.Image.SCALE_SMOOTH)
-        ));
+        // Jadwal jadwal = controller.getJadwalByID(idJadwal);
+        // fieldID.setText(movie.getIdMovie()); 
+        // fieldID.setEditable(false);
+        // fieldJudul.setText(movie.getJudul());
+        // datePickerReleaseDate.getJFormattedTextField().setText(controller.localDateToString(movie.getReleaseDate(), "MMM dd, yyyy"));
+        // fieldDirector.setText(movie.getDirector());
+        // fieldLanguage.setSelectedItem(controller.getMovieLanguageString(movie.getLanguage()));
+        // fieldDurasi.setText(String.valueOf(movie.getDurasi()));
+        // fieldSinopsis.setText(movie.getSinopsis());
+        // fotoMovie = movie.getFotoMovie();
+        // fChooser.setSelectedFile(fotoMovie);
+        // labelDisplayFoto.setIcon(new ImageIcon(
+        //     new ImageIcon(fotoMovie.getAbsolutePath())
+        //     .getImage()
+        //     .getScaledInstance(225, 400,java.awt.Image.SCALE_SMOOTH)
+        // ));
 
         buttonSubmit.setText("Update movie");
         buttonSubmit.setSize(
@@ -45,16 +45,7 @@ public class EditJadwalDialog extends JadwalFormDialog {
         );
         buttonSubmit.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                int status = controller.editMovie(
-                    fieldID.getText(),
-                    fieldJudul.getText(),
-                    datePickerReleaseDate.getJFormattedTextField().getText(),
-                    fieldDirector.getText(),
-                    (String) fieldLanguage.getSelectedItem(),
-                    fieldDurasi.getText(),
-                    fieldSinopsis.getText(),
-                    fChooser.getSelectedFile()
-                );
+                int status = -9999;
 
                 if (status == OperationCode.EditMovie.SUCCESS) {
                     JOptionPane.showMessageDialog(
@@ -126,42 +117,42 @@ public class EditJadwalDialog extends JadwalFormDialog {
             buttonSubmit.getY()
         );
 
-        buttonDelete.addActionListener(new ActionListener() {
+        // buttonDelete.addActionListener(new ActionListener() {
 
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (JOptionPane.showConfirmDialog(
-                        owner,
-                        "Apakah anda yakin ingin menghapus film " + movie.getJudul(),
-                        title,
-                        JOptionPane.YES_NO_OPTION 
-                    ) == JOptionPane.YES_OPTION
-                ) {
-                    int status = controller.deleteMovie(idMovie);
+        //     @Override
+        //     public void actionPerformed(ActionEvent e) {
+        //         if (JOptionPane.showConfirmDialog(
+        //                 owner,
+        //                 "Apakah anda yakin ingin menghapus film " + movie.getJudul(),
+        //                 title,
+        //                 JOptionPane.YES_NO_OPTION 
+        //             ) == JOptionPane.YES_OPTION
+        //         ) {
+        //             int status = controller.deleteMovie(idMovie);
 
-                    if (status == OperationCode.DeleteMovie.SUCCESS) {
-                        JOptionPane.showMessageDialog(
-                            owner,
-                            "Film \"" + movie.getJudul() + "\" berhasil dihapus!",
-                            title,
-                            JOptionPane.INFORMATION_MESSAGE
-                        );
-                        close();
-                    }
-                    else {
-                        if (status == OperationCode.DeleteMovie.EMPTYIDMOVIE) {
-                            JOptionPane.showMessageDialog(owner, "ID Movie tidak boleh kosong!", title, JOptionPane.ERROR_MESSAGE
-                            );
-                        }
-                        else if (status == OperationCode.DeleteMovie.ANYEXCEPTION) {
-                            JOptionPane.showMessageDialog(owner, "Terjadi error!", title, JOptionPane.ERROR_MESSAGE
-                            );
-                        }
-                    }
-                }
-            }
+        //             if (status == OperationCode.DeleteMovie.SUCCESS) {
+        //                 JOptionPane.showMessageDialog(
+        //                     owner,
+        //                     "Film \"" + movie.getJudul() + "\" berhasil dihapus!",
+        //                     title,
+        //                     JOptionPane.INFORMATION_MESSAGE
+        //                 );
+        //                 close();
+        //             }
+        //             else {
+        //                 if (status == OperationCode.DeleteMovie.EMPTYIDMOVIE) {
+        //                     JOptionPane.showMessageDialog(owner, "ID Movie tidak boleh kosong!", title, JOptionPane.ERROR_MESSAGE
+        //                     );
+        //                 }
+        //                 else if (status == OperationCode.DeleteMovie.ANYEXCEPTION) {
+        //                     JOptionPane.showMessageDialog(owner, "Terjadi error!", title, JOptionPane.ERROR_MESSAGE
+        //                     );
+        //                 }
+        //             }
+        //         }
+        //     }
             
-        });
+        // });
 
         this.add(buttonDelete);
 

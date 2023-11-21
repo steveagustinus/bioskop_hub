@@ -42,7 +42,7 @@ public class Controller {
         Data.movies = getMovies();
     }
 
-    //Seat area
+    // Seat area
     public int getLastSeatId() {
         int lastId = -1;
         try {
@@ -124,9 +124,6 @@ public class Controller {
     }
 
     // Jadwal area
-    // public Seat[] GenerateSeat(Jadwal jadwal) {
-    //     return null;
-    // }
 
     // Studio area
     public boolean isStudioExists(String idStudio) {

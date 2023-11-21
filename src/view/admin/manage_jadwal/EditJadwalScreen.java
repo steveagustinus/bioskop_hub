@@ -31,6 +31,6 @@ public class EditJadwalScreen {
             return;
         }
         
-        new EditMovieDialog(parent, inputID);
+        new EditJadwalDialog(parent, inputID);
     }
 }

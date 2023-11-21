@@ -10,17 +10,18 @@ import javax.swing.JOptionPane;
 
 import src.controller.Controller;
 import src.controller.OperationCode;
+import src.model.Jadwal;
 import src.model.movie.Movie;
 
-public class EditMovieDialog extends JadwalFormDialog {
+public class EditJadwalDialog extends JadwalFormDialog {
     Controller controller = new Controller();
     
-    public EditMovieDialog(Window owner, String idMovie) {
+    public EditJadwalDialog(Window owner, String idJadwal) {
         super(owner);
-        String title = "Admin: Update movie";
+        String title = "Admin: Update jadwal";
         this.setTitle(title);
 
-        Movie movie = controller.getMovieById(idMovie);
+        Jadwal jadwal = controller.getJadwalByID(idJadwal);
         fieldID.setText(movie.getIdMovie()); 
         fieldID.setEditable(false);
         fieldJudul.setText(movie.getJudul());

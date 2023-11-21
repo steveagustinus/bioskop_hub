@@ -677,14 +677,15 @@ public class Controller {
             ResultSet result = statement.executeQuery(
                     "SELECT * FROM `movie` WHERE `is_deleted`=0");
 
+            int counter = 0;
             while (result.next()) {
-                File fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
+                File fotoMovie = new File(Config.Path.TEMP_DIR + "img_" + counter + ".png");
                 fotoMovie.createNewFile();
 
                 Path target = fotoMovie.toPath();
                 Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
 
-                fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
+                fotoMovie = new File(Config.Path.TEMP_DIR + "img_" + counter + ".png");
 
                 Movie movie = new Movie(
                     result.getString("id_movie"),
@@ -698,6 +699,7 @@ public class Controller {
                 );
 
                 movieList.add(movie);
+                counter++;
             }
 
             

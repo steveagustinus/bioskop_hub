@@ -96,7 +96,7 @@ public abstract class JadwalFormDialog extends JDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                fieldIDStudio.setText(GetObjectDialog.getStudio());
+                fieldIDStudio.setText(showGetStudioDialog());
             }
             
         });
@@ -123,5 +123,9 @@ public abstract class JadwalFormDialog extends JDialog {
 
     public String showGetMovieDialog() {
         return GetObjectDialog.getMovie(this);
+    }
+
+    public String showGetStudioDialog() {
+        return GetObjectDialog.getStudio(this);
     }
 }

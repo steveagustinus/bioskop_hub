@@ -74,7 +74,7 @@ public class HitungPendapatanScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                //Tinggal diarahin ke mana
+                new MainMenuScreen();
             }
         });
 

@@ -1,12 +1,26 @@
 package src.view.admin;
 
+import java.awt.Font;
+import java.awt.Panel;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JFrame;
+
+import com.mysql.cj.x.protobuf.MysqlxNotice.Frame;
 
 import src.controller.Controller;
 import src.model.user.User;
+import src.view.LoginScreen;
 import src.view.MainInterface;
 import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
+import src.view.admin.manage_jadwal.AddJadwalScreen;
+import src.view.admin.manage_jadwal.EditJadwalScreen;
 import src.view.admin.manage_movie.EditMovieDialog;
 import src.view.admin.manage_movie.EditMovieScreen;
 import src.view.admin.manage_movie.NewMovieDialog;
@@ -15,52 +29,105 @@ import src.view.admin.manage_studio.NewStudioDialog;
 
 public class MainMenuScreen implements MainInterface {
     Controller controller = new Controller();
-    
+
     public MainMenuScreen() {
         controller.programStart();
         showMainMenuScreen();
     }
 
     public void showMainMenuScreen() {
-        // test area
-        User user = controller.login("admin", "123");
-        System.out.println(user.getUsername());
-        // test area
+        mainFrame.setSize(500, 500);
+        mainFrame.setDefaultCloseOperation(mainFrame.EXIT_ON_CLOSE);
 
-        boolean exit = false;
+        Panel panel = new Panel();
+        panel.setLayout(null);
 
-        while (!exit) {
-            String userInput = JOptionPane.showInputDialog(
-                mainFrame,
-                "1. Tambah cinema baru\r\n" +
-                    "2. Edit cinema\r\n" +
-                    "3. Tambah movie baru\r\n" +
-                    "4. Edit movie\r\n" +
-                    "5. Tambah studio baru\r\n" +
-                    "6. Edit studio\r\n" + 
-                    "7. Hitung pendapatan\r\n" +
-                    "8. Exit\r\n" +
-                "Admin",
-                JOptionPane.QUESTION_MESSAGE
-            );
+        JLabel mainlabel = new JLabel("Admin Main Menu!");
+        mainlabel.setBounds(130, 10, 500, 50);
+        panel.add(mainlabel);
+        mainlabel.setFont(new Font("Arial", Font.BOLD, 24));
 
-            if (userInput == null) {
-                exit = true;
-                break;
-            }
+        JButton manageCinemaButton = new JButton("Tambah Cinema");
+        manageCinemaButton.setBounds(40, 70, 200, 30);
+        manageCinemaButton.addActionListener(e -> {
+            new NewCinemaDialog(mainFrame);
+        });
 
-            switch (userInput) {
-                case "1": new NewCinemaDialog(mainFrame); break;
-                case "2": new EditCinemaScreen(mainFrame); break;
-                case "3": new NewMovieDialog(mainFrame); break;
-                case "4": new EditCinemaScreen(mainFrame); break;
-                case "5": new NewStudioDialog(mainFrame); break;
-                case "6": new EditStudioScreen(mainFrame); break;
-                case "7": new HitungPendapatanScreen(); break;
-                case "8": exit = true; break;
+        JButton manageStudioButton = new JButton("Tambah Studio");
+        manageStudioButton.setBounds(40, 120, 200, 30);
+        manageStudioButton.addActionListener(e -> {
+            new NewStudioDialog(mainFrame);
+        });
 
-            }
-        }
-        mainFrame.dispose();
+        JButton manageMovieButton = new JButton("Tambah Movie");
+        manageMovieButton.setBounds(40, 170, 200, 30);
+        manageMovieButton.addActionListener(e -> {
+            new NewMovieDialog(mainFrame);
+        });
+
+        JButton manageJadwalButton = new JButton("Tambah Jadwal");
+        manageJadwalButton.setBounds(40, 220, 200, 30);
+        manageJadwalButton.addActionListener(e -> {
+            new AddJadwalScreen();
+        });
+
+        JButton manageCinemaButton2 = new JButton("Edit Cinema");
+        manageCinemaButton2.setBounds(260, 70, 200, 30);
+        manageCinemaButton2.addActionListener(e -> {
+            new EditCinemaScreen(mainFrame);
+        });
+
+        JButton manageStudioButton2 = new JButton("Edit Studio");
+        manageStudioButton2.setBounds(260, 120, 200, 30);
+        manageStudioButton2.addActionListener(e -> {
+            new EditStudioScreen(mainFrame);
+        });
+
+        JButton manageMovieButton2 = new JButton("Edit Movie");
+        manageMovieButton2.setBounds(260, 170, 200, 30);
+        manageMovieButton2.addActionListener(e -> {
+            new EditMovieScreen(mainFrame);
+        });
+
+        JButton manageJadwalButton2 = new JButton("Edit Jadwal");
+        manageJadwalButton2.setBounds(260, 220, 200, 30);
+        manageJadwalButton2.addActionListener(e -> {
+            new EditJadwalScreen();
+        });
+
+        JButton hitungPendapatanButton = new JButton("Hitung Pendapatan");
+        hitungPendapatanButton.setBounds(40, 270, 200, 30);
+        hitungPendapatanButton.addActionListener(e -> {
+            new HitungPendapatanScreen();
+        });
+
+        
+        panel.add(manageCinemaButton);
+        panel.add(manageStudioButton);
+        panel.add(manageMovieButton);
+        panel.add(manageJadwalButton);
+        panel.add(manageCinemaButton2);
+        panel.add(manageStudioButton2);
+        panel.add(manageMovieButton2);
+        panel.add(manageJadwalButton2);
+        panel.add(hitungPendapatanButton);
+
+
+
+        JButton logoutButton = new JButton("Logout");
+        logoutButton.setBounds(150, 410, 200, 30);
+        logoutButton.addActionListener(e -> {
+            mainFrame.dispose();
+            new LoginScreen();
+        });
+        panel.add(logoutButton);
+        mainFrame.add(panel);
+        mainFrame.setVisible(true);
+        mainFrame.setLocationRelativeTo(null);
+    }
+
+    // test area
+    public static void main(String[] args) {
+        new MainMenuScreen();
     }
 }

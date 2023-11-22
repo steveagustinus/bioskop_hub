@@ -3,10 +3,6 @@ package src.view.admin;
 import javax.swing.JOptionPane;
 
 import src.controller.Controller;
-import src.model.Jadwal;
-import src.model.seat.Seat;
-import src.model.user.Customer;
-import src.model.user.User;
 import src.view.MainInterface;
 import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
@@ -24,31 +20,6 @@ public class MainMenuScreen implements MainInterface {
     }
 
     public void showMainMenuScreen() {
-        // test area
-        User user = controller.login("admin", "123");
-        System.out.println(user.getUsername());
-
-        User user2 = controller.login("steve", "123");
-        System.out.println(user2.getUsername());
-
-        System.out.println(
-            controller.pesanTiket(
-                (Customer) user2,
-                new Jadwal(
-                    "SH_LPKBAL-001_PERJANGAIB_2312010900",
-                    null,
-                    null,
-                    50000,
-                    null,
-                    null
-                ),
-                new Seat[] {
-                    new Seat("27", null, 1),
-                    new Seat("28", null, 1),
-                })
-        );
-        // test area
-
         boolean exit = false;
 
         while (!exit) {

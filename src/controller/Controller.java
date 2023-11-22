@@ -126,10 +126,12 @@ public class Controller {
         }
     }
 
-    public Seat[][] getSeatFromJadwal(Jadwal jadwal) {
+    public Seat[][] getSeatFromJadwal(String idJadwal) {
         Seat[][] seats = new Seat[1][1];
 
-        Studio studio = getStudioById(jadwal.getIdStudio());
+        String idStudio = idJadwal.substring(3, 13);
+
+        Studio studio = getStudioById(idStudio);
         switch (studio.getStudioClass()) {
             case REGULER: seats = new Seat[9][15]; break;
             case LUXE: seats = new Seat[8][8]; break;
@@ -162,7 +164,7 @@ public class Controller {
 
             statement = conn.connection.createStatement();
             result = statement.executeQuery(
-                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + jadwal.getIdJadwal() + 
+                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + idJadwal + 
                     "' ORDER BY `id_seat` ASC;"
             );
 
@@ -214,10 +216,10 @@ public class Controller {
                 result.getString("id_studio"),
                 result.getInt("harga"),
                 result.getTimestamp("waktu").toLocalDateTime(),
-                null
+                getSeatFromJadwal(result.getString("id_jadwal"))
             );
 
-            jadwal.setSeat(getSeatFromJadwal(jadwal));
+            
 
             result.close();
             statement.close();
@@ -335,6 +337,71 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
+    }
+
+    public Jadwal[] getJadwalByTimeRange(String idCinema, LocalDate start, LocalDate end) {
+        String startDate = start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + " 00:00:00";
+        String endDate = end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + " 23:59:59";
+
+        try {
+            conn.open();
+            
+            String sql = "SELECT * FROM jadwal " +
+            "WHERE id_studio IN (" +
+                "SELECT id_studio FROM cinema " +
+                "WHERE id_cinema = '" + idCinema + "'" +
+            ") " +
+            "AND waktu > '" + startDate + "' " +
+            "AND waktu < '" + endDate + "' " +
+            "ORDER BY waktu ASC;";
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(sql);
+
+            ArrayList<Jadwal> listJadwal = new ArrayList<Jadwal>();
+
+            while (result.next()) {
+                listJadwal.add(
+                    new Jadwal(
+                        result.getString("id_jadwal"),
+                        result.getString("id_movie"),
+                        result.getString("id_studio"),
+                        result.getInt("harga"),
+                        result.getTimestamp("waktu").toLocalDateTime(),
+                        getSeatFromJadwal(result.getString("id_jadwal"))
+                    )
+                );
+            }
+
+            return listJadwal.toArray(new Jadwal[listJadwal.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public Movie[] extractMoviesFromListJadwal(Jadwal[] arrJadwal) {
+        if (arrJadwal.length == 0) { return null; }
+
+        ArrayList<Movie> movies = new ArrayList<Movie>();
+        
+        ArrayList<String> idsMovie = new ArrayList<String>();
+        for (Jadwal jadwal : arrJadwal) {
+            if (!idsMovie.contains(jadwal.getIdMovie())) {
+                idsMovie.add(jadwal.getIdMovie());
+            }
+        }
+
+        for (String idMovie : idsMovie) {
+            for (int i = 0; i < Data.movies.length; i++) {
+                if (Data.movies[i].getIdMovie().equals(idMovie)) {
+                    movies.add(Data.movies[i]);
+                    break;
+                }
+            }
+        }
+
+        return movies.toArray(new Movie[movies.size()]);
     }
 
     // Studio area
@@ -857,14 +924,15 @@ public class Controller {
             fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
 
             Movie movie = new Movie(
-                    idMovie,
-                    result.getString("judul"),
-                    dateToLocalDate(result.getDate("release_date")),
-                    result.getString("director"),
-                    result.getInt("language"),
-                    result.getInt("durasi"),
-                    result.getString("sinopsis"),
-                    fotoMovie);
+                idMovie,
+                result.getString("judul"),
+                dateToLocalDate(result.getDate("release_date")),
+                result.getString("director"),
+                result.getInt("language"),
+                result.getInt("durasi"),
+                result.getString("sinopsis"),
+                fotoMovie
+            );
 
             result.close();
             statement.close();

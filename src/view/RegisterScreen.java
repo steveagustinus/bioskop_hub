@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 public class RegisterScreen {
     JFrame frame = new JFrame();
     Controller controller = new Controller();
+
     public RegisterScreen() {
         frame.setTitle("Register");
 
@@ -104,7 +105,7 @@ public class RegisterScreen {
         JLabel addressLabel = new JLabel("Address");
         addressLabel.setBounds(20, 250, 80, 25);
 
-        JTextField addressField = new JTextField(20);  
+        JTextField addressField = new JTextField(20);
         addressField.setBounds(20, 270, 230, 25);
         addressField.setText("Enter your Address");
         addressField.setForeground(Color.GRAY);
@@ -139,7 +140,6 @@ public class RegisterScreen {
                 frame.dispose();
             }
         });
-    
 
         JPanel panel = new JPanel();
         panel.setLayout(null);
@@ -164,41 +164,38 @@ public class RegisterScreen {
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (passwordField.getPassword().equals(confirmPasswordField.getPassword())) {
-                    String username = usernameField.getText();
-                    String password = "";
-                    char[] pass = passwordField.getPassword();
-                    String email = emailField.getText();
-                    String phoneNum = phoneNumField.getText();
-                    String address = addressField.getText();
-                    for (char chr : pass) {
-                        password += chr;
-                    }
-                    int user = new Controller().register(username, password, email, phoneNum, address);
-                    if (user == -1) {
-                        JOptionPane.showMessageDialog(null, "Username tidak boleh kosong!");
-                    } else if (user == -2) {
-                        JOptionPane.showMessageDialog(null, "Password tidak boleh kosong!");
-                    } else if (user == -3) {
-                        JOptionPane.showMessageDialog(null, "Email tidak boleh kosong!");
-                    } else if (user == -4) {
-                        JOptionPane.showMessageDialog(null, "Phone Number tidak boleh kosong!");
-                    } else if (user == -5) {
-                        JOptionPane.showMessageDialog(null, "Address tidak boleh kosong!");
-                    } else if (user == 0) {
-                        JOptionPane.showMessageDialog(null, "Username already exists!");
-                        return;
-                    } else if (user == 1) {
-                        int singleton = new Controller().insertToSingelton(username);
-                        if (singleton == -1) {
-                            JOptionPane.showMessageDialog(null, "Failed to insert to singleton!");
-                            return;
-                        }
-                        JOptionPane.showMessageDialog(null, "Registration " + username + " successful!");
-                        frame.dispose();
-                    }
+                String username = usernameField.getText();
+                String password = "";
+                char[] pass = passwordField.getPassword();
+                String email = emailField.getText();
+                String phoneNum = phoneNumField.getText();
+                String address = addressField.getText();
+                for (char chr : pass) {
+                    password += chr;
+                }
+                int check = new Controller().checkEmptyFields(username, password, email, phoneNum, address);
+                if (check == 0){
+                    JOptionPane.showMessageDialog(null, "Please fill all the fields!", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
                 }else{
-                    JOptionPane.showMessageDialog(null, "Password and Confirm Password must be same!", "Error Password!", JOptionPane.ERROR_MESSAGE);
+                    if (passwordField.getPassword().equals(confirmPasswordField.getPassword())) {
+                        int user = new Controller().register(username, password, email, phoneNum, address);
+                        if (user == 0) {
+                            JOptionPane.showMessageDialog(null, "Username already exists!");
+                            return;
+                        } else if (user == 1) {
+                            int singleton = new Controller().insertToSingelton(username);
+                            if (singleton == -1) {
+                                JOptionPane.showMessageDialog(null, "Failed to insert to singleton!");
+                                return;
+                            }
+                            JOptionPane.showMessageDialog(null, "Registration " + username + " successful!");
+                            frame.dispose();
+                        }
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Password doesn't match!" , "Error", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                 }
             }
         });
@@ -210,7 +207,8 @@ public class RegisterScreen {
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
     }
-    //test area
+
+    // test area
     public static void main(String[] args) {
         new RegisterScreen();
     }

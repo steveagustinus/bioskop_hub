@@ -348,7 +348,7 @@ public class Controller {
             
             String sql = "SELECT * FROM jadwal " +
             "WHERE id_studio IN (" +
-                "SELECT id_studio FROM cinema " +
+                "SELECT id_studio FROM studio " +
                 "WHERE id_cinema = '" + idCinema + "'" +
             ") " +
             "AND waktu > '" + startDate + "' " +
@@ -373,6 +373,7 @@ public class Controller {
                 );
             }
 
+            if (listJadwal.size() == 0) { return null; }
             return listJadwal.toArray(new Jadwal[listJadwal.size()]);
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
@@ -381,7 +382,7 @@ public class Controller {
     }
 
     public Movie[] extractMoviesFromListJadwal(Jadwal[] arrJadwal) {
-        if (arrJadwal.length == 0) { return null; }
+        if (arrJadwal == null) { return null; }
 
         ArrayList<Movie> movies = new ArrayList<Movie>();
         

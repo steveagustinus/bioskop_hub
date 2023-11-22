@@ -381,6 +381,42 @@ public class Controller {
         }
     }
 
+    public Jadwal[] filterJadwal(Jadwal[] listJadwal, String idMovie) {
+        ArrayList<Jadwal> output = new ArrayList<Jadwal>();
+
+        for (int i = 0; i < listJadwal.length; i++) {
+            if (listJadwal[i].getIdMovie().equals(idMovie)) {
+                output.add(listJadwal[i]);
+            }
+        }
+
+        return output.toArray(new Jadwal[output.size()]);
+    }
+
+    public String[][] getJadwalData(Jadwal[] listJadwal) {
+        String[][] output = new String[listJadwal.length][5];
+
+        for (int i = 0; i < listJadwal.length; i++) {
+            // output[i][0] = listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM hh:mm"));
+            // output[i][1] = getMovieById(listJadwal[i].getIdMovie()).getJudul();
+            // Studio studio = getStudioById(listJadwal[i].getIdStudio());
+            // output[i][2] = getStudioClassString(studio.getStudioClass());
+            // output[i][3] = getStudioTypeString(studio.getStudioType());
+            // output[i][4] = String.valueOf(listJadwal[i].getHarga());
+
+            String item = listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM hh:mm"));
+            item += " | " + getMovieById(listJadwal[i].getIdMovie()).getJudul();
+            Studio studio = getStudioById(listJadwal[i].getIdStudio());
+            item += " | " + getStudioClassString(studio.getStudioClass());
+            item += " | " + getStudioTypeString(studio.getStudioType());
+            item += " | " +String.valueOf(listJadwal[i].getHarga());
+
+            output[i][0] = item;
+        }
+
+        return output;
+    }
+
     public Movie[] extractMoviesFromListJadwal(Jadwal[] arrJadwal) {
         if (arrJadwal == null) { return null; }
 
@@ -1662,6 +1698,7 @@ public class Controller {
         }
         return total;
     }
+    
     public boolean isKotaExists(String kota) {
         try {
             conn.open();
@@ -1680,6 +1717,7 @@ public class Controller {
             return false;
         }
     }
+    
     public boolean isCabangExists(String cabang) {
         try {
             conn.open();
@@ -1698,6 +1736,7 @@ public class Controller {
             return false;
         }
     }
+    
     //Function tampilkan list
     public String[] listKota() {
         try {
@@ -1786,6 +1825,7 @@ public class Controller {
             return null;
         }
     }
+    
     public String[] listMovie(String id_Studio){
         try {
             conn.open();
@@ -1862,6 +1902,7 @@ public class Controller {
             return null;
         }
     }
+    
     // User Profile area
     public int editProfile(String username, String oldPassword, String newPassword, String profileName, String email,
             String phoneNo, String address) {

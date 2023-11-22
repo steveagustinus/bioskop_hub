@@ -8,7 +8,10 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.SwingConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import src.controller.Controller;
 import src.controller.ExceptionLogger;
@@ -25,6 +28,9 @@ import java.awt.event.ActionListener;
 import java.time.LocalDate;
 
 public class PesanTiket extends JDialog {
+    private Jadwal[] listJadwal = null;
+    private Movie[] listMovie = null;
+
     private String fontFamily = "Dialog";
 
     private Controller controller = new Controller();
@@ -32,6 +38,7 @@ public class PesanTiket extends JDialog {
     public static void main(String[] args) {
         new PesanTiket(null);
     }
+
     public PesanTiket(Window owner) {
         super(owner, ModalityType.DOCUMENT_MODAL);
         this.setTitle("Pesan Tiket");
@@ -65,10 +72,12 @@ public class PesanTiket extends JDialog {
 
         JLabel panelCinemaTitle = new JLabel("Pilih cinema di kota pilihan anda");
         panelCinemaTitle.setLocation(1, 1);
-        panelCinemaTitle.setSize(panelCinema.getWidth(), 30);
-        panelCinemaTitle.setFont(new Font(fontFamily, Font.BOLD, 25));
+        panelCinemaTitle.setSize(panelCinema.getWidth() - 2, 30);
+        panelCinemaTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
         panelCinemaTitle.setOpaque(true);
         panelCinemaTitle.setBackground(Color.LIGHT_GRAY);
+        panelCinemaTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        panelCinemaTitle.setVerticalAlignment(SwingConstants.CENTER);
 
         int fieldWidth = (panelCinema.getWidth() - 60) / 2;
         int fieldHeight = (panelCinema.getHeight() - 75) / 2;
@@ -113,12 +122,36 @@ public class PesanTiket extends JDialog {
         panelFilm.setLayout(null);
         panelFilm.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 
-        JLabel panelFilmTitle = new JLabel("Silahkan pilih film yang tersedia");
+        JLabel panelFilmTitle = new JLabel("Pilih film");
         panelFilmTitle.setLocation(1, 1);
-        panelFilmTitle.setSize(panelCinema.getWidth(), 30);
-        panelFilmTitle.setFont(new Font(fontFamily, Font.BOLD, 25));
+        panelFilmTitle.setSize(panelFilm.getWidth() - 2, 30);
+        panelFilmTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
         panelFilmTitle.setOpaque(true);
         panelFilmTitle.setBackground(Color.LIGHT_GRAY);
+        panelFilmTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        panelFilmTitle.setVerticalAlignment(SwingConstants.CENTER);
+
+        JPanel panelJadwal = new JPanel();
+        panelJadwal.setName("mainpanel_jadwal");
+        panelJadwal.setSize(
+            (this.getWidth() - 15) / 2,
+            300
+        );
+        panelJadwal.setLocation(
+            panelFilm.getX(),
+            panelFilm.getY() + panelFilm.getHeight() + 20
+        );
+        panelJadwal.setLayout(null);
+        panelJadwal.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        
+        JLabel panelJadwalTitle = new JLabel("Pilih showtime");
+        panelJadwalTitle.setLocation(1, 1);
+        panelJadwalTitle.setSize(panelJadwal.getWidth() - 2, 30);
+        panelJadwalTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
+        panelJadwalTitle.setOpaque(true);
+        panelJadwalTitle.setBackground(Color.LIGHT_GRAY);
+        panelJadwalTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        panelJadwalTitle.setVerticalAlignment(SwingConstants.CENTER);
 
         fieldKota.addActionListener(new ActionListener() {
 
@@ -139,6 +172,7 @@ public class PesanTiket extends JDialog {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 showFilm((String) fieldCinema.getSelectedItem());
+                showJadwal(null);
             }
             
         });
@@ -151,19 +185,22 @@ public class PesanTiket extends JDialog {
 
         panelFilm.add(panelFilmTitle);
 
+        panelJadwal.add(panelJadwalTitle);
+
         this.add(labelHeader);
         this.add(panelCinema);
         this.add(panelFilm);
+        this.add(panelJadwal);
     }
 
     private void showFilm(String idCinema) {
-        Jadwal[] listJadwal = controller.getJadwalByTimeRange(
+        listJadwal = controller.getJadwalByTimeRange(
             idCinema,
             LocalDate.of(2023, 11, 14), //LocalDate.now(),
             LocalDate.of(2023, 11, 17) //LocalDate.now().plusWeeks(1)
         );
         
-        Movie[] movies = controller.extractMoviesFromListJadwal(listJadwal);
+        listMovie = controller.extractMoviesFromListJadwal(listJadwal);
         
         // Search for Movie Panel
         JPanel panelMovie = null;
@@ -189,12 +226,11 @@ public class PesanTiket extends JDialog {
         panelMovie.revalidate();
         panelMovie.repaint();
 
-        if (movies == null) { return; }
+        if (listMovie == null) { return; }
 
-        JPanel[] panels = new JPanel[movies.length];
+        JPanel[] panels = new JPanel[listMovie.length];
         
-        for (int i = 0; i < movies.length; i++) {
-            System.out.println(i);
+        for (int i = 0; i < listMovie.length; i++) {
             JPanel moviePanel = new JPanel();
             moviePanel.setName("panel_movie_" + i);
             moviePanel.setLayout(null);
@@ -219,7 +255,7 @@ public class PesanTiket extends JDialog {
             moviePanel.setBackground(Color.magenta);
             panels[i] = moviePanel;
 
-            JLabel movieLabel = new JLabel(movies[i].getJudul());
+            JLabel movieLabel = new JLabel(listMovie[i].getJudul());
             movieLabel.setName("label_movie");
             movieLabel.setSize(moviePanel.getWidth(), 30);
             movieLabel.setLocation(0, 240);
@@ -227,17 +263,17 @@ public class PesanTiket extends JDialog {
             movieLabel.setVerticalAlignment(SwingConstants.CENTER);
             movieLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-            movieLabel.setText(movies[i].getJudul());
+            movieLabel.setText(listMovie[i].getJudul());
 
             moviePanel.add(movieLabel);
 
             JButton buttonDisplayFoto = new JButton();
-            buttonDisplayFoto.setName("button_fotoMovie_" + movies[i].getIdMovie());
+            buttonDisplayFoto.setName("button_fotoMovie_" + listMovie[i].getIdMovie());
             buttonDisplayFoto.setSize(150, 240);
             buttonDisplayFoto.setLocation(0, 0);
 
             try {
-                Image image = ImageIO.read(movies[i].getFotoMovie());
+                Image image = ImageIO.read(listMovie[i].getFotoMovie());
                 buttonDisplayFoto.setIcon(new ImageIcon(
                     new ImageIcon(image)
                     .getImage()
@@ -251,8 +287,8 @@ public class PesanTiket extends JDialog {
 
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    // output = ((JButton) e.getSource()).getName().replace("button_fotoMovie_", "");
-                    // getInput();
+                    String idMovie = ((JButton) buttonDisplayFoto).getName().replace("button_fotoMovie_", "");
+                    showJadwal(idMovie);
                 }
                 
             });
@@ -263,6 +299,71 @@ public class PesanTiket extends JDialog {
             panelMovie.revalidate();
             panelMovie.repaint();
         }
+    }
+
+    private void showJadwal(String idMovie) {
+        // Search for Movie Panel
+        JPanel panelJadwal = null;
+        for (Component comp : this.getContentPane().getComponents()) {
+            if (comp instanceof JPanel) {
+                if (comp.getName() == null) { continue; }
+                if (comp.getName().equals("mainpanel_jadwal")) {
+                    panelJadwal = (JPanel) comp;
+                    break;
+                }
+            }
+        }
+
+        // Delete JTable
+        for (Component comp : panelJadwal.getComponents()) {
+            if (comp instanceof JTable) {
+                if (comp.getName() == null) { continue; }
+                if (comp.getName().equals("table_jadwal")) {
+                    panelJadwal.remove(comp);
+                    panelJadwal.revalidate();
+                    panelJadwal.repaint();
+                    break;
+                }
+            }
+        }
+
+        if (listJadwal == null) { return; }
+
+        String[] columnHeader = new String[] { "Showtime" };
+        // String[] columnHeader = new String[] { "Waktu", "Film", "Kelas Studio", "Tipe Studio", "Harga" };
+        Jadwal[] filteredJadwal = controller.filterJadwal(listJadwal, idMovie);
+        String[][] rowData = controller.getJadwalData(filteredJadwal);
+
+        JTable tableJadwal = new JTable(rowData, columnHeader) {
+            public boolean isCellEditable(int row,int column) {
+                return false;
+            }  
+        };
+
+        tableJadwal.setName("table_jadwal");
+        tableJadwal.setSize(panelJadwal.getWidth() - 2, panelJadwal.getHeight() - 32);
+        tableJadwal.setLocation(1, 31);
+        tableJadwal.setFont(new Font(fontFamily, Font.BOLD, 15));
+        tableJadwal.setRowHeight(40);
+        tableJadwal.setShowGrid(false);
+
+        tableJadwal.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                String idJadwal = filteredJadwal[tableJadwal.getSelectedRow()].getIdJadwal();
+                showSeat(idJadwal);
+            }
+            
+        });
+
+        panelJadwal.add(tableJadwal);
+        panelJadwal.revalidate();
+        panelJadwal.repaint();
+    }
+
+    private void showSeat(String idJadwal) {
+        
     }
 
     public void close() {

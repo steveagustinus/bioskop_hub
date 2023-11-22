@@ -17,6 +17,7 @@ import src.controller.Controller;
 import src.controller.ExceptionLogger;
 import src.model.Jadwal;
 import src.model.movie.Movie;
+import src.model.seat.Seat;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -42,7 +43,7 @@ public class PesanTiket extends JDialog {
     public PesanTiket(Window owner) {
         super(owner, ModalityType.DOCUMENT_MODAL);
         this.setTitle("Pesan Tiket");
-        this.setSize(1000, 1000);
+        this.setSize(1280, 1000);
         this.setLayout(null);
         this.setLocationRelativeTo(owner);
 
@@ -134,7 +135,7 @@ public class PesanTiket extends JDialog {
         JPanel panelJadwal = new JPanel();
         panelJadwal.setName("mainpanel_jadwal");
         panelJadwal.setSize(
-            (this.getWidth() - 15) / 2,
+            (this.getWidth() - 55) / 2 - 200,
             300
         );
         panelJadwal.setLocation(
@@ -153,6 +154,28 @@ public class PesanTiket extends JDialog {
         panelJadwalTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelJadwalTitle.setVerticalAlignment(SwingConstants.CENTER);
 
+        JPanel panelSeat = new JPanel();
+        panelSeat.setName("mainpanel_seat");
+        panelSeat.setSize(
+            (this.getWidth() - 55) / 2 + 200,
+            300
+        );
+        panelSeat.setLocation(
+            panelJadwal.getX() + panelJadwal.getWidth() + 15,
+            panelJadwal.getY()
+        );
+        panelSeat.setLayout(null);
+        panelSeat.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        
+        JLabel panelSeatTitle = new JLabel("Pilih kursi");
+        panelSeatTitle.setLocation(1, 1);
+        panelSeatTitle.setSize(panelSeat.getWidth() - 2, 30);
+        panelSeatTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
+        panelSeatTitle.setOpaque(true);
+        panelSeatTitle.setBackground(Color.LIGHT_GRAY);
+        panelSeatTitle.setHorizontalAlignment(SwingConstants.CENTER);
+        panelSeatTitle.setVerticalAlignment(SwingConstants.CENTER);
+        
         fieldKota.addActionListener(new ActionListener() {
 
             @Override
@@ -164,7 +187,7 @@ public class PesanTiket extends JDialog {
                     fieldCinema.addItem(cinema);
                 }
             }
-                
+
         });
 
         fieldCinema.addActionListener(new ActionListener() {
@@ -187,10 +210,13 @@ public class PesanTiket extends JDialog {
 
         panelJadwal.add(panelJadwalTitle);
 
+        panelSeat.add(panelSeatTitle);
+
         this.add(labelHeader);
         this.add(panelCinema);
         this.add(panelFilm);
         this.add(panelJadwal);
+        this.add(panelSeat);
     }
 
     private void showFilm(String idCinema) {
@@ -302,7 +328,7 @@ public class PesanTiket extends JDialog {
     }
 
     private void showJadwal(String idMovie) {
-        // Search for Movie Panel
+        // Search for Jadwal Panel
         JPanel panelJadwal = null;
         for (Component comp : this.getContentPane().getComponents()) {
             if (comp instanceof JPanel) {
@@ -363,7 +389,60 @@ public class PesanTiket extends JDialog {
     }
 
     private void showSeat(String idJadwal) {
-        
+        // Search for Seat Panel
+        JPanel panelSeat = null;
+        for (Component comp : this.getContentPane().getComponents()) {
+            if (comp instanceof JPanel) {
+                if (comp.getName() == null) { continue; }
+                if (comp.getName().equals("mainpanel_seat")) {
+                    panelSeat = (JPanel) comp;
+                    break;
+                }
+            }
+        }
+
+        // Delete Seats
+        for (Component comp : panelSeat.getComponents()) {
+            if (comp instanceof JPanel) {
+                if (comp.getName() == null) { continue; }
+                if (comp.getName().contains("button_seat_")) {
+                    panelSeat.remove(comp);
+                }
+            }
+        }
+
+        panelSeat.revalidate();
+        panelSeat.repaint();
+
+        Seat[][] seats = controller.getSeatFromJadwal(listJadwal, idJadwal);
+        JButton[][] buttonSeat = new JButton[seats.length][seats[0].length];
+
+        for (int i = 0; i < buttonSeat.length; i++) {
+            for (int j = 0; j < buttonSeat[i].length; j++) {
+                System.out.println(seats[i][j].getSeatCode());
+                JButton button = new JButton(seats[i][j].getSeatCode());
+                button.setName("button_seat_" + seats[i][j].getSeatCode());
+                button.setSize(60, 25);
+                button.setFont(new Font(fontFamily, Font.BOLD, 12));
+                
+                if (i == 0 && j == 0) {
+                    button.setLocation(5, 35);
+                } else if (j == 0) {
+                    button.setLocation(
+                        buttonSeat[i - 1][j].getX(),
+                        buttonSeat[i - 1][j].getY() + buttonSeat[i - 1][j].getHeight()
+                    );
+                } else {
+                     button.setLocation(
+                        buttonSeat[i][j - 1].getX() + buttonSeat[i][j - 1].getWidth(),
+                        buttonSeat[i][j - 1].getY()
+                    );
+                }
+
+                buttonSeat[i][j] = button;
+                panelSeat.add(button);
+            }
+        }
     }
 
     public void close() {

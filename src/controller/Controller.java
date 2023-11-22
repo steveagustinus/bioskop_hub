@@ -199,6 +199,16 @@ public class Controller {
         return null;
     }
     
+    public Seat[][] getSeatFromJadwal(Jadwal[] arrJadwal, String idJadwal) {
+        for (Jadwal jadwal : arrJadwal) {
+            if (jadwal.getIdJadwal().equals(idJadwal)) {
+                return jadwal.getSeat();
+            }
+        }
+
+        return null;
+    }
+
     // Jadwal area
     public Jadwal getJadwalById(String idJadwal) {
         try {

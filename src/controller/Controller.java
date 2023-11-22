@@ -21,6 +21,8 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 import src.model.Cinema;
 import src.model.movie.Movie;
@@ -739,9 +741,12 @@ public class Controller {
             return -99;
         }
     }
+
     public int checkEmptyFields(String username, String password, String email, String phoneNumber, String alamat) {
         if (username.equals("") || password.equals("") || email.equals("") || phoneNumber.equals("")
-                || alamat.equals("") || username.equals("Enter your Username") || password.equals("Enter your Password") || email.equals("Enter your Email") || phoneNumber.equals("Enter your Phone Number") || alamat.equals("Enter your Address")) {
+                || alamat.equals("") || username.equals("Enter your Username") || password.equals("Enter your Password")
+                || email.equals("Enter your Email") || phoneNumber.equals("Enter your Phone Number")
+                || alamat.equals("Enter your Address")) {
             return 0;
         }
         return 1;
@@ -807,7 +812,7 @@ public class Controller {
     }
 
     public void setPlaceholder(JPasswordField passwordField, String placeholder) {
-        passwordField.setEchoChar((char) 0); 
+        passwordField.setEchoChar((char) 0);
         passwordField.setText(placeholder);
         passwordField.setForeground(Color.GRAY);
 
@@ -816,7 +821,7 @@ public class Controller {
             public void focusGained(FocusEvent e) {
                 if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
                     passwordField.setText("");
-                    passwordField.setEchoChar('*'); 
+                    passwordField.setEchoChar('*');
                     passwordField.setForeground(Color.BLACK);
                 }
             }
@@ -1153,7 +1158,48 @@ public class Controller {
     // public int checkMembership(String username){
 
     // }
-    public void printTable(){
-        
+    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String foodName = resultSet.getString("f.nama");
+                int quantity = resultSet.getInt("tf.qty");
+                int totalPrice = resultSet.getInt("f.harga * tf.qty");
+                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String movieName = resultSet.getString("m.judul");
+                int seat = resultSet.getInt("tj.id_seat");
+                String classType = resultSet.getString("s.studio_class");
+                int totalPrice = resultSet.getInt("j.harga");
+                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
     }
 }

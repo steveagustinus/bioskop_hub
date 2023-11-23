@@ -51,10 +51,6 @@ public class Controller {
 
     public Controller() { }
 
-    public void fetchData() {
-        Data.movies = getMovies();
-    }
-
     // Seat area
     public int getLastSeatId() {
         int lastId = -1;
@@ -463,11 +459,11 @@ public class Controller {
                 idsMovie.add(jadwal.getIdMovie());
             }
         }
-
+        Movie[] arrMovie = getMovies();
         for (String idMovie : idsMovie) {
-            for (int i = 0; i < Data.movies.length; i++) {
-                if (Data.movies[i].getIdMovie().equals(idMovie)) {
-                    movies.add(Data.movies[i]);
+            for (int i = 0; i < arrMovie.length; i++) {
+                if (arrMovie[i].getIdMovie().equals(idMovie)) {
+                    movies.add(arrMovie[i]);
                     break;
                 }
             }
@@ -1073,19 +1069,20 @@ public class Controller {
     }
 
     public Movie[] searchMovie(String input, int limit) {
-        if (Data.movies == null) { return null; }
+        Movie[] movies = getMovies();
+        if (movies == null) { return null; }
 
         ArrayList<Movie> movieList = new ArrayList<Movie>();
 
         if (input.equals("")) {
-            for (int i = 0; i < limit && i < Data.movies.length; i++) {
-                movieList.add(Data.movies[i]);
+            for (int i = 0; i < limit && i < movies.length; i++) {
+                movieList.add(movies[i]);
             }
 
             return movieList.toArray(new Movie[movieList.size()]);
         }
 
-        for (Movie movie : Data.movies) {
+        for (Movie movie : movies) {
             if (movie.getJudul().toLowerCase().contains(input.toLowerCase())) {
                 movieList.add(movie);
             }
@@ -1732,8 +1729,6 @@ public class Controller {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-
-        fetchData();
     }
 
     // FnB area
@@ -2093,6 +2088,7 @@ public class Controller {
             return null;
         }
     }
+    
     public String[] listCabangHP(String namaKota){
         try {
             conn.open();
@@ -2121,7 +2117,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT DISTINCT `kota` FROM `cinema` ");
+                    "SELECT DISTINCT `kota` FROM `cinema`");
 
             ArrayList<String> listKota = new ArrayList<String>();
             while (result.next()) {
@@ -2187,7 +2183,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `nama` FROM `fnb`");
+                    "SELECT `nama` FROM `fnb` WHERE `is_deleted`=0");
 
             ArrayList<String> listFNB = new ArrayList<String>();
             while (result.next()) {
@@ -2209,7 +2205,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "'");
+                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "' WHERE `is_deleted`=0");
 
             ArrayList<String> listMovie = new ArrayList<String>();
             while (result.next()) {

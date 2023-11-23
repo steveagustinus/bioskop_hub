@@ -1,5 +1,7 @@
 package src.controller;
 
+import java.sql.Date;
+
 public class UserDataSingleton {
     private static UserDataSingleton instance;
     
@@ -11,6 +13,9 @@ public class UserDataSingleton {
     private String phone_no;
     private String address;
     private int user_type;
+    private int membership_status;
+    private Date membership_expiry_date;	
+    private int membership_point;
     
     private UserDataSingleton() {
         this.id = 0;
@@ -21,6 +26,9 @@ public class UserDataSingleton {
         this.phone_no = "";
         this.address = "";
         this.user_type = 0;
+        this.membership_status = 0;
+        this.membership_expiry_date = null;
+        this.membership_point = 0;
     }
     
     public static UserDataSingleton getInstance() {
@@ -94,5 +102,29 @@ public class UserDataSingleton {
     }
     public void setUser_type(int user_type) {
         this.user_type = user_type;
+    }
+
+    public int getMembership_status() {
+        return membership_status;
+    }
+
+    public void setMembership_status(int membership_status) {
+        this.membership_status = membership_status;
+    }
+
+    public int getMembership_point() {
+        return membership_point;
+    }
+
+    public void setMembership_point(int membership_point) {
+        this.membership_point = membership_point;
+    }
+
+    public Date getMembership_expiry_date() {
+        return membership_expiry_date;
+    }
+
+    public void setMembership_expiry_date(Date membership_expiry_date) {
+        this.membership_expiry_date = membership_expiry_date;
     }
 }

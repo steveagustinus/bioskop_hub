@@ -803,6 +803,9 @@ public class Controller {
             userDataSingleton.setPhone_no(result.getString("phone_no"));
             userDataSingleton.setAddress(result.getString("address"));
             userDataSingleton.setUser_type(result.getInt("user_type"));
+            userDataSingleton.setMembership_status(result.getInt("membership_status"));
+            userDataSingleton.setMembership_expiry_date(result.getDate("membership_expiry_date"));
+            userDataSingleton.setMembership_point(result.getInt("point_membership"));
             conn.close();
             return 1;
         } catch (Exception ex) {

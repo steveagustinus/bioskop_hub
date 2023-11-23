@@ -113,4 +113,25 @@ public class OperationCode {
         public final static int EMPTYIDMOVIE = -1;
         public final static int ANYEXCEPTION = -99;
     }
+
+    public class addFnB{
+        public final static int SUCCESS=0;
+        public final static int EMPTYNAME=-1;
+        public final static int EMPTYHARGA=-2;
+        public final static int EMPTYDESCRIPTION=-3;
+        public final static int ANYEXCEPTION=-99;
+    }
+
+    public class DeleteFnB {
+        public final static int SUCCESS = 0;
+        public final static int ANYEXCEPTION = -99;
+    }
+    
+    public class EditFnB{
+        public final static int SUCCESS=0;
+        public final static int EMPTYNAME=-1;
+        public final static int EMPTYHARGA=-2;
+        public final static int EMPTYDESCRIPTION=-3;
+        public final static int ANYEXCEPTION=-99;
+    }
 }

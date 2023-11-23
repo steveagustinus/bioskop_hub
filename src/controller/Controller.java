@@ -30,6 +30,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import src.model.Cinema;
+import src.model.FnB;
 import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.movie.MovieLanguageInterface;
@@ -2032,6 +2033,36 @@ public class Controller {
         }
     }
 
+    public FnB getFnBbyName (String namaFnB){
+         try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `fnb` WHERE `nama`='" + namaFnB + "' AND `is_deleted`=0;");
+
+            result.next();
+
+            
+            FnB fnB = null;
+            fnB = new FnB(
+                result.getString("nama"),
+                result.getInt("harga"),
+                result.getString("description")
+            );
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return fnB;
+            
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
     public long hargaPerFnb(String namaFnb) {
         try {
             conn.open();
@@ -2157,14 +2188,74 @@ public class Controller {
             while (result.next()) {
                 listJam.add(result.getString("jam"));
             }
-            result.close();
-            statement.close();
-            conn.close();
 
             return listJam.toArray(new String[listJam.size()]);
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
             return null;
+        }
+    }
+
+    public int addFnB( String [] fnb){
+        int harga = Integer.parseInt(fnb[1]);
+        if(fnb[0]==null){
+            return OperationCode.addFnB.EMPTYNAME;
+        }else if (fnb[1]==null) {
+            return OperationCode.addFnB.EMPTYHARGA;
+        }else if (fnb[2]==null) {
+            return OperationCode.addFnB.EMPTYDESCRIPTION;
+        }
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "INSERT INTO `fnb` (`nama`,`harga`,`description`,`is_deleted`) VALUES ('"+fnb[0]+"','"+harga+"','"+fnb[2]+"',0)");
+            statement.close();
+            conn.close();
+            return OperationCode.addFnB.SUCCESS;
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return OperationCode.addFnB.ANYEXCEPTION;
+        }
+    }
+    public int deleteFnB(String fnbName){
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "UPDATE `fnb` SET `is_deleted`=1 WHERE nama='" + fnbName + "'");
+            statement.close();
+            conn.close();
+            return 0;
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    public int EditFnB(String fnbName, String [] dataFnB){
+        int harga = Integer.parseInt(dataFnB[1]);
+        if(dataFnB[0]==null){
+            return OperationCode.EditFnB.EMPTYNAME;
+        }else if (dataFnB[1]==null) {
+            return OperationCode.EditFnB.EMPTYHARGA;
+        }else if (dataFnB[2]==null) {
+            return OperationCode.EditFnB.EMPTYDESCRIPTION;
+        }
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "UPDATE `fnb` SET `nama`='"+dataFnB[0]+"', `harga`='"+harga+"', `description`='"+dataFnB[2]+"' WHERE nama='" + fnbName + "'");
+            statement.close();
+            conn.close();
+            return OperationCode.EditFnB.SUCCESS;
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return OperationCode.EditFnB.ANYEXCEPTION;
         }
     }
     

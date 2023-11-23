@@ -26,7 +26,6 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -1807,25 +1806,18 @@ public class Controller {
         return decFormat.format(total);
     }
     
-    public void insertTransaksiFnb(String pilihan, int quantity, String studio, int id_user) {
+    public String insertTransaksiFnb(String pilihan, int quantity, String cinema, int id_user) {
+        System.out.println(pilihan + " | " + quantity + " | " + cinema + " | " + id_user);
         try {
             conn.open();
-            String selectQuery = "SELECT MAX(CAST(SUBSTRING(id_transaction, 3) AS UNSIGNED)) + 1 AS next_value FROM `transaction`";
-            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
-            ResultSet resultSet = selectStatement.executeQuery();
-        
-            long autoIncrementValue = 0;
-            if (resultSet.next()) {
-                autoIncrementValue = resultSet.getLong("next_value");
-            }
+            String currentIdTransaction = createTransactionId();
         
             String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
                     "VALUES (?, ?, NOW())";
             PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
-            String transactionId = "T-" + String.format("%018d", autoIncrementValue);
-            insertStatement.setString(1, transactionId);
+            insertStatement.setString(1, currentIdTransaction);
             insertStatement.setInt(2, id_user);
-            int rowsAffected = insertStatement.executeUpdate();
+            insertStatement.executeUpdate();
 
             // Get id_fnb
             String selectIdFnb = "SELECT `id_fnb` FROM `fnb` WHERE `nama` = ?";
@@ -1836,24 +1828,24 @@ public class Controller {
             if (resultSet2.next()) {
                 resultString = resultSet2.getString("id_fnb");
             }
-            System.out.println(resultString);
 
             String insertQuery2 = "INSERT INTO `transaction_fnb` (`id_transaction`, `id_fnb`, `qty`, `id_cinema`) " +
                     "VALUES (?, ?, ?, ?)";
             PreparedStatement insertStatement2 = conn.connection.prepareStatement(insertQuery2);
-            insertStatement2.setString(1, transactionId);
+            insertStatement2.setString(1, currentIdTransaction);
             insertStatement2.setString(2, resultString);
             insertStatement2.setInt(3, quantity);
-            insertStatement2.setString(4, studio);
+            insertStatement2.setString(4, cinema);
+            int rowsAffected2 = insertStatement2.executeUpdate();
 
-            if (rowsAffected > 0) {
-                JOptionPane.showMessageDialog(null, "Transaksi Berhasil", "Success", JOptionPane.INFORMATION_MESSAGE);
+            if (rowsAffected2 > 0) {
+                return "Transaksi Berhasil";
             } else {
-                JOptionPane.showMessageDialog(null, "Insert Gagal1", "Error", JOptionPane.ERROR_MESSAGE);
+                return "Insert Gagal";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Insert gagal2.", "Error", JOptionPane.ERROR_MESSAGE);
+                return "Insert Gagal";
         }
     }
     
@@ -1866,23 +1858,23 @@ public class Controller {
         }
     }
 
-    public String increasePoinMembership(String username, boolean statusMembership, int amountPlusPoin){
-        if (statusMembership == true) {
+    public String increasePoinMembership(String username, int statusMembership, int amountPlusPoin){
+        if (statusMembership == 0) {
             try {
                 conn.open();
-                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                String selectQuery = "SELECT `point_membership` FROM `user` WHERE `username` = ?";
                 PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
                 selectStatement.setString(1, username);
                 ResultSet resultSet = selectStatement.executeQuery();
     
                 int poin = 0;
                 if (resultSet.next()) {
-                    poin = resultSet.getInt("poin_membership");
+                    poin = resultSet.getInt("point_membership");
                 }
     
                 int totalPoin = poin + amountPlusPoin;
     
-                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+                String updateQuery = "UPDATE `user` SET `point_membership` = ? WHERE `username` = ?";
                 PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);
@@ -1898,23 +1890,23 @@ public class Controller {
         }
     }
 
-    public String decreasePoinMembership(String username, boolean statusMembership, int amountMinusPoin){
-        if (statusMembership == true) {
+    public String decreasePoinMembership(String username, int statusMembership, int amountMinusPoin){
+        if (statusMembership == 0) {
             try{
                 conn.open();
-                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                String selectQuery = "SELECT `point_membership` FROM `user` WHERE `username` = ?";
                 PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
                 selectStatement.setString(1, username);
                 ResultSet resultSet = selectStatement.executeQuery();
     
                 int poin = 0;
                 if (resultSet.next()) {
-                    poin = resultSet.getInt("poin_membership");
+                    poin = resultSet.getInt("point_membership");
                 }
     
                 int totalPoin = poin - amountMinusPoin;
     
-                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+                String updateQuery = "UPDATE `user` SET `point_membership` = ? WHERE `username` = ?";
                 PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);

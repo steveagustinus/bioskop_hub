@@ -16,6 +16,7 @@ import javax.swing.event.ListSelectionListener;
 
 import src.controller.Controller;
 import src.controller.ExceptionLogger;
+import src.controller.UserDataSingleton;
 import src.model.Cinema;
 import src.model.Jadwal;
 import src.model.movie.Movie;
@@ -42,7 +43,7 @@ public class PesanTiket extends JDialog {
         public OrderConfirmation(Window owner) {
             super(owner, ModalityType.DOCUMENT_MODAL);
             this.setLocation(owner.getX(), owner.getY());
-            this.setSize(500, 700);
+            this.setSize(500, 750);
             this.setLayout(null);
             this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
@@ -162,10 +163,30 @@ public class PesanTiket extends JDialog {
             separator3.setFont(new Font(fontFamily, Font.BOLD, 20));
             separator3.setForeground(Color.BLACK);
 
-            int totalBayar = controller.getTotalBayar(jadwal, seats);
-            JPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250, totalBayar);
+            JPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250);
             panelPayment.setLocation(labelTotalBayar.getX(), separator3.getY() + separator3.getHeight() + 10);
 
+            JButton buttonPesan = new JButton("Pesan");
+            buttonPesan.setSize(this.getWidth() / 3, 30);
+            buttonPesan.setLocation(
+                buttonPesan.getWidth(),
+                panelPayment.getY() + panelPayment.getHeight() + 10
+            );
+
+            buttonPesan.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    int status = controller.pesanTiket(
+                        String.valueOf(UserDataSingleton.getInstance().getId()),
+                        jadwal,
+                        seats
+                    );
+
+                    System.out.println(status);
+                }
+                
+            });
             this.add(labelHeader);
             this.add(labelCinema);
             this.add(labelCinemaInfo);
@@ -181,6 +202,7 @@ public class PesanTiket extends JDialog {
             this.add(labelTotalBayar2);
             this.add(separator3);
             this.add(panelPayment);
+            this.add(buttonPesan);
         }
     }
 

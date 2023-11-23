@@ -1470,8 +1470,9 @@ public class Controller {
         return jadwal.getHarga() * bookedSeat.length;
     }
 
-    public int pesanTiket(Customer customer, Jadwal jadwal, Seat[] bookedSeat) {
-        if (customer == null) {
+    public int pesanTiket(String idCustomer, Jadwal jadwal, Seat[] bookedSeat) {
+        System.out.println(idCustomer);
+        if (idCustomer == null || idCustomer.equals("")) {
             return -1;
         }
 
@@ -1490,7 +1491,7 @@ public class Controller {
             Statement statement = conn.connection.createStatement();
             statement.executeUpdate(
                 "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES ('" + idTransaction + "', '" + customer.getIdUser() + "', now());"
+                    "VALUES ('" + idTransaction + "', '" + idCustomer + "', now());"
             );
 
             String sql = "INSERT INTO `transaction_jadwal` (`id_transaction`, `id_jadwal`, `id_seat`) VALUES ";

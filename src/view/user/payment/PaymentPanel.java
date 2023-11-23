@@ -1,11 +1,8 @@
 package src.view.user.payment;
 
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -16,14 +13,12 @@ import src.controller.Controller;
 public class PaymentPanel extends JPanel {
     private Controller controller = new Controller();
 
-    private int totalBayar;
     private String[] paymentMethods;
     private String paymentMethod;
 
-    public PaymentPanel(int width, int height, int totalBayar) {
+    public PaymentPanel(int width, int height) {
         this.setLayout(null);
         this.setSize(width, height);
-        this.totalBayar = totalBayar;
         initializeComponent();
     }
 
@@ -57,28 +52,11 @@ public class PaymentPanel extends JPanel {
             this.add(radioButton);
         }
 
-        JButton buttonPesan = new JButton("Pesan");
-        buttonPesan.setSize(this.getWidth() / 3, 30);
-        buttonPesan.setLocation(
-            buttonPesan.getWidth(),
-            labelInfo.getY() + labelInfo.getHeight() + 10 + paymentMethods.length * (20 + 10) + 10
-        );
-
-        buttonPesan.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                executeOrder();
-            }
-            
-        });
-
         this.add(labelHeader);
         this.add(labelInfo);
-        this.add(buttonPesan);
     }
 
-    private void executeOrder() {
-        
+    public String getPaymentMethods() {
+        return this.paymentMethod;
     }
 }

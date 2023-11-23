@@ -101,6 +101,12 @@ public class MainMenuScreen implements MainInterface {
             new HitungPendapatanScreen();
         });
 
+        JButton raiseRevokeButton = new JButton("Raise/Revoke Membership");
+        raiseRevokeButton.setBounds(260, 270, 200, 30);
+        raiseRevokeButton.addActionListener(e -> {
+            // new RaiseRevokeMembershipScreen();
+        });
+
         
         panel.add(manageCinemaButton);
         panel.add(manageStudioButton);
@@ -110,6 +116,7 @@ public class MainMenuScreen implements MainInterface {
         panel.add(manageStudioButton2);
         panel.add(manageMovieButton2);
         panel.add(manageJadwalButton2);
+        panel.add(raiseRevokeButton);
         panel.add(hitungPendapatanButton);
 
 

@@ -3,6 +3,7 @@ package src.view;
 import javax.swing.*;
 
 import src.controller.Controller;
+import src.view.user.MainMenuUserScreen;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -170,7 +171,7 @@ public class RegisterScreen {
                 String email = emailField.getText();
                 String phoneNum = phoneNumField.getText();
                 String address = addressField.getText();
-                
+
                 for (char chr : pass) {
                     password += chr;
                 }
@@ -197,6 +198,7 @@ public class RegisterScreen {
                                 return;
                             }
                             JOptionPane.showMessageDialog(null, "Registration " + username + " successful!");
+                            new MainMenuUserScreen();
                             frame.dispose();
                         }
                     }else{

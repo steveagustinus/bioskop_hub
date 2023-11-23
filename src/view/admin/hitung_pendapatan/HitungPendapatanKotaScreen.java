@@ -1,5 +1,7 @@
 package src.view.admin.hitung_pendapatan;
 
+import java.text.DecimalFormat;
+
 import javax.swing.JOptionPane;
 
 import src.controller.Controller;
@@ -19,7 +21,7 @@ public class HitungPendapatanKotaScreen {
                 } else {
                         int pendapatan = controller.hitungPendapatanKota(kota);
                         JOptionPane.showMessageDialog(null,
-                                        "Pendapatan Kota " + kota + " adalah Rp" + pendapatan + ",00",
+                                        "Pendapatan Kota " + kota + " adalah Rp. " + new DecimalFormat("###,###").format(pendapatan),
                                         "Hitung Pendapatan",
                                         JOptionPane.INFORMATION_MESSAGE);
                 }

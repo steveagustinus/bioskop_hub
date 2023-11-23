@@ -82,8 +82,4 @@ public class HitungPendapatanScreen {
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
     }
-    //test area
-    public static void main(String[] args) {
-        new HitungPendapatanScreen();
-    }
 }

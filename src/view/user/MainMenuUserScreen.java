@@ -54,10 +54,10 @@ public class MainMenuUserScreen implements MainInterface {
             membershipDateLabel.setVisible(false);
         }
 
-        JButton pesanTikerButton = new JButton("Pesan Tiket");
-        pesanTikerButton.setBounds(170, 150, 150, 50);
-        panel.add(pesanTikerButton);
-        pesanTikerButton.addActionListener(e -> {
+        JButton pesanTiketButton = new JButton("Pesan Tiket");
+        pesanTiketButton.setBounds(170, 150, 150, 50);
+        panel.add(pesanTiketButton);
+        pesanTiketButton.addActionListener(e -> {
             frame.setVisible(false);
             new PesanTiket(mainFrame);
             frame.setVisible(true);

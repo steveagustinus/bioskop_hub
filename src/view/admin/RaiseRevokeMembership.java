@@ -21,6 +21,7 @@ public class RaiseRevokeMembership {
         JFrame frame = new JFrame();
         frame.setTitle("Revoke dan Raise Membership");
         frame.setSize(400,150);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(4, 2));

@@ -74,7 +74,4 @@ public class HitungPendapatanPerKotaPerCabangScreen {
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
     }
-    public static void main(String[] args) {
-        new HitungPendapatanPerKotaPerCabangScreen();
-    }
 }

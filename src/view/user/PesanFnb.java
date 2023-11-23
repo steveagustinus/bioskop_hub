@@ -1,10 +1,11 @@
 package src.view.user;
+import java.awt.Dialog.ModalityType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
@@ -17,18 +18,17 @@ import src.controller.UserDataSingleton;
 public class PesanFnb {
     public PesanFnb(){
         viewPesanFnb();
-    }
-
-    public static void main(String[] args) {
-        new PesanFnb();
-    }
+    };
 
     public int status;
     public String response;
-    private void viewPesanFnb(){
+
+    private void viewPesanFnb() {
         Controller controller = new Controller();
 
-        JFrame f = new JFrame("Pesan FNB");
+        JDialog f = new JDialog();
+        f.setTitle("Pesan FNB");
+        f.setModalityType(ModalityType.DOCUMENT_MODAL);
         f.setLayout(null);
         f.setSize(500, 400);
 
@@ -143,6 +143,7 @@ public class PesanFnb {
         });
 
         buttonToMainMenu.addActionListener(e -> {
+            f.setVisible(false);
             f.dispose();
         });
 
@@ -174,10 +175,11 @@ public class PesanFnb {
                                     int result = JOptionPane.showOptionDialog(null,"Apakah Anda ingin pesan lagi?","Konfirmasi",JOptionPane.YES_NO_OPTION,
                                     JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Ya", "Tidak"},"Ya");
                                     if (result == JOptionPane.YES_OPTION) {
-                                        new PesanFnb();
+                                        f.setVisible(false);
                                         f.dispose();
+                                        new PesanFnb();
                                     } else {
-                                        new MainMenuUserScreen();
+                                        f.setVisible(false);
                                         f.dispose();
                                     }
                                 }
@@ -196,10 +198,11 @@ public class PesanFnb {
                                     int result = JOptionPane.showOptionDialog(null,"Apakah Anda ingin pesan lagi?","Konfirmasi",JOptionPane.YES_NO_OPTION,
                                     JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Ya", "Tidak"},"Ya");
                                     if (result == JOptionPane.YES_OPTION) {
-                                        new PesanFnb();
+                                        f.setVisible(false);
                                         f.dispose();
+                                        new PesanFnb();
                                     } else {
-                                        new MainMenuUserScreen();
+                                        f.setVisible(false);
                                         f.dispose();
                                     }
                                 }                        

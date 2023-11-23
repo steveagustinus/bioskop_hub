@@ -1807,7 +1807,6 @@ public class Controller {
     }
     
     public String insertTransaksiFnb(String pilihan, int quantity, String cinema, int id_user) {
-        System.out.println(pilihan + " | " + quantity + " | " + cinema + " | " + id_user);
         try {
             conn.open();
             String currentIdTransaction = createTransactionId();

@@ -142,4 +142,10 @@ public class OperationCode {
         public final static int EMPTYDESCRIPTION=-3;
         public final static int ANYEXCEPTION=-99;
     }
+    public class RaiseRevokeMembership {
+        public final static int SUCCESS=0;
+        public final static int ALREADYMEMBER=-1;
+        public final static int ALREADYUSER=-2;
+        public final static int ANYEXCEPTION=-99;
+    }
 }

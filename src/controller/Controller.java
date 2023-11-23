@@ -2262,7 +2262,7 @@ public class Controller {
     }
     
     // Main menu user area
-    public boolean checkMembership(String username) {
+    public int checkMembership(String username) {
         try {
             conn.open();
             String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";
@@ -2272,60 +2272,63 @@ public class Controller {
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if (!resultSet.isBeforeFirst()) {
-                return false;
+                return -99;
             }
 
             resultSet.close();
             conn.close();
-            return true;
+            return 0;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
-            return false;
+            return -99;
         }
     }
     
-    public boolean raiseMembership(String username) {
+    public int raiseMembership(String username) {
         try {
-            boolean status = checkMembership(username);
-            if (!status) {
+            int status = checkMembership(username);
+            if (status!=0) {
                 conn.open();
                 String updateQuery = "UPDATE user SET membership_status = 1 WHERE username = ?";
                 try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
                     preparedStatement.setString(1, username);
                     int rowsAffected = preparedStatement.executeUpdate();
                     if (rowsAffected > 0) {
-                        return true;
+                        return 0;
                     }
                 }
+            }else{
+                return -1;
             }
         } catch (Exception ex) {
              new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
         }
-        return false;
+        return -99;
     }
 
-    public boolean revokeMembership(String username) {
+    public int revokeMembership(String username) {
         try {
-            boolean status = checkMembership(username);
-            if (status) {
+            int status = checkMembership(username);
+            if (status==0) {
                 conn.open();
                 String updateQuery = "UPDATE user SET membership_status = 0 WHERE username = ?";
                 try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
                     preparedStatement.setString(1, username);
                     int rowsAffected = preparedStatement.executeUpdate();
                     if (rowsAffected > 0) {
-                        return true;
+                        return 0;
                     }
                 }
+            }else{
+                return -2;
             }
         } catch (Exception ex) {
              new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
-            return false;
         }
-        return false;
+        return -99;
     }
     
     public void printTableFnB(int id, JTable table, DefaultTableModel model) {

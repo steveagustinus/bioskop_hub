@@ -7,8 +7,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.awt.*;
+import java.lang.management.OperatingSystemMXBean;
 
 import src.controller.Controller;
+import src.controller.OperationCode;
 
 public class RaiseRevokeMembership {
     public RaiseRevokeMembership() {
@@ -39,39 +41,51 @@ public class RaiseRevokeMembership {
         buttonRaise.addActionListener(e -> {
             int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
             String username = inputUsername.getText().toString();
-            if (username==null) {
-                JOptionPane.showMessageDialog(null, "Username Kosong !" );
-            }else{
-                if(confirmation==0){
-                    boolean result= controller.raiseMembership(username);
-                    if (result) {
-                        JOptionPane.showMessageDialog(null, "Perubahan telah di lakukan!" );
-                    }else{
-                        JOptionPane.showMessageDialog(null, "Error!" );
-                    }
+            int checker = controller.isNameExist(username);
+            if (username!=null) {
+                if (checker!=1) {
+                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");
                 }else{
-                    JOptionPane.showMessageDialog(null, "Perubahan di batalkan !" );    
-                }
+                    int status = controller.raiseMembership(username);
+                    String alert="";
+                   if (status == OperationCode.RaiseRevokeMembership.SUCCESS) {
+                         alert="Berhasil!";
+                    }else if(status == OperationCode.RaiseRevokeMembership.ALREADYMEMBER){
+                        alert="Sudah menjadi Member!";
+                    }else if (status == OperationCode.RaiseRevokeMembership.ANYEXCEPTION) {
+                        alert="Error!";
+                    }
+                    JOptionPane.showMessageDialog(null,alert);
+                }     
+            }else{
+                JOptionPane.showMessageDialog(null,"Username TIDAK boleh kosong !");
             }
         });
 
         buttonRevoke.addActionListener(e -> {
             int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
             String username = inputUsername.getText().toString();
-            if (username==null) {
-                JOptionPane.showMessageDialog(null, "Username Kosong !" );
-            }else{
-                if(confirmation==0){
-                    boolean result= controller.revokeMembership(username);
-                    if (result) {
-                        JOptionPane.showMessageDialog(null, "Perubahan telah di lakukan!" );
-                    }else{
-                        JOptionPane.showMessageDialog(null, "Error!" );
-                    }
+            int checker = controller.isNameExist(username);
+            if (username!=null) {
+                if (checker!=1) {
+                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");
                 }else{
-                    JOptionPane.showMessageDialog(null, "Perubahan di batalkan !" );    
-                }
+                    int status = controller.revokeMembership(username);
+                    String alert="";
+                    if (status == OperationCode.RaiseRevokeMembership.SUCCESS) {
+                         alert="Berhasil!";
+                    }else if(status == OperationCode.RaiseRevokeMembership.ALREADYUSER){
+                        alert="Sudah menjadi User biasa!";
+                    }else if (status == OperationCode.RaiseRevokeMembership.ANYEXCEPTION) {
+                        alert="Error!";
+                    }
+                    JOptionPane.showMessageDialog(null,alert);
+                }     
+            }else{
+                JOptionPane.showMessageDialog(null,"Username TIDAK boleh kosong !");
             }
+            
+            
         });
 
         backButton.addActionListener(e ->{
@@ -83,5 +97,8 @@ public class RaiseRevokeMembership {
         frame.add(panel);
         frame.setVisible(true);
        
+    }
+    public static void main(String[] args) {
+        new RaiseRevokeMembership();
     }
 }

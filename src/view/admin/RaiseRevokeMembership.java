@@ -39,39 +39,51 @@ public class RaiseRevokeMembership {
         panel.add(backButton);
         
         buttonRaise.addActionListener(e -> {
-            int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
-            String username = inputUsername.getText().toString();
+           String username = inputUsername.getText().toString();
+            if (username.equals("")) {
+                username=null;
+            }
             int checker = controller.isNameExist(username);
             if (username!=null) {
-                if (checker!=1) {
-                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");
-                }else{
-                    int status = controller.raiseMembership(username);
+                if(checker==0){
+                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");      
+                }else if (checker ==1) {
+                    int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+                    if (confirmation == 0) {
+                        int status = controller.raiseMembership(username);
                     String alert="";
-                   if (status == OperationCode.RaiseRevokeMembership.SUCCESS) {
+                    if (status == OperationCode.RaiseRevokeMembership.SUCCESS) {
                          alert="Berhasil!";
                     }else if(status == OperationCode.RaiseRevokeMembership.ALREADYMEMBER){
                         alert="Sudah menjadi Member!";
                     }else if (status == OperationCode.RaiseRevokeMembership.ANYEXCEPTION) {
                         alert="Error!";
                     }
-                    JOptionPane.showMessageDialog(null,alert);
-                }     
+                    JOptionPane.showMessageDialog(null,alert);  
+                    }else if (confirmation == 1) {
+                        
+                    }
+                    
+                }   
             }else{
                 JOptionPane.showMessageDialog(null,"Username TIDAK boleh kosong !");
             }
         });
 
-        buttonRevoke.addActionListener(e -> {
-            int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+        buttonRevoke.addActionListener(e -> { 
             String username = inputUsername.getText().toString();
+            if (username.equals("")) {
+                username=null;
+            }
             int checker = controller.isNameExist(username);
             if (username!=null) {
-                if (checker!=1) {
-                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");
-                }else{
-                    int status = controller.revokeMembership(username);
-                    String alert="";
+                if(checker==0){
+                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");      
+                }else if (checker ==1) {
+                    int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+                    if (confirmation == 0) {
+                        int status = controller.revokeMembership(username);
+                        String alert="";
                     if (status == OperationCode.RaiseRevokeMembership.SUCCESS) {
                          alert="Berhasil!";
                     }else if(status == OperationCode.RaiseRevokeMembership.ALREADYUSER){
@@ -79,8 +91,12 @@ public class RaiseRevokeMembership {
                     }else if (status == OperationCode.RaiseRevokeMembership.ANYEXCEPTION) {
                         alert="Error!";
                     }
-                    JOptionPane.showMessageDialog(null,alert);
-                }     
+                    JOptionPane.showMessageDialog(null,alert);  
+                    }else if (confirmation == 1) {
+                        
+                    }
+                    
+                }   
             }else{
                 JOptionPane.showMessageDialog(null,"Username TIDAK boleh kosong !");
             }

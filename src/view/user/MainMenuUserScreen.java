@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -41,18 +40,24 @@ public class MainMenuUserScreen {
         membershipPointLabel.setBounds(10, 90, 500, 50);
         panel.add(membershipPointLabel);
 
+        JLabel membershipDateLabel = new JLabel("Membership Date : " + userData.getMembership_expiry_date());
+        membershipDateLabel.setBounds(10, 110, 500, 50);
+        panel.add(membershipDateLabel);
+
         boolean isMember = controller.checkMembership(userData.getUsername());
         if(isMember){
             membershipPointLabel.setVisible(true);
+            membershipDateLabel.setVisible(true);
         }else{
             membershipPointLabel.setVisible(false);
+            membershipDateLabel.setVisible(false);
         }
 
         JButton pesanTikerButton = new JButton("Pesan Tiket");
         pesanTikerButton.setBounds(170, 150, 150, 50);
         panel.add(pesanTikerButton);
         pesanTikerButton.addActionListener(e -> {
-            // new PesanTiket();
+            new PesanTiket(null);
             frame.dispose();
         });
 

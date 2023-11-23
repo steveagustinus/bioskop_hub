@@ -16,16 +16,24 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 import src.model.Cinema;
+import src.model.FnB;
+import src.model.Jadwal;
 import src.model.movie.Movie;
+import src.model.movie.MovieLanguageInterface;
 import src.model.seat.Seat;
 import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
@@ -40,7 +48,10 @@ import src.view.user.CheckUserProfileScreen;
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
 
-    public Controller() {
+    public Controller() { }
+
+    public void fetchData() {
+        Data.movies = getMovies();
     }
 
     // Seat area
@@ -75,18 +86,10 @@ public class Controller {
 
         Seat[][] seats = new Seat[1][1];
         switch (studio.getStudioClass()) {
-            case REGULER:
-                seats = new Seat[15][9];
-                break;
-            case LUXE:
-                seats = new Seat[8][8];
-                break;
-            case JUNIOR:
-                seats = new Seat[10][9];
-                break;
-            case VIP:
-                seats = new Seat[5][5];
-                break;
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
         }
 
         int idSeat = getLastSeatId() + 1;
@@ -130,26 +133,396 @@ public class Controller {
         }
     }
 
+    public Seat[][] getSeatFromJadwal(String idJadwal) {
+        Seat[][] seats = new Seat[1][1];
+
+        String idStudio = idJadwal.substring(3, 13);
+
+        Studio studio = getStudioById(idStudio);
+        switch (studio.getStudioClass()) {
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
+        }
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `id_seat`, `kode` FROM `seat` WHERE `id_studio`='" + studio.getIdStudio() + "'");
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    result.next();
+                    seats[i][j] = new Seat(
+                        result.getString("id_seat"),
+                        result.getString("kode"),
+                        SeatStatusInterface.AVAILABLE
+                    );
+                }
+            }
+
+            conn.close();
+
+            statement = conn.connection.createStatement();
+            result = statement.executeQuery(
+                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + idJadwal + 
+                    "' ORDER BY `id_seat` ASC;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return seats;
+            }
+
+            result.next();
+
+            mainloop:for (int i = 0; i < seats.length; i++) {
+                for (int j = 0; j < seats[i].length; j++) {
+                    if (seats[i][j].getIdSeat().equals(result.getString("id_seat"))) {
+                        seats[i][j].setSeatStatus(SeatStatusInterface.TAKEN);
+                        if (result.isLast()) {
+                            break mainloop;
+                        }
+                        else {
+                            result.next();
+                        }
+                    }
+                }
+            }
+
+            result.close();
+            conn.close();
+            
+            return seats;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+        }
+
+        return null;
+    }
+    
+    public Seat[][] getSeatFromJadwal(Jadwal[] arrJadwal, String idJadwal) {
+        for (Jadwal jadwal : arrJadwal) {
+            if (jadwal.getIdJadwal().equals(idJadwal)) {
+                return jadwal.getSeat();
+            }
+        }
+
+        return null;
+    }
+
+    public Seat[] getSeatFromListSeatString(Seat[][] seats, ArrayList<String> seatIds) {
+        Seat[] output = new Seat[seatIds.size()];
+
+        main:for (int i = 0; i < seatIds.size(); i++) {
+            for (Seat[] arrSeat : seats) {
+                for (Seat seat : arrSeat) {
+                    if (seat.getSeatCode().equals(seatIds.get(i))) {
+                        output[i] = seat;
+                        continue main;
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
     // Jadwal area
-    // public Seat[] GenerateSeat(Jadwal jadwal) {
-    // return null;
-    // }
+    public Jadwal getJadwalById(String idJadwal) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';"
+            );
+
+            result.next();
+
+            Jadwal jadwal = new Jadwal(
+                result.getString("id_jadwal"),
+                result.getString("id_movie"),
+                result.getString("id_studio"),
+                result.getInt("harga"),
+                result.getTimestamp("waktu").toLocalDateTime(),
+                getSeatFromJadwal(result.getString("id_jadwal"))
+            );
+
+            
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return jadwal;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public String generateJadwalID(String idStudio, String idMovie, String tanggal, String jam) {
+        if (idStudio == null || idStudio.equals("")) {
+            return "";
+        }
+        if (idMovie == null || idMovie.equals("")) {
+            return "";
+        }
+
+        LocalDateTime tanggalWaktu = null;
+        try {
+            tanggalWaktu = LocalDateTime.parse(tanggal + " " + jam, DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
+        } catch (DateTimeParseException ex) {
+            return "";
+        }
+
+        String output = "SH_" + idStudio + "_";
+
+        String movieString = idMovie;
+        for (int i = idMovie.length(); i < 10; i++) {
+            movieString += "X";
+        }
+
+        output += movieString + "_";
+
+        output += tanggalWaktu.format(DateTimeFormatter.ofPattern("yyMMddHHmm"));
+
+        return output;
+    }
+
+    public int addNewJadwal(String idJadwal, String idStudio, String idMovie, String harga, String tanggal, String jam) {
+        if (idJadwal == null || idJadwal.equals("")) {
+            return -1;
+        }
+        if (idJadwal.length() != 35) {
+            return -2;
+        }
+        if (idStudio == null || idStudio.equals("")) {
+            return -3;
+        }
+        if (!isStudioExists(idStudio)) {
+            return -4;
+        }
+        if (idMovie == null || idMovie.equals("")) {
+            return -5;
+        }
+        if (!isMovieExists(idMovie)) {
+            return -6;
+        }
+        if (harga == null || harga.equals("")) {
+            return -7;
+        }
+        if (!isNumber(harga)) {
+            return -8;
+        }
+        if (tanggal == null || tanggal.equals("")) {
+            return -9;
+        }
+        if (jam == null || jam.equals("")) {
+            return -10;
+        }
+
+        LocalDateTime tanggalWaktu = null;
+        try {
+            tanggalWaktu = LocalDateTime.parse(tanggal + " " + jam, DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm"));
+        } catch (DateTimeParseException ex) {
+            return -11;
+        }
+
+        return addNewJadwal(
+            idJadwal,
+            idStudio,
+            idMovie,
+            Integer.parseInt(harga),
+            tanggalWaktu
+        );
+    }
+
+    private int addNewJadwal(String idJadwal, String idStudio, String idMovie, int harga, LocalDateTime waktu) {
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `jadwal` (`id_jadwal`, `id_studio`, `id_movie`, `waktu`, `harga`)" +
+                    "VALUES (?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            PreparedStatement ps = conn.connection.prepareStatement(sql);
+
+            ps.setString(1, idJadwal);
+            ps.setString(2, idStudio);
+            ps.setString(3, idMovie);
+            ps.setString(4, waktu.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+            ps.setInt(5, harga);
+            
+            ps.executeUpdate();
+            conn.connection.commit();
+            ps.close();
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public Jadwal[] getJadwalByTimeRange(String idCinema, LocalDate start, LocalDate end) {
+        String startDate = start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + " 00:00:00";
+        String endDate = end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + " 23:59:59";
+
+        try {
+            conn.open();
+            
+            String sql = "SELECT * FROM jadwal " +
+            "WHERE id_studio IN (" +
+                "SELECT id_studio FROM studio " +
+                "WHERE id_cinema = '" + idCinema + "'" +
+            ") " +
+            "AND waktu > '" + startDate + "' " +
+            "AND waktu < '" + endDate + "' " +
+            "ORDER BY waktu ASC;";
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(sql);
+
+            ArrayList<Jadwal> listJadwal = new ArrayList<Jadwal>();
+
+            while (result.next()) {
+                listJadwal.add(
+                    new Jadwal(
+                        result.getString("id_jadwal"),
+                        result.getString("id_movie"),
+                        result.getString("id_studio"),
+                        result.getInt("harga"),
+                        result.getTimestamp("waktu").toLocalDateTime(),
+                        getSeatFromJadwal(result.getString("id_jadwal"))
+                    )
+                );
+            }
+
+            if (listJadwal.size() == 0) { return null; }
+            return listJadwal.toArray(new Jadwal[listJadwal.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public Jadwal[] filterJadwal(Jadwal[] listJadwal, String idMovie) {
+        ArrayList<Jadwal> output = new ArrayList<Jadwal>();
+
+        for (int i = 0; i < listJadwal.length; i++) {
+            if (listJadwal[i].getIdMovie().equals(idMovie)) {
+                output.add(listJadwal[i]);
+            }
+        }
+
+        return output.toArray(new Jadwal[output.size()]);
+    }
+
+    public String[][] getJadwalData(Jadwal[] listJadwal) {
+        String[][] output = new String[listJadwal.length][5];
+
+        for (int i = 0; i < listJadwal.length; i++) {
+            // output[i][0] = listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM hh:mm"));
+            // output[i][1] = getMovieById(listJadwal[i].getIdMovie()).getJudul();
+            // Studio studio = getStudioById(listJadwal[i].getIdStudio());
+            // output[i][2] = getStudioClassString(studio.getStudioClass());
+            // output[i][3] = getStudioTypeString(studio.getStudioType());
+            // output[i][4] = String.valueOf(listJadwal[i].getHarga());
+
+            String item = listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM hh:mm"));
+            item += " | " + getMovieById(listJadwal[i].getIdMovie()).getJudul();
+            Studio studio = getStudioById(listJadwal[i].getIdStudio());
+            item += " | " + getStudioClassString(studio.getStudioClass());
+            item += " | " + getStudioTypeString(studio.getStudioType());
+            item += " | " +String.valueOf(listJadwal[i].getHarga());
+
+            output[i][0] = item;
+        }
+
+        return output;
+    }
+
+    public Movie[] extractMoviesFromListJadwal(Jadwal[] arrJadwal) {
+        if (arrJadwal == null) { return null; }
+
+        ArrayList<Movie> movies = new ArrayList<Movie>();
+        
+        ArrayList<String> idsMovie = new ArrayList<String>();
+        for (Jadwal jadwal : arrJadwal) {
+            if (!idsMovie.contains(jadwal.getIdMovie())) {
+                idsMovie.add(jadwal.getIdMovie());
+            }
+        }
+
+        for (String idMovie : idsMovie) {
+            for (int i = 0; i < Data.movies.length; i++) {
+                if (Data.movies[i].getIdMovie().equals(idMovie)) {
+                    movies.add(Data.movies[i]);
+                    break;
+                }
+            }
+        }
+
+        return movies.toArray(new Movie[movies.size()]);
+    }
 
     // Studio area
+    public boolean isStudioExists(String idStudio) {
+        return isStudioExists(idStudio, false);
+    }
+
+    private boolean isStudioExists(String idStudio, boolean includeDeleted) {
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            String sql = "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "'";
+            if (!includeDeleted) {
+                sql += " AND `is_deleted`=0";
+            }
+            ResultSet result = statement.executeQuery(sql);
+
+            boolean exists = false;
+            if (result.isBeforeFirst()) {
+                exists = true;
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return exists;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return false;
+        }
+    }
+
     public Studio getStudioById(String idStudio) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "';");
+                "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "' AND `is_deleted`=0;"
+            );
 
             result.next();
 
             Studio studio = new Studio(
-                    idStudio,
-                    result.getString("id_cinema"),
-                    getStudioClassEnum(result.getString("studio_class")),
-                    result.getInt("studio_type"));
+                idStudio,
+                result.getString("id_cinema"),
+                getStudioClassEnum(result.getString("studio_class")),
+                result.getInt("studio_type")
+            );
 
             result.close();
             statement.close();
@@ -162,12 +535,12 @@ public class Controller {
         }
     }
 
-    public ArrayList<Studio> getStudio(String idCinema, boolean getJadwalData) {
+    public ArrayList<Studio> getStudio(String idCinema) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "'");
+                    "SELECT * FROM `studio` WHERE `id_cinema`='" + idCinema + "' AND `is_deleted`=0");
 
             if (!result.isBeforeFirst()) {
                 return null;
@@ -176,10 +549,12 @@ public class Controller {
             ArrayList<Studio> studioList = new ArrayList<Studio>();
             while (result.next()) {
                 Studio studio = new Studio(
-                        result.getString("id_studio"),
-                        result.getString("id_cinema"),
-                        getStudioClassEnum(result.getString("studio_class")),
-                        result.getInt("studio_type"));
+                    result.getString("id_studio"),
+                    result.getString("id_cinema"),
+                    getStudioClassEnum(result.getString("studio_class")),
+                    result.getInt("studio_type")
+                );
+
                 studioList.add(studio);
             }
 
@@ -193,7 +568,7 @@ public class Controller {
             return null;
         }
     }
-
+    
     public StudioClassEnum getStudioClassEnum(String studioClass) {
         switch (studioClass.toUpperCase()) {
             case "VIP":
@@ -206,10 +581,6 @@ public class Controller {
                 return StudioClassEnum.REGULER;
         }
         return null;
-    }
-
-    public String[] getListStudioClass() {
-        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
     }
 
     public String getStudioClassString(StudioClassEnum studioClass) {
@@ -261,6 +632,28 @@ public class Controller {
     }
 
     public int addNewStudio(String idStudio, String idCinema, String studioClass, String studioType) {
+        if (idStudio == null || idStudio.equals("")) {
+            return -1;
+        }
+        if (idStudio.length() != 10) {
+            return -2;
+        }
+        if (isStudioExists(idStudio, true)) {
+            return -3;
+        }
+        if (idCinema == null || idCinema.equals("")) {
+            return -4;
+        }
+        if (idCinema.length() != 10) {
+            return -5;
+        }
+        if (studioClass == null || studioClass.equals("")) {
+            return -6;
+        }
+        if (studioType == null || studioType.equals("")) {
+            return -7;
+        }
+
         return addNewStudio(
                 idStudio,
                 idCinema,
@@ -268,25 +661,12 @@ public class Controller {
                 getStudioType(studioType));
     }
 
-    public int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
-        if (idStudio == null || idStudio.equals("") || idStudio.length() != 10) {
-            return -1;
-        }
-        if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
-            return -2;
-        }
-        if (studioClass == null) {
-            return -3;
-        }
-        if (studioType < 0) {
-            return -4;
-        }
-
+    private int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
         try {
             conn.open();
 
-            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`)" +
-                    "VALUES (?, ?, ?, ?)";
+            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`, `is_deleted`)" +
+                    "VALUES (?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
 
@@ -296,7 +676,8 @@ public class Controller {
             ps.setString(2, idCinema);
             ps.setString(3, getStudioClassString(studioClass).toUpperCase());
             ps.setInt(4, studioType);
-
+            ps.setInt(5, 0);
+            
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -305,7 +686,7 @@ public class Controller {
 
             // Generate seats on studio creation
             if (generateSeat(new Studio(idStudio, idCinema, studioClass, studioType)) != 0) {
-                return -5;
+                return -8;
             }
 
             return 0;
@@ -315,37 +696,36 @@ public class Controller {
         }
     }
 
-    public int editStudio(String idStudio, String idCinema, String studioClass, String studioType) {
-        return editStudio(
-                idStudio,
-                idCinema,
-                getStudioClassEnum(studioClass),
-                getStudioType(studioType));
-    }
-
-    public int editStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
+    public int editStudio(String idStudio, String studioClass, String studioType) {
         if (idStudio == null || idStudio.equals("")) {
             return -1;
         }
 
-        if (idCinema == null || idCinema.equals("")) {
+        if (studioClass == null || studioClass.equals("")) {
             return -2;
         }
 
-        if (studioClass == null) {
+        if (studioType == null || studioType.equals("")) {
             return -3;
         }
 
+        return editStudio (
+            idStudio,
+            getStudioClassEnum(studioClass),
+            getStudioType(studioType)
+        );
+    }
+
+    private int editStudio(String idStudio, StudioClassEnum studioClass, int studioType) {
         try {
             conn.open();
 
-            String sql = "UPDATE `studio` SET `id_cinema`=?, `studio_class`=?, `studio_type`=? WHERE `id_studio`=?;";
+            String sql = "UPDATE `studio` SET `studio_class`=?, `studio_type`=? WHERE `id_studio`=?;";
             PreparedStatement ps = conn.connection.prepareStatement(sql);
 
-            ps.setString(1, idCinema);
-            ps.setString(2, getStudioClassString(studioClass).toUpperCase());
-            ps.setInt(3, studioType);
-            ps.setString(4, idStudio);
+            ps.setString(1, getStudioClassString(studioClass).toUpperCase());
+            ps.setInt(2, studioType);
+            ps.setString(3, idStudio);
 
             ps.executeUpdate();
             ps.close();
@@ -358,7 +738,29 @@ public class Controller {
             return -99;
         }
     }
+    
+    public int deleteStudio(String idStudio) {
+        if (idStudio == null || idStudio.equals("")) {
+            return -1;
+        }
 
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            
+            statement.executeUpdate(
+                "UPDATE `studio` SET `is_deleted`=1 WHERE `id_studio`='" + idStudio + "';"
+            );
+
+            statement.close();
+            conn.close();
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -367,7 +769,7 @@ public class Controller {
 
             Statement statement = conn.connection.createStatement();
             ResultSet rows = statement.executeQuery(
-                    "SELECT `nama` FROM `cinema`");
+                    "SELECT `nama` FROM `cinema` AND `is_deleted`=0;");
 
             while (rows.next()) {
                 cinemaList.add(rows.getString("nama"));
@@ -384,13 +786,21 @@ public class Controller {
     }
 
     public boolean isCinemaExists(String idCinema) {
+        return isCinemaExists(idCinema, false);
+    }
+
+    private boolean isCinemaExists(String idCinema, boolean includeDeleted) {
         try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
 
+            String sql = "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'";
+            if (!includeDeleted) {
+                sql += " AND `is_deleted`=0";
+            }
+
+            ResultSet result = statement.executeQuery(sql);
             boolean exists = false;
             if (result.isBeforeFirst()) {
                 exists = true;
@@ -407,13 +817,13 @@ public class Controller {
         }
     }
 
-    public Cinema getCinemaById(String idCinema, boolean getStudioData) {
+    public Cinema getCinemaById(String idCinema) {
         try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "'");
+                    "SELECT * FROM `cinema` WHERE `id_cinema`='" + idCinema + "' AND `is_deleted`=0;");
 
             result.next();
 
@@ -426,23 +836,14 @@ public class Controller {
             fotoCinema = new File(Config.Path.TEMP_DIR + "img.png");
 
             Cinema cinema = null;
-            if (getStudioData) {
-                cinema = new Cinema(
-                        idCinema,
-                        result.getString("nama"),
-                        result.getString("alamat"),
-                        result.getString("kota"),
-                        fotoCinema,
-                        getStudio(idCinema, true));
-            } else {
-                cinema = new Cinema(
-                        idCinema,
-                        result.getString("nama"),
-                        result.getString("alamat"),
-                        result.getString("kota"),
-                        fotoCinema,
-                        null);
-            }
+            cinema = new Cinema(
+                idCinema,
+                result.getString("nama"),
+                result.getString("alamat"),
+                result.getString("kota"),
+                fotoCinema,
+                null
+            );
 
             result.close();
             statement.close();
@@ -456,6 +857,61 @@ public class Controller {
     }
 
     public int addNewCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
+        if (idCinema == null || idCinema.equals("")) {
+            return -1;
+        }
+        if (idCinema.length() != 10) {
+            return -2;
+        }
+        if (nama == null || nama.equals("")) {
+            return -3;
+        }
+        if (alamat == null || alamat.equals("")) {
+            return -4;
+        }
+        if (kota == null || kota.equals("")) {
+            return -5;
+        }
+        if (fotoCinema == null) {
+            return -6;
+        }
+        if (isCinemaExists(idCinema, true)) {
+            return -7;
+        }
+
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `cinema` (`id_cinema`, `nama`, `kota`, `alamat`, `img`, `is_deleted`)" +
+                    "VALUES (?, ?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
+                ps.setString(1, idCinema);
+                ps.setString(2, nama);
+                ps.setString(3, kota);
+                ps.setString(4, alamat);
+                ps.setBinaryStream(5, fis, (int) fotoCinema.length());
+                ps.setInt(6, 0);
+
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int editCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
         if (idCinema == null || idCinema.equals("") || idCinema.length() != 10) {
             return -1;
         }
@@ -474,20 +930,20 @@ public class Controller {
 
         try {
             conn.open();
-
-            String sql = "INSERT INTO `cinema` (`id_cinema`, `nama`, `kota`, `alamat`, `img`)" +
-                    "VALUES (?, ?, ?, ?, ?)";
-
             conn.connection.setAutoCommit(false);
 
+            String sql = "UPDATE `cinema` SET `nama`=?, `alamat`=?, `kota`=?, `img`=? WHERE `id_cinema`=?;";
+
             try (
-                    FileInputStream fis = new FileInputStream(fotoCinema);
-                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
-                ps.setString(1, idCinema);
-                ps.setString(2, nama);
+                FileInputStream fis = new FileInputStream(fotoCinema);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, nama);
+                ps.setString(2, alamat);
                 ps.setString(3, kota);
-                ps.setString(4, alamat);
-                ps.setBinaryStream(5, fis, (int) fotoCinema.length());
+                ps.setBinaryStream(4, fis, (int) fotoCinema.length());
+                ps.setString(5, idCinema);
+
                 ps.executeUpdate();
                 conn.connection.commit();
                 ps.close();
@@ -502,84 +958,35 @@ public class Controller {
         }
     }
 
-    public int editCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
+    public int deleteCinema(String idCinema) {
         if (idCinema == null || idCinema.equals("")) {
             return -1;
         }
 
-        boolean empty_nama = nama == null || nama.equals("");
-        boolean empty_alamat = alamat == null || alamat.equals("");
-        boolean empty_kota = kota == null || kota.equals("");
-        boolean empty_foto = fotoCinema == null;
-
-        if (empty_nama && empty_alamat && empty_kota && empty_foto) {
-            return -2;
-        }
-
-        String sql = "UPDATE `cinema` SET ";
-        if (!empty_nama) {
-            sql += "`nama` = ?, ";
-        }
-        if (!empty_alamat) {
-            sql += "`alamat` = ?, ";
-        }
-        if (!empty_kota) {
-            sql += "`kota` = ?, ";
-        }
-        if (!empty_foto) {
-            sql += "`img` = ?,";
-        }
-        sql = sql.substring(0, sql.length() - 1);
-        sql += " WHERE `id_cinema` = ?";
-
         try {
             conn.open();
+            Statement statement = conn.connection.createStatement();
+            
+            statement.executeUpdate(
+                "UPDATE `cinema` SET `is_deleted`=1 WHERE `id_cinema`='" + idCinema + "';"
+            );
 
-            conn.connection.setAutoCommit(false);
-
-            try (
-                    FileInputStream fis = new FileInputStream(fotoCinema);
-                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
-                int count = 1;
-                if (!empty_nama) {
-                    ps.setString(count, nama);
-                    count++;
-                }
-                if (!empty_alamat) {
-                    ps.setString(count, alamat);
-                    count++;
-                }
-                if (!empty_kota) {
-                    ps.setString(count, kota);
-                    count++;
-                }
-                if (!empty_foto) {
-                    ps.setBinaryStream(count, fis, (int) fotoCinema.length());
-                    count++;
-                }
-                ps.setString(count, idCinema);
-
-                ps.executeUpdate();
-                conn.connection.commit();
-                ps.close();
-            }
-
+            statement.close();
             conn.close();
-
             return 0;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
-
+    
     // Movie area
     public Movie getMovieById(String idMovie) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
+                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "' AND `is_deleted`=0");
 
             result.next();
 
@@ -592,14 +999,15 @@ public class Controller {
             fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
 
             Movie movie = new Movie(
-                    idMovie,
-                    result.getString("judul"),
-                    result.getDate("release_date"),
-                    result.getString("director"),
-                    result.getInt("language"),
-                    result.getInt("durasi"),
-                    result.getString("sinopsis"),
-                    fotoMovie);
+                idMovie,
+                result.getString("judul"),
+                dateToLocalDate(result.getDate("release_date")),
+                result.getString("director"),
+                result.getInt("language"),
+                result.getInt("durasi"),
+                result.getString("sinopsis"),
+                fotoMovie
+            );
 
             result.close();
             statement.close();
@@ -612,13 +1020,92 @@ public class Controller {
         }
     }
 
+    public Movie[] getMovies() {
+        ArrayList<Movie> movieList = new ArrayList<Movie>();
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `movie` WHERE `is_deleted`=0");
+
+            int counter = 0;
+            while (result.next()) {
+                File fotoMovie = new File(Config.Path.TEMP_DIR + "img_" + counter + ".png");
+                fotoMovie.createNewFile();
+
+                Path target = fotoMovie.toPath();
+                Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
+
+                fotoMovie = new File(Config.Path.TEMP_DIR + "img_" + counter + ".png");
+
+                Movie movie = new Movie(
+                    result.getString("id_movie"),
+                    result.getString("judul"),
+                    dateToLocalDate(result.getDate("release_date")),
+                    result.getString("director"),
+                    result.getInt("language"),
+                    result.getInt("durasi"),
+                    result.getString("sinopsis"),
+                    fotoMovie
+                );
+
+                movieList.add(movie);
+                counter++;
+            }
+
+            
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return movieList.toArray(new Movie[movieList.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public Movie[] searchMovie(String input, int limit) {
+        if (Data.movies == null) { return null; }
+
+        ArrayList<Movie> movieList = new ArrayList<Movie>();
+
+        if (input.equals("")) {
+            for (int i = 0; i < limit && i < Data.movies.length; i++) {
+                movieList.add(Data.movies[i]);
+            }
+
+            return movieList.toArray(new Movie[movieList.size()]);
+        }
+
+        for (Movie movie : Data.movies) {
+            if (movie.getJudul().toLowerCase().contains(input.toLowerCase())) {
+                movieList.add(movie);
+            }
+        }
+
+        if (movieList.isEmpty()) { return null; }
+
+        return movieList.toArray(new Movie[movieList.size()]);
+    }
+
     public boolean isMovieExists(String idMovie) {
+        return isMovieExists(idMovie, false);
+    }
+
+    private boolean isMovieExists(String idMovie, boolean includeDeleted) {
         try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'");
+            String sql =  "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'";
+
+            if (!includeDeleted) {
+                sql += " AND `is_deleted`=0";
+            }
+            ResultSet result = statement.executeQuery(sql);
 
             boolean exists = false;
             if (result.isBeforeFirst()) {
@@ -634,6 +1121,210 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return false;
         }
+    }
+    
+    public int addNewMovie(String idMovie, String judul, String releaseDate, String director, String language, String durasi, String sinopsis, File fotoMovie) {
+        if (idMovie == null || idMovie.equals("")) {
+            return -1;
+        }
+        if (judul == null || judul.equals("")) {
+            return -2;
+        }
+        if (releaseDate == null || releaseDate.equals("")) {
+            return -3;
+        }
+        if (director == null || director.equals("")) {
+            return -4;
+        }
+        if (language == null || language.equals("")) {
+            return -5;
+        }
+        if (durasi == null || durasi.equals("")) {
+            return -6;
+        }
+        if (!isNumber(durasi)) {
+            return -7;
+        }
+        if (sinopsis == null || sinopsis.equals("")) {
+            return -8;
+        }
+        if (fotoMovie == null) {
+            return -9;
+        }
+
+        if (isMovieExists(idMovie, true)) {
+            return -10;
+        }
+
+        return addNewMovie(
+            idMovie,
+            judul,
+            stringToLocalDate(releaseDate, "MMM d, yyyy"),
+            director,
+            getMovieLanguage(language),
+            Integer.parseInt(durasi),
+            sinopsis,
+            fotoMovie
+        );
+    }
+
+    private int addNewMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+        try {
+            conn.open();
+
+            String sql = "INSERT INTO `movie` (`id_movie`, `judul`, `release_date`, `director`, `language`, `durasi`, `sinopsis`, `img`, `is_deleted`)" +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                FileInputStream fis = new FileInputStream(fotoMovie);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, idMovie);
+                ps.setString(2, judul);
+                ps.setDate(3, java.sql.Date.valueOf(releaseDate));
+                ps.setString(4, director);
+                ps.setInt(5, language);
+                ps.setInt(6, durasi);
+                ps.setString(7, sinopsis);
+                ps.setBinaryStream(8, fis, (int) fotoMovie.length());
+                ps.setInt(9, 0);
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int editMovie(String idMovie, String judul, String releaseDate, String director, String language, String durasi, String sinopsis, File fotoMovie) {
+        if (idMovie == null || idMovie.equals("")) {
+            return -1;
+        }
+        if (judul == null || judul.equals("")) {
+            return -2;
+        }
+        if (releaseDate == null || releaseDate.equals("")) {
+            return -3;
+        }
+        if (director == null || director.equals("")) {
+            return -4;
+        }
+        if (language == null || language.equals("")) {
+            return -5;
+        }
+        if (durasi == null || durasi.equals("")) {
+            return -6;
+        }
+        if (!isNumber(durasi)) {
+            return -7;
+        }
+        if (sinopsis == null || sinopsis.equals("")) {
+            return -8;
+        }
+        if (fotoMovie == null) {
+            return -9;
+        }
+        
+        return editMovie(
+            idMovie,
+            judul,
+            stringToLocalDate(releaseDate, "MMM d, yyyy"),
+            director,
+            getMovieLanguage(language),
+            Integer.parseInt(durasi),
+            sinopsis,
+            fotoMovie
+        );
+    }
+    
+    private int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?, `is_deleted`=0 " +
+            "WHERE `id_movie`=?";
+
+        try {
+            conn.open();
+
+            conn.connection.setAutoCommit(false);
+
+            try (
+                FileInputStream fis = new FileInputStream(fotoMovie);
+                PreparedStatement ps = conn.connection.prepareStatement(sql);
+            ) {
+                ps.setString(1, judul);
+                ps.setDate(2, java.sql.Date.valueOf(releaseDate));
+                ps.setString(3, director);
+                ps.setInt(4, language);
+                ps.setInt(5, durasi);
+                ps.setString(6, sinopsis);
+                ps.setBinaryStream(7, fis, (int) fotoMovie.length());
+                ps.setString(8, idMovie);
+
+                ps.executeUpdate();
+                conn.connection.commit();
+                ps.close();
+            }
+
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int deleteMovie(String idMovie) {
+        if (idMovie == null || idMovie.equals("")) {
+            return -1;
+        }
+
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            
+            statement.executeUpdate(
+                "UPDATE `movie` SET `is_deleted`=1 WHERE `id_movie`='" + idMovie + "';"
+            );
+
+            statement.close();
+            conn.close();
+
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public String[] getMovieLanguageList() {
+        return new String[] { "English", "Japanese", "Bahasa_Indonesia" };
+    }
+
+    public String getMovieLanguageString(int language) {
+        switch (language) {
+            case MovieLanguageInterface.ENGLISH: return "English";
+            case MovieLanguageInterface.JAPANESE: return "Japanese";
+            case MovieLanguageInterface.BAHASA_INDONESIA: return "Bahasa_Indonesia";
+        }
+        return "";
+    }
+
+    public int getMovieLanguage(String language) {
+        switch (language) {
+            case "English": return MovieLanguageInterface.ENGLISH;
+            case "Japanese": return MovieLanguageInterface.JAPANESE;
+            case "Bahasa_Indonesia": return MovieLanguageInterface.BAHASA_INDONESIA;
+        }
+
+        return -1;
     }
 
     // User area
@@ -657,23 +1348,29 @@ public class Controller {
 
                 case 1:
                     user = new Customer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phone_no"),
-                            result.getString("address"), null);
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phone_no"),
+                        result.getString("address"),
+                        null
+                    );
                     break;
 
                 case 2:
                     user = new MembershipCustomer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phone_no"),
-                            result.getString("address"),
-                            null, result.getInt("poin"));
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phone_no"),
+                        result.getString("address"),
+                        null,
+                        result.getInt("poin")
+                    );
                     break;
             }
 
@@ -775,6 +1472,54 @@ public class Controller {
         }
     }
 
+    // User action
+    public int getTotalBayar(Jadwal jadwal, Seat[] bookedSeat) {
+        return jadwal.getHarga() * bookedSeat.length;
+    }
+
+    public int pesanTiket(String idCustomer, Jadwal jadwal, Seat[] bookedSeat) {
+        System.out.println(idCustomer);
+        if (idCustomer == null || idCustomer.equals("")) {
+            return -1;
+        }
+
+        if (jadwal == null) {
+            return -2;
+        }
+
+        if (bookedSeat == null) {
+            return -3;
+        }
+
+        try {
+            String idTransaction = createTransactionId();
+            conn.open();
+            
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES ('" + idTransaction + "', '" + idCustomer + "', now());"
+            );
+
+            String sql = "INSERT INTO `transaction_jadwal` (`id_transaction`, `id_jadwal`, `id_seat`) VALUES ";
+
+            for (Seat seat : bookedSeat) {
+                sql += "('" + idTransaction + "', '" + jadwal.getIdJadwal() + "', '" + seat.getIdSeat() + "'),";
+            }
+
+            sql = sql.substring(0, sql.length() - 1) + ";";
+
+            statement.executeUpdate(sql);
+            statement.close();
+            conn.close();
+            
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+  
     public int checkUserType(User user) {
         try {
             conn.open();
@@ -788,6 +1533,47 @@ public class Controller {
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
+        }
+    }
+
+    public String[] getPaymentMethods() {
+        return new String[] { "BCA", "GO-PAY", "DANA", "SHOPEEPAY" };
+    }
+
+    // Transaction
+    public String createTransactionId() {
+        String newId = "";
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_transaction` FROM `transaction` ORDER BY `id_transaction` DESC LIMIT 1;"
+            );
+
+            String lastId = "";
+            if (!result.isBeforeFirst()) {
+                lastId = "0";
+            } else {
+                result.next();
+                lastId = result.getString("id_transaction").replace("T-", "");
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            newId = String.valueOf(Integer.parseInt(lastId) + 1);
+
+            for (int i = newId.length(); i < 18; i++) {
+                newId = "0" + newId;
+            }
+            
+            newId = "T-" + newId;
+
+            return newId;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
         }
     }
 
@@ -854,14 +1640,51 @@ public class Controller {
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email,
+    public MembershipCustomer registerMembership(String idUser, String username, String password, String profileName, String email,
             String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email,
+        MembershipCustomer membershipCustomer = new MembershipCustomer(idUser, username, password, profileName, email,
                 phoneNumber, address, null, poin);
         return membershipCustomer;
     }
 
     // Common services
+    public boolean isNumber(String string) {
+        for (int i = 0; i < string.length(); i++) {
+            int chr = (char) string.charAt(i);
+
+            if (i == 0 && chr == 45) {
+                continue;
+            }
+
+            if (!(chr >= 48 && chr <= 57)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public LocalDate dateToLocalDate(java.util.Date date) {
+        return LocalDate.from(Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()));
+    }
+
+    public LocalDate stringToLocalDate(String str, String pattern) {
+        if (str.equals("")) { return null; }
+        LocalDate output = null;
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+            output = LocalDate.parse(str, formatter);
+        } catch (Exception ex) {
+            return null;
+        }
+
+        return output;
+    }
+
+    public String localDateToString(LocalDate date, String pattern) {
+        return date.format(DateTimeFormatter.ofPattern(pattern));
+    }
+    
     public String sha256(String content) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
@@ -911,6 +1734,8 @@ public class Controller {
         if (!dir.exists()) {
             dir.mkdirs();
         }
+
+        fetchData();
     }
 
     // Hitung pendapatan area
@@ -985,6 +1810,7 @@ public class Controller {
         }
         return total;
     }
+  
     public int hitungPendapatanPerKotaPerCabang(String namaKota, String namaCabang){
         int total = 0;
         try {
@@ -1011,6 +1837,7 @@ public class Controller {
         return total;
     }
 
+  
     public boolean isKotaExists(String kota) {
         try {
             conn.open();
@@ -1029,6 +1856,7 @@ public class Controller {
             return false;
         }
     }
+    
     public boolean isCabangExists(String cabang) {
         try {
             conn.open();
@@ -1047,6 +1875,7 @@ public class Controller {
             return false;
         }
     }
+    
     public String[] listKotaHP(){
         try {
             conn.open();
@@ -1091,6 +1920,7 @@ public class Controller {
     }
 
     // Function tampilkan list
+  
     public String[] listKota() {
         try {
             conn.open();
@@ -1178,8 +2008,8 @@ public class Controller {
             return null;
         }
     }
-
-    public String[] listMovie(String id_Studio) {
+    
+    public String[] listMovie(String id_Studio){
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1195,6 +2025,36 @@ public class Controller {
             conn.close();
 
             return listMovie.toArray(new String[listMovie.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public FnB getFnBbyName (String namaFnB){
+         try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `fnb` WHERE `nama`='" + namaFnB + "' AND `is_deleted`=0;");
+
+            result.next();
+
+            
+            FnB fnB = null;
+            fnB = new FnB(
+                result.getString("nama"),
+                result.getInt("harga"),
+                result.getString("description")
+            );
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return fnB;
+            
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return null;
@@ -1314,6 +2174,89 @@ public class Controller {
         UserDataSingleton.getInstance().setAddress(address);
         return 1;
     }
+  
+    public String[] listJam(String movie){
+        try{
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `waktu` FROM `jadwal` WHERE `id_movie`='" + movie + "'");
+
+            ArrayList<String> listJam = new ArrayList<String>();
+            while (result.next()) {
+                listJam.add(result.getString("jam"));
+            }
+
+            return listJam.toArray(new String[listJam.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+            return null;
+        }
+    }
+
+    public int addFnB( String [] fnb){
+        int harga = Integer.parseInt(fnb[1]);
+        if(fnb[0]==null){
+            return OperationCode.addFnB.EMPTYNAME;
+        }else if (fnb[1]==null) {
+            return OperationCode.addFnB.EMPTYHARGA;
+        }else if (fnb[2]==null) {
+            return OperationCode.addFnB.EMPTYDESCRIPTION;
+        }
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "INSERT INTO `fnb` (`nama`,`harga`,`description`,`is_deleted`) VALUES ('"+fnb[0]+"','"+harga+"','"+fnb[2]+"',0)");
+            statement.close();
+            conn.close();
+            return OperationCode.addFnB.SUCCESS;
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return OperationCode.addFnB.ANYEXCEPTION;
+        }
+    }
+    public int deleteFnB(String fnbName){
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "UPDATE `fnb` SET `is_deleted`=1 WHERE nama='" + fnbName + "'");
+            statement.close();
+            conn.close();
+            return 0;
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    public int EditFnB(String fnbName, String [] dataFnB){
+        int harga = Integer.parseInt(dataFnB[1]);
+        if(dataFnB[0]==null){
+            return OperationCode.EditFnB.EMPTYNAME;
+        }else if (dataFnB[1]==null) {
+            return OperationCode.EditFnB.EMPTYHARGA;
+        }else if (dataFnB[2]==null) {
+            return OperationCode.EditFnB.EMPTYDESCRIPTION;
+        }
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "UPDATE `fnb` SET `nama`='"+dataFnB[0]+"', `harga`='"+harga+"', `description`='"+dataFnB[2]+"' WHERE nama='" + fnbName + "'");
+            statement.close();
+            conn.close();
+            return OperationCode.EditFnB.SUCCESS;
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return OperationCode.EditFnB.ANYEXCEPTION;
+        }
+    }
+    
     // Main menu user area
 
     public void printTableFnB(int id, JTable table, DefaultTableModel model) {

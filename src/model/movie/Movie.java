@@ -1,19 +1,19 @@
 package src.model.movie;
 
 import java.io.File;
-import java.util.Date;
+import java.time.LocalDate;
 
 public class Movie implements MovieLanguageInterface{
     private String idMovie;
     private String judul;
-    private Date releaseDate;
+    private LocalDate releaseDate;
     private String director;
     private int language;
     private int durasi;
     private String sinopsis;
     private File fotoMovie;
 
-    public Movie(String idMovie, String judul, Date releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+    public Movie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
         this.idMovie = idMovie;
         this.judul = judul;
         this.releaseDate = releaseDate;
@@ -32,7 +32,7 @@ public class Movie implements MovieLanguageInterface{
         return judul;
     }
 
-    public Date getReleaseDate() {
+    public LocalDate getReleaseDate() {
         return releaseDate;
     }
 
@@ -40,13 +40,8 @@ public class Movie implements MovieLanguageInterface{
         return director;
     }
 
-    public String getLanguage() {
-        switch (this.language) {
-            case ENGLISH: return "English";
-            case JAPANESE: return "Japanese";
-            case BAHASA_INDONESIA: return "Bahasa_Indonesia";
-        }
-        return "";
+    public int getLanguage() {
+        return language;
     }
 
     public int getDurasi() {

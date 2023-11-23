@@ -20,6 +20,7 @@ import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -2419,16 +2420,13 @@ public class Controller {
             String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";
             PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
             preparedStatement.setString(1, username);
-
             ResultSet resultSet = preparedStatement.executeQuery();
-
             if (!resultSet.isBeforeFirst()) {
-                return -99;
+                return 0;
             }
-
             resultSet.close();
             conn.close();
-            return 0;
+            return 1;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
@@ -2439,22 +2437,61 @@ public class Controller {
     public int raiseMembership(String username) {
         try {
             int status = checkMembership(username);
-            if (status!=0) {
+            if (status == 0) {
                 conn.open();
-                String updateQuery = "UPDATE user SET membership_status = 1 WHERE username = ?";
-                try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
-                    preparedStatement.setString(1, username);
-                    int rowsAffected = preparedStatement.executeUpdate();
-                    if (rowsAffected > 0) {
-                        UserDataSingleton.getInstance().setMembership_status(1);
-                        return 0;
-                    }
+                String updateQuery = "UPDATE user SET `membership_status` = 1, `membership_expiry_date` = ? WHERE username = ?";
+                PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery);
+                LocalDate date = LocalDate.now();
+                LocalDate newDate = date.plusDays(30);
+                preparedStatement.setDate(1, Date.valueOf(newDate));
+                preparedStatement.setString(2, username);
+
+                int rowsAffected = preparedStatement.executeUpdate();
+                preparedStatement.close();
+                conn.close();
+                if (rowsAffected > 0) {
+                    UserDataSingleton.getInstance().setMembership_status(1);
+                    UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
+                    return 1;
                 }
-            }else{
-                return -1;
             }
         } catch (Exception ex) {
              new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+        }
+        return -99;
+    }
+    public int extendMembership(String username){
+        try{
+            int status = checkMembership(username);
+            if(status == 1){
+                conn.open();
+                String selectQuery = "SELECT `membership_expiry_date` FROM user WHERE username=? AND membership_status = 1";
+                PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+                preparedStatement.setString(1, username);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                resultSet.next();
+                Date date = resultSet.getDate("membership_expiry_date");
+                LocalDate localDate = dateToLocalDate(date);
+                LocalDate newDate = localDate.plusDays(30);
+                resultSet.close();
+                preparedStatement.close();
+                String updateQuery = "UPDATE user SET membership_expiry_date = ? WHERE username = ?";
+                PreparedStatement preparedStatement2 = conn.connection.prepareStatement(updateQuery);
+                preparedStatement2.setDate(1, Date.valueOf(newDate));
+                preparedStatement2.setString(2, username);
+                int rowsAffected = preparedStatement2.executeUpdate();
+                preparedStatement2.close();
+                conn.close();
+                if (rowsAffected > 0) {
+                    UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
+                    return 1;
+                }
+            }else{
+                return 0;
+            }
+        }catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
         }
         return -99;

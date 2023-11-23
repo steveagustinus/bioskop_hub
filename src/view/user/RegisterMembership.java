@@ -16,20 +16,20 @@ public class RegisterMembership {
     UserDataSingleton user;
     Controller controller = new Controller();
     public RegisterMembership(){
-        JFrame frame = new JFrame("Register Membership");
-        frame.setSize(300, 100);
+        JFrame frame = new JFrame("Membership");
+        frame.setSize(270, 210);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
         panel.setLayout(null);
 
-        JLabel mainLabel = new JLabel("Register Membership");
-        mainLabel.setBounds(50, 10, 250, 25);
+        JLabel mainLabel = new JLabel("Membership Menu");
+        mainLabel.setBounds(43, 10, 250, 25);
         mainLabel.setFont(new Font("Arial", Font.BOLD, 18));
         panel.add(mainLabel);
 
         JButton registerButton = new JButton("Register");
-        registerButton.setBounds(150, 35, 80, 25);
+        registerButton.setBounds(40, 50, 170, 25);
         panel.add(registerButton);
         registerButton.addActionListener(new ActionListener() {
             @Override
@@ -46,10 +46,28 @@ public class RegisterMembership {
         });
 
         JButton backButton = new JButton("Back");
-        backButton.setBounds(50, 35, 80, 25);
+        backButton.setBounds(40, 130, 170, 25);
         panel.add(backButton);
         backButton.addActionListener(e -> {
             frame.setVisible(false);
+            new MainMenuUserScreen();
+        });
+
+        JButton extendButton = new JButton("Extend");
+        extendButton.setBounds(40, 90, 170, 25);
+        panel.add(extendButton);
+        extendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                user = UserDataSingleton.getInstance();
+                int isMember = controller.checkMembership(user.getUsername());
+                if(isMember == 1){
+                    controller.extendMembership(user.getUsername());
+                    JOptionPane.showMessageDialog(null, "Membership extended!");
+                }else{
+                    JOptionPane.showMessageDialog(null, "You don't have a membership!");
+                }
+            }
         });
 
         frame.add(panel);

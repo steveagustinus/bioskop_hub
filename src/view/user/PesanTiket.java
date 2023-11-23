@@ -437,8 +437,8 @@ public class PesanTiket extends JDialog {
 
         listJadwal = controller.getJadwalByTimeRange(
             idCinema,
-            LocalDate.of(2023, 12, 1), //LocalDate.now(),
-            LocalDate.of(2023, 12, 8) //LocalDate.now().plusWeeks(1)
+            LocalDate.of(2023, 11, 14), //LocalDate.now(),
+            LocalDate.of(2023, 11, 17) //LocalDate.now().plusWeeks(1)
         );
         
         listMovie = controller.extractMoviesFromListJadwal(listJadwal);

@@ -13,6 +13,8 @@ import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
 import src.view.admin.manage_jadwal.EditJadwalScreen;
 import src.view.admin.manage_jadwal.NewJadwalDialog;
+import src.view.admin.manage_movie.EditMovieScreen;
+import src.view.admin.manage_movie.NewMovieDialog;
 import src.view.admin.manage_studio.EditStudioScreen;
 import src.view.admin.manage_studio.NewStudioDialog;
 
@@ -50,7 +52,7 @@ public class MainMenuScreen implements MainInterface {
         JButton manageMovieButton = new JButton("Tambah Movie");
         manageMovieButton.setBounds(40, 170, 200, 30);
         manageMovieButton.addActionListener(e -> {
-            //new NewMovieDialog(mainFrame);
+            new NewMovieDialog(mainFrame);
         });
 
         JButton manageJadwalButton = new JButton("Tambah Jadwal");
@@ -74,7 +76,7 @@ public class MainMenuScreen implements MainInterface {
         JButton manageMovieButton2 = new JButton("Edit Movie");
         manageMovieButton2.setBounds(260, 170, 200, 30);
         manageMovieButton2.addActionListener(e -> {
-            //new EditMovieScreen(mainFrame);
+            new EditMovieScreen(mainFrame);
         });
 
         JButton manageJadwalButton2 = new JButton("Edit Jadwal");
@@ -119,10 +121,5 @@ public class MainMenuScreen implements MainInterface {
         mainFrame.add(panel);
         mainFrame.setVisible(true);
         mainFrame.setLocationRelativeTo(null);
-    }
-
-    // test area
-    public static void main(String[] args) {
-        new MainMenuScreen();
     }
 }

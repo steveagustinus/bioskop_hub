@@ -12,8 +12,9 @@ import javax.swing.JLabel;
 import src.controller.UserDataSingleton;
 import src.model.button.MyButton;
 import src.view.LoginScreen;
+import src.view.MainInterface;
 
-public class MainMenuUserScreen {
+public class MainMenuUserScreen implements MainInterface {
     UserDataSingleton userData = UserDataSingleton.getInstance();
 
     public MainMenuUserScreen() {
@@ -42,7 +43,7 @@ public class MainMenuUserScreen {
         pesanTikerButton.setBounds(170, 150, 150, 50);
         panel.add(pesanTikerButton);
         pesanTikerButton.addActionListener(e -> {
-            new PesanTiket(null);
+            new PesanTiket(mainFrame);
             frame.dispose();
         });
 
@@ -97,10 +98,5 @@ public class MainMenuUserScreen {
         frame.add(panel);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
-    }
-
-    // test area
-    public static void main(String[] args) {
-        new MainMenuUserScreen();
     }
 }

@@ -567,6 +567,10 @@ public class Controller {
             return null;
         }
     }
+
+    public String[] getListStudioClass() {
+        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
+    }
     
     public StudioClassEnum getStudioClassEnum(String studioClass) {
         switch (studioClass.toUpperCase()) {

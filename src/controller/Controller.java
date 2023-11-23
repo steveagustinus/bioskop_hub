@@ -1,5 +1,8 @@
 package src.controller;
 
+import java.awt.Color;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,6 +24,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
+
+import javax.swing.JPasswordField;
 
 import src.model.Cinema;
 import src.model.Jadwal;
@@ -52,8 +57,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT `id_seat` FROM `seat` ORDER BY `id_seat` DESC LIMIT 1;"
-            );
+                    "SELECT `id_seat` FROM `seat` ORDER BY `id_seat` DESC LIMIT 1;");
 
             if (!result.isBeforeFirst()) {
                 return 0;
@@ -75,13 +79,21 @@ public class Controller {
     }
 
     public int generateSeat(Studio studio) {
-        
+
         Seat[][] seats = new Seat[1][1];
         switch (studio.getStudioClass()) {
-            case REGULER: seats = new Seat[15][9]; break;
-            case LUXE: seats = new Seat[8][8]; break;
-            case JUNIOR: seats = new Seat[10][9]; break;
-            case VIP: seats = new Seat[5][5]; break;
+            case REGULER:
+                seats = new Seat[15][9];
+                break;
+            case LUXE:
+                seats = new Seat[8][8];
+                break;
+            case JUNIOR:
+                seats = new Seat[10][9];
+                break;
+            case VIP:
+                seats = new Seat[5][5];
+                break;
         }
 
         int idSeat = getLastSeatId() + 1;
@@ -89,17 +101,16 @@ public class Controller {
         for (int i = 0; i < seats.length; i++) {
             for (int j = 0; j < seats[i].length; j++) {
                 seats[i][j] = new Seat(
-                    String.valueOf(idSeat),
-                    ((char)(i + 65)) + ((j + 1) < 10 ? "0" + String.valueOf(j + 1) : String.valueOf(j + 1)),
-                    SeatStatusInterface.AVAILABLE
-                );
+                        String.valueOf(idSeat),
+                        ((char) (i + 65)) + ((j + 1) < 10 ? "0" + String.valueOf(j + 1) : String.valueOf(j + 1)),
+                        SeatStatusInterface.AVAILABLE);
                 idSeat++;
             }
         }
 
         // Insert seats into database
         String sql = "INSERT INTO `seat` (`id_seat`, `id_studio`, `kode`)" +
-            "VALUES ";
+                "VALUES ";
 
         for (Seat[] arrSeat : seats) {
             for (Seat seat : arrSeat) {
@@ -113,7 +124,7 @@ public class Controller {
             conn.open();
             conn.connection.setAutoCommit(false);
             PreparedStatement ps = conn.connection.prepareStatement(sql);
-            
+
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -468,10 +479,14 @@ public class Controller {
 
     public int getStudioType(String studioType) {
         switch (studioType) {
-            case "2D": return StudioTypeInterface.TYPE2D;
-            case "3D": return StudioTypeInterface.TYPE3D;
-            case "4D": return StudioTypeInterface.TYPE4D;
-            case "5D": return StudioTypeInterface.TYPE5D;
+            case "2D":
+                return StudioTypeInterface.TYPE2D;
+            case "3D":
+                return StudioTypeInterface.TYPE3D;
+            case "4D":
+                return StudioTypeInterface.TYPE4D;
+            case "5D":
+                return StudioTypeInterface.TYPE5D;
         }
 
         return -1;
@@ -479,10 +494,14 @@ public class Controller {
 
     public String getStudioTypeString(int studioType) {
         switch (studioType) {
-            case StudioTypeInterface.TYPE2D: return "2D";
-            case StudioTypeInterface.TYPE3D: return "3D";
-            case StudioTypeInterface.TYPE4D: return "4D";
-            case StudioTypeInterface.TYPE5D: return "5D";
+            case StudioTypeInterface.TYPE2D:
+                return "2D";
+            case StudioTypeInterface.TYPE3D:
+                return "3D";
+            case StudioTypeInterface.TYPE4D:
+                return "4D";
+            case StudioTypeInterface.TYPE5D:
+                return "5D";
         }
 
         return "";
@@ -512,11 +531,10 @@ public class Controller {
         }
 
         return addNewStudio(
-            idStudio,
-            idCinema, 
-            getStudioClassEnum(studioClass),
-            getStudioType(studioType)
-        );
+                idStudio,
+                idCinema,
+                getStudioClassEnum(studioClass),
+                getStudioType(studioType));
     }
 
     private int addNewStudio(String idStudio, String idCinema, StudioClassEnum studioClass, int studioType) {
@@ -567,7 +585,7 @@ public class Controller {
             return -3;
         }
 
-        return editStudio(
+        return editStudio (
             idStudio,
             getStudioClassEnum(studioClass),
             getStudioType(studioType)
@@ -1209,7 +1227,7 @@ public class Controller {
                             result.getString("password"),
                             result.getString("profile_name"),
                             result.getString("email"),
-                            result.getString("phoneNumber"),
+                            result.getString("phone_no"),
                             result.getString("address"), null);
                     break;
 
@@ -1219,7 +1237,7 @@ public class Controller {
                             result.getString("password"),
                             result.getString("profile_name"),
                             result.getString("email"),
-                            result.getString("phoneNumber"),
+                            result.getString("phone_no"),
                             result.getString("address"),
                             null, result.getInt("poin"));
                     break;
@@ -1242,7 +1260,7 @@ public class Controller {
 
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `id_user` FROM `user` WHERE `username`='" + username + "' AND `password`='"
+                    "SELECT id_user, user_type FROM `user` WHERE `username`='" + username + "' AND `password`='"
                             + sha256(password) + "'");
 
             if (!result.isBeforeFirst()) {
@@ -1255,7 +1273,6 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
-
     }
 
     public int register(String username, String password, String email, String phoneNumber, String alamat) {
@@ -1325,6 +1342,72 @@ public class Controller {
             System.out.println(ex.getMessage());
             return -99;
         }
+    }
+
+    public int checkUserType(User user) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT user_type FROM `user` WHERE `username`='" + user.getUsername() + "'");
+            result.next();
+            int userType = result.getInt("user_type");
+            conn.close();
+            return userType;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+
+    public int insertToSingelton(String nama) {
+        try {
+            UserDataSingleton userDataSingleton = UserDataSingleton.getInstance();
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `user` WHERE `username`='" + nama + "'");
+            result.next();
+            userDataSingleton.setId(result.getInt("id_user"));
+            userDataSingleton.setUsername(result.getString("username"));
+            userDataSingleton.setPassword(result.getString("password"));
+            userDataSingleton.setProfile_name(result.getString("profile_name"));
+            userDataSingleton.setEmail(result.getString("email"));
+            userDataSingleton.setPhone_no(result.getString("phone_no"));
+            userDataSingleton.setAddress(result.getString("address"));
+            userDataSingleton.setUser_type(result.getInt("user_type"));
+            conn.close();
+            return 1;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -1;
+        }
+    }
+
+    public void setPlaceholder(JPasswordField passwordField, String placeholder) {
+        passwordField.setEchoChar((char) 0); 
+        passwordField.setText(placeholder);
+        passwordField.setForeground(Color.GRAY);
+
+        passwordField.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
+                    passwordField.setText("");
+                    passwordField.setEchoChar('*'); 
+                    passwordField.setForeground(Color.BLACK);
+                }
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                if (String.valueOf(passwordField.getPassword()).isEmpty()) {
+                    passwordField.setText(placeholder);
+                    passwordField.setEchoChar((char) 0);
+                    passwordField.setForeground(Color.GRAY);
+                }
+            }
+        });
     }
 
     // Line Ini Jangan dihapus yak sementara yak biar ga pusing
@@ -1507,6 +1590,32 @@ public class Controller {
         }
         return total;
     }
+    public int hitungPendapatanPerKotaPerCabang(String namaKota, String namaCabang){
+        int total = 0;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.kota = '"
+                            + namaKota + "' AND c.nama='"+namaCabang+"';");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.kota = '"
+                            + namaKota + "' AND c.nama='"+namaCabang+"';");
+            result.next();
+            total += result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
+
     public boolean isKotaExists(String kota) {
         try {
             conn.open();
@@ -1543,7 +1652,50 @@ public class Controller {
             return false;
         }
     }
-    //Function tampilkan list
+    public String[] listKotaHP(){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT DISTINCT `kota` FROM `cinema` ");
+
+            ArrayList<String> listKota = new ArrayList<String>();
+            while (result.next()) {
+                listKota.add(result.getString("kota"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listKota.toArray(new String[listKota.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listCabangHP(String namaKota){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `nama` FROM `cinema` WHERE `kota` = '"+namaKota+"'");
+
+            ArrayList<String> listCabang = new ArrayList<String>();
+            while (result.next()) {
+                listCabang.add(result.getString("nama"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listCabang.toArray(new String[listCabang.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    // Function tampilkan list
     public String[] listKota() {
         try {
             conn.open();
@@ -1701,13 +1853,14 @@ public class Controller {
             if (rowsAffected > 0) {
                 return "Transaksi berhasil";
             } else {
-               return "Transaksi Gagal";
+                return "Transaksi Gagal";
             }
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
     }
+
     // User Profile area
     public int editProfile(String username, String oldPassword, String newPassword, String profileName, String email,
             String phoneNo, String address) {
@@ -1728,26 +1881,34 @@ public class Controller {
         }
         try {
             conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `user` WHERE `username`='" + UserDataSingleton.getInstance().getUsername() + "' AND `password`='" + sha256(oldPassword)
-                            + "'");
+            String selectQuery = "SELECT * FROM user WHERE username=? AND password=?";
+            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+            selectStatement.setString(1, UserDataSingleton.getInstance().getUsername());
+            selectStatement.setString(2, sha256(oldPassword));
+
+            ResultSet result = selectStatement.executeQuery();
+
             if (!result.isBeforeFirst()) {
                 return 0;
             }
+
             result.next();
-            String sql = "UPDATE `user` SET `username`=?, `password`=?, `profile_name`=?, `email`=?, `phoneNo`=?, `address`=? WHERE `username`=?;";
-            PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ps.setString(1, username);
-            ps.setString(2, sha256(newPassword));
-            ps.setString(3, profileName);
-            ps.setString(4, email);
-            ps.setString(5, phoneNo);
-            ps.setString(6, address);
-            ps.setString(7, UserDataSingleton.getInstance().getUsername());
-            
+            int id_user = result.getInt("id_user");
+
+            String updateQuery = "UPDATE user SET username=?, password=?, profile_name=?, email=?, phone_no=?, address=? WHERE id_user=?";
+            PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
+            updateStatement.setString(1, username);
+            updateStatement.setString(2, sha256(newPassword));
+            updateStatement.setString(3, profileName);
+            updateStatement.setString(4, email);
+            updateStatement.setString(5, phoneNo);
+            updateStatement.setString(6, address);
+            updateStatement.setInt(7, id_user);
+            updateStatement.executeUpdate();
+
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
             return -99;
         }
         UserDataSingleton.getInstance().setUsername(username);
@@ -1757,5 +1918,13 @@ public class Controller {
         UserDataSingleton.getInstance().setPhone_no(phoneNo);
         UserDataSingleton.getInstance().setAddress(address);
         return 1;
+    }
+    // Main menu user area
+
+    // public int checkMembership(String username){
+
+    // }
+    public void printTable(){
+        
     }
 }

@@ -717,9 +717,9 @@ public class Controller {
             }
 
             conn.open();
-            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)"
+            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`, `membership_status`, `membership_expiry_date`, `point_membership`)"
                     +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
             PreparedStatement ps = conn.connection.prepareStatement(sql);
@@ -730,6 +730,9 @@ public class Controller {
             ps.setString(5, alamat);
             ps.setString(6, username);
             ps.setInt(7, 1);
+            ps.setInt(8, 0);
+            ps.setDate(9, null);
+            ps.setInt(10, 0);
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();

@@ -52,7 +52,7 @@ public class MainMenuUserScreen {
         pesanTikerButton.setBounds(170, 150, 150, 50);
         panel.add(pesanTikerButton);
         pesanTikerButton.addActionListener(e -> {
-            new PesanTiket();
+            // new PesanTiket();
             frame.dispose();
         });
 

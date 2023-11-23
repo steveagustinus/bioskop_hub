@@ -18,6 +18,7 @@ import src.controller.ExceptionLogger;
 import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.seat.Seat;
+import src.model.seat.SeatStatusInterface;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -27,12 +28,17 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 
 public class PesanTiket extends JDialog {
     private Jadwal[] listJadwal = null;
     private Movie[] listMovie = null;
+    private ArrayList<String> selectedSeatIds = new ArrayList<String>();
 
     private String fontFamily = "Dialog";
+
+    private JButton buttonOrder;
 
     private Controller controller = new Controller();
 
@@ -43,7 +49,7 @@ public class PesanTiket extends JDialog {
     public PesanTiket(Window owner) {
         super(owner, ModalityType.DOCUMENT_MODAL);
         this.setTitle("Pesan Tiket");
-        this.setSize(1280, 1000);
+        this.setSize(1280, 950);
         this.setLayout(null);
         this.setLocationRelativeTo(owner);
 
@@ -122,6 +128,7 @@ public class PesanTiket extends JDialog {
         );
         panelFilm.setLayout(null);
         panelFilm.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        panelFilm.setVisible(false);
 
         JLabel panelFilmTitle = new JLabel("Pilih film");
         panelFilmTitle.setLocation(1, 1);
@@ -144,6 +151,7 @@ public class PesanTiket extends JDialog {
         );
         panelJadwal.setLayout(null);
         panelJadwal.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        panelJadwal.setVisible(false);
         
         JLabel panelJadwalTitle = new JLabel("Pilih showtime");
         panelJadwalTitle.setLocation(1, 1);
@@ -166,6 +174,7 @@ public class PesanTiket extends JDialog {
         );
         panelSeat.setLayout(null);
         panelSeat.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        panelSeat.setVisible(false);
         
         JLabel panelSeatTitle = new JLabel("Pilih kursi");
         panelSeatTitle.setLocation(1, 1);
@@ -175,7 +184,26 @@ public class PesanTiket extends JDialog {
         panelSeatTitle.setBackground(Color.LIGHT_GRAY);
         panelSeatTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelSeatTitle.setVerticalAlignment(SwingConstants.CENTER);
-        
+
+        JLabel labelSelectedSeatsInfo = new JLabel();
+        labelSelectedSeatsInfo.setName("label_selectedseatsinfo");
+        labelSelectedSeatsInfo.setSize(panelSeat.getWidth() - 2, 30);
+        labelSelectedSeatsInfo.setLocation(1, panelSeat.getHeight() - labelSelectedSeatsInfo.getHeight() - 1);
+        labelSelectedSeatsInfo.setOpaque(true);
+        labelSelectedSeatsInfo.setBackground(new Color(255, 240, 200));
+
+        buttonOrder = new JButton("Go to Payment");
+        buttonOrder.setSize(300, 50);
+        buttonOrder.setLocation(
+            panelSeat.getX() + panelSeat.getWidth() - buttonOrder.getWidth(),
+            panelSeat.getY() + panelSeat.getHeight() + 5
+        );
+        buttonOrder.setOpaque(true);
+        buttonOrder.setBackground(Color.WHITE);
+        buttonOrder.setFont(new Font(fontFamily, Font.BOLD, 20));
+        buttonOrder.setFocusPainted(false);
+        buttonOrder.setVisible(false);
+
         fieldKota.addActionListener(new ActionListener() {
 
             @Override
@@ -195,7 +223,6 @@ public class PesanTiket extends JDialog {
             @Override
             public void actionPerformed(ActionEvent arg0) {
                 showFilm((String) fieldCinema.getSelectedItem());
-                showJadwal(null);
             }
             
         });
@@ -211,15 +238,19 @@ public class PesanTiket extends JDialog {
         panelJadwal.add(panelJadwalTitle);
 
         panelSeat.add(panelSeatTitle);
+        panelSeat.add(labelSelectedSeatsInfo);
 
         this.add(labelHeader);
         this.add(panelCinema);
         this.add(panelFilm);
         this.add(panelJadwal);
         this.add(panelSeat);
+        this.add(buttonOrder);
     }
 
     private void showFilm(String idCinema) {
+        buttonOrder.setVisible(false);
+
         listJadwal = controller.getJadwalByTimeRange(
             idCinema,
             LocalDate.of(2023, 11, 14), //LocalDate.now(),
@@ -228,14 +259,25 @@ public class PesanTiket extends JDialog {
         
         listMovie = controller.extractMoviesFromListJadwal(listJadwal);
         
-        // Search for Movie Panel
+        // Search for Movie Panel, and hide Seat Panel
         JPanel panelMovie = null;
         for (Component comp : this.getContentPane().getComponents()) {
             if (comp instanceof JPanel) {
                 if (comp.getName() == null) { continue; }
                 if (comp.getName().equals("mainpanel_movie")) {
                     panelMovie = (JPanel) comp;
-                    break;
+                    panelMovie.setVisible(true);
+                    continue;
+                }
+
+                if (comp.getName().equals("mainpanel_jadwal")) {
+                    comp.setVisible(false);
+                    continue;
+                }
+
+                if (comp.getName().equals("mainpanel_seat")) {
+                    comp.setVisible(false);
+                    continue;
                 }
             }
         }
@@ -328,6 +370,7 @@ public class PesanTiket extends JDialog {
     }
 
     private void showJadwal(String idMovie) {
+        buttonOrder.setVisible(false);
         // Search for Jadwal Panel
         JPanel panelJadwal = null;
         for (Component comp : this.getContentPane().getComponents()) {
@@ -335,7 +378,13 @@ public class PesanTiket extends JDialog {
                 if (comp.getName() == null) { continue; }
                 if (comp.getName().equals("mainpanel_jadwal")) {
                     panelJadwal = (JPanel) comp;
-                    break;
+                    panelJadwal.setVisible(true);
+                    continue;
+                }
+
+                if (comp.getName().equals("mainpanel_seat")) {
+                    comp.setVisible(false);
+                    continue;
                 }
             }
         }
@@ -367,9 +416,9 @@ public class PesanTiket extends JDialog {
         };
 
         tableJadwal.setName("table_jadwal");
-        tableJadwal.setSize(panelJadwal.getWidth() - 2, panelJadwal.getHeight() - 32);
-        tableJadwal.setLocation(1, 31);
-        tableJadwal.setFont(new Font(fontFamily, Font.BOLD, 15));
+        tableJadwal.setSize(panelJadwal.getWidth() - 2, panelJadwal.getHeight() - 33);
+        tableJadwal.setLocation(1, 32);
+        tableJadwal.setFont(new Font(fontFamily, Font.BOLD, 12));
         tableJadwal.setRowHeight(40);
         tableJadwal.setShowGrid(false);
 
@@ -389,6 +438,10 @@ public class PesanTiket extends JDialog {
     }
 
     private void showSeat(String idJadwal) {
+        buttonOrder.setVisible(false);
+        selectedSeatIds.clear();
+        setLabelSelectedSeatsInfoLabel("Selected (0): ");
+
         // Search for Seat Panel
         JPanel panelSeat = null;
         for (Component comp : this.getContentPane().getComponents()) {
@@ -396,6 +449,7 @@ public class PesanTiket extends JDialog {
                 if (comp.getName() == null) { continue; }
                 if (comp.getName().equals("mainpanel_seat")) {
                     panelSeat = (JPanel) comp;
+                    panelSeat.setVisible(true);
                     break;
                 }
             }
@@ -403,7 +457,7 @@ public class PesanTiket extends JDialog {
 
         // Delete Seats
         for (Component comp : panelSeat.getComponents()) {
-            if (comp instanceof JPanel) {
+            if (comp instanceof JButton) {
                 if (comp.getName() == null) { continue; }
                 if (comp.getName().contains("button_seat_")) {
                     panelSeat.remove(comp);
@@ -419,10 +473,16 @@ public class PesanTiket extends JDialog {
 
         for (int i = 0; i < buttonSeat.length; i++) {
             for (int j = 0; j < buttonSeat[i].length; j++) {
-                System.out.println(seats[i][j].getSeatCode());
                 JButton button = new JButton(seats[i][j].getSeatCode());
                 button.setName("button_seat_" + seats[i][j].getSeatCode());
                 button.setSize(60, 25);
+                if (seats[i][j].getSeatStatus() == SeatStatusInterface.TAKEN) {
+                    button.setBackground(Color.RED);
+                    button.setEnabled(false);
+                } else {
+                    button.setBackground(Color.WHITE);
+                }
+
                 button.setFont(new Font(fontFamily, Font.BOLD, 12));
                 
                 if (i == 0 && j == 0) {
@@ -439,8 +499,64 @@ public class PesanTiket extends JDialog {
                     );
                 }
 
+                button.addActionListener(new ActionListener() {
+
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        String currentSeatId = ((JButton) e.getSource()).getName().replace("button_seat_", "");
+                        if (!selectedSeatIds.contains(currentSeatId)) {
+                            selectedSeatIds.add(currentSeatId);
+                            button.setBackground(Color.CYAN);
+                        } else {
+                            selectedSeatIds.remove(currentSeatId);
+                            button.setBackground(Color.WHITE);
+                        }
+
+                        button.setFocusPainted(false);
+
+                        Collections.sort(selectedSeatIds);
+
+                        String info = "Selected (" + selectedSeatIds.size() +"): ";
+                        for (int i = 0; i < selectedSeatIds.size(); i++) {
+                            info += " " + selectedSeatIds.get(i) + " |";
+                        }
+
+                        setLabelSelectedSeatsInfoLabel(info.substring(0, info.length() - 1));
+
+                        buttonOrder.setVisible(selectedSeatIds.size() != 0);
+                    }
+                    
+                });
+
                 buttonSeat[i][j] = button;
                 panelSeat.add(button);
+            }
+        }
+
+        panelSeat.revalidate();
+        panelSeat.repaint();
+    }
+
+    private void setLabelSelectedSeatsInfoLabel(String str) {
+        JPanel panelSeat = null;
+        for (Component comp : this.getContentPane().getComponents()) {
+            if (comp instanceof JPanel) {
+                if (comp.getName() == null) { continue; }
+                if (comp.getName().equals("mainpanel_seat")) {
+                    panelSeat = (JPanel) comp;
+                    break;
+                }
+            }
+        }
+
+        // Search for SelectedSeatInfo Label
+        for (Component comp : panelSeat.getComponents()) {
+            if (comp instanceof JLabel) {
+                if (comp.getName() == null) { continue; }
+                if (comp.getName().equals("label_selectedseatsinfo")) {
+                    ((JLabel) comp).setText(str);
+                    break;
+                }
             }
         }
     }

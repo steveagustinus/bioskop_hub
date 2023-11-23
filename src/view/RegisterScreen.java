@@ -3,6 +3,7 @@ package src.view;
 import javax.swing.*;
 
 import src.controller.Controller;
+import src.view.user.MainMenuUserScreen;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -170,15 +171,22 @@ public class RegisterScreen {
                 String email = emailField.getText();
                 String phoneNum = phoneNumField.getText();
                 String address = addressField.getText();
+
                 for (char chr : pass) {
                     password += chr;
                 }
+                
+                String confirmPassword = "";
+                for (char c : confirmPasswordField.getPassword()) {
+                    confirmPassword += c;
+                }
+
                 int check = new Controller().checkEmptyFields(username, password, email, phoneNum, address);
                 if (check == 0){
                     JOptionPane.showMessageDialog(null, "Please fill all the fields!", "Error", JOptionPane.ERROR_MESSAGE);
                     return;
                 }else{
-                    if (passwordField.getPassword().equals(confirmPasswordField.getPassword())) {
+                    if (password.equals(confirmPassword)) {
                         int user = new Controller().register(username, password, email, phoneNum, address);
                         if (user == 0) {
                             JOptionPane.showMessageDialog(null, "Username already exists!");
@@ -190,6 +198,7 @@ public class RegisterScreen {
                                 return;
                             }
                             JOptionPane.showMessageDialog(null, "Registration " + username + " successful!");
+                            new MainMenuUserScreen();
                             frame.dispose();
                         }
                     }else{
@@ -206,10 +215,5 @@ public class RegisterScreen {
         frame.setSize(300, 450);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
-    }
-
-    // test area
-    public static void main(String[] args) {
-        new RegisterScreen();
     }
 }

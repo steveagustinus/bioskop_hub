@@ -21,6 +21,7 @@ import src.controller.Controller;
 public class LoginScreen {
     public LoginScreen() {
         Controller controller = new Controller();
+        controller.programStart();
 
         JFrame loginJFrame = new JFrame();
 

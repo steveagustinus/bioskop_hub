@@ -43,7 +43,6 @@ import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
 import src.model.user.User;
-import src.view.user.CheckUserProfileScreen;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
@@ -2262,6 +2261,51 @@ public class Controller {
     }
     
     // Main menu user area
+    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String foodName = resultSet.getString("f.nama");
+                int quantity = resultSet.getInt("tf.qty");
+                int totalPrice = resultSet.getInt("f.harga * tf.qty");
+                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String movieName = resultSet.getString("m.judul");
+                int seat = resultSet.getInt("tj.id_seat");
+                String classType = resultSet.getString("s.studio_class");
+                int totalPrice = resultSet.getInt("j.harga");
+                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+    }
+
     public boolean checkMembership(String username) {
         try {
             conn.open();
@@ -2326,50 +2370,5 @@ public class Controller {
             return false;
         }
         return false;
-    }
-    
-    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
-        model.setColumnIdentifiers(columns);
-        try {
-            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
-                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
-            PreparedStatement statement = conn.connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
-                String foodName = resultSet.getString("f.nama");
-                int quantity = resultSet.getInt("tf.qty");
-                int totalPrice = resultSet.getInt("f.harga * tf.qty");
-                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice });
-            }
-            conn.close();
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
-        }
-    }
-
-    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price" };
-        model.setColumnIdentifiers(columns);
-        try {
-            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio WHERE u.id_user = "
-                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
-            PreparedStatement statement = conn.connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
-                String movieName = resultSet.getString("m.judul");
-                int seat = resultSet.getInt("tj.id_seat");
-                String classType = resultSet.getString("s.studio_class");
-                int totalPrice = resultSet.getInt("j.harga");
-                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice });
-            }
-            conn.close();
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
-        }
     }
 }

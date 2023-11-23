@@ -82,18 +82,10 @@ public class Controller {
 
         Seat[][] seats = new Seat[1][1];
         switch (studio.getStudioClass()) {
-            case REGULER:
-                seats = new Seat[15][9];
-                break;
-            case LUXE:
-                seats = new Seat[8][8];
-                break;
-            case JUNIOR:
-                seats = new Seat[10][9];
-                break;
-            case VIP:
-                seats = new Seat[5][5];
-                break;
+            case REGULER: seats = new Seat[9][15]; break;
+            case LUXE: seats = new Seat[8][8]; break;
+            case JUNIOR: seats = new Seat[9][10]; break;
+            case VIP: seats = new Seat[5][5]; break;
         }
 
         int idSeat = getLastSeatId() + 1;
@@ -137,10 +129,12 @@ public class Controller {
         }
     }
 
-    public Seat[][] getSeatFromJadwal(Jadwal jadwal) {
+    public Seat[][] getSeatFromJadwal(String idJadwal) {
         Seat[][] seats = new Seat[1][1];
 
-        Studio studio = getStudioById(jadwal.getIdStudio());
+        String idStudio = idJadwal.substring(3, 13);
+
+        Studio studio = getStudioById(idStudio);
         switch (studio.getStudioClass()) {
             case REGULER: seats = new Seat[9][15]; break;
             case LUXE: seats = new Seat[8][8]; break;
@@ -173,7 +167,7 @@ public class Controller {
 
             statement = conn.connection.createStatement();
             result = statement.executeQuery(
-                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + jadwal.getIdJadwal() + 
+                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + idJadwal + 
                     "' ORDER BY `id_seat` ASC;"
             );
 
@@ -208,6 +202,33 @@ public class Controller {
         return null;
     }
     
+    public Seat[][] getSeatFromJadwal(Jadwal[] arrJadwal, String idJadwal) {
+        for (Jadwal jadwal : arrJadwal) {
+            if (jadwal.getIdJadwal().equals(idJadwal)) {
+                return jadwal.getSeat();
+            }
+        }
+
+        return null;
+    }
+
+    public Seat[] getSeatFromListSeatString(Seat[][] seats, ArrayList<String> seatIds) {
+        Seat[] output = new Seat[seatIds.size()];
+
+        main:for (int i = 0; i < seatIds.size(); i++) {
+            for (Seat[] arrSeat : seats) {
+                for (Seat seat : arrSeat) {
+                    if (seat.getSeatCode().equals(seatIds.get(i))) {
+                        output[i] = seat;
+                        continue main;
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
     // Jadwal area
     public Jadwal getJadwalById(String idJadwal) {
         try {
@@ -225,10 +246,10 @@ public class Controller {
                 result.getString("id_studio"),
                 result.getInt("harga"),
                 result.getTimestamp("waktu").toLocalDateTime(),
-                null
+                getSeatFromJadwal(result.getString("id_jadwal"))
             );
 
-            jadwal.setSeat(getSeatFromJadwal(jadwal));
+            
 
             result.close();
             statement.close();
@@ -346,6 +367,108 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
+    }
+
+    public Jadwal[] getJadwalByTimeRange(String idCinema, LocalDate start, LocalDate end) {
+        String startDate = start.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + " 00:00:00";
+        String endDate = end.format(DateTimeFormatter.ofPattern("yyyy-MM-dd")) + " 23:59:59";
+
+        try {
+            conn.open();
+            
+            String sql = "SELECT * FROM jadwal " +
+            "WHERE id_studio IN (" +
+                "SELECT id_studio FROM studio " +
+                "WHERE id_cinema = '" + idCinema + "'" +
+            ") " +
+            "AND waktu > '" + startDate + "' " +
+            "AND waktu < '" + endDate + "' " +
+            "ORDER BY waktu ASC;";
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(sql);
+
+            ArrayList<Jadwal> listJadwal = new ArrayList<Jadwal>();
+
+            while (result.next()) {
+                listJadwal.add(
+                    new Jadwal(
+                        result.getString("id_jadwal"),
+                        result.getString("id_movie"),
+                        result.getString("id_studio"),
+                        result.getInt("harga"),
+                        result.getTimestamp("waktu").toLocalDateTime(),
+                        getSeatFromJadwal(result.getString("id_jadwal"))
+                    )
+                );
+            }
+
+            if (listJadwal.size() == 0) { return null; }
+            return listJadwal.toArray(new Jadwal[listJadwal.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
+    public Jadwal[] filterJadwal(Jadwal[] listJadwal, String idMovie) {
+        ArrayList<Jadwal> output = new ArrayList<Jadwal>();
+
+        for (int i = 0; i < listJadwal.length; i++) {
+            if (listJadwal[i].getIdMovie().equals(idMovie)) {
+                output.add(listJadwal[i]);
+            }
+        }
+
+        return output.toArray(new Jadwal[output.size()]);
+    }
+
+    public String[][] getJadwalData(Jadwal[] listJadwal) {
+        String[][] output = new String[listJadwal.length][5];
+
+        for (int i = 0; i < listJadwal.length; i++) {
+            // output[i][0] = listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM hh:mm"));
+            // output[i][1] = getMovieById(listJadwal[i].getIdMovie()).getJudul();
+            // Studio studio = getStudioById(listJadwal[i].getIdStudio());
+            // output[i][2] = getStudioClassString(studio.getStudioClass());
+            // output[i][3] = getStudioTypeString(studio.getStudioType());
+            // output[i][4] = String.valueOf(listJadwal[i].getHarga());
+
+            String item = listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM hh:mm"));
+            item += " | " + getMovieById(listJadwal[i].getIdMovie()).getJudul();
+            Studio studio = getStudioById(listJadwal[i].getIdStudio());
+            item += " | " + getStudioClassString(studio.getStudioClass());
+            item += " | " + getStudioTypeString(studio.getStudioType());
+            item += " | " +String.valueOf(listJadwal[i].getHarga());
+
+            output[i][0] = item;
+        }
+
+        return output;
+    }
+
+    public Movie[] extractMoviesFromListJadwal(Jadwal[] arrJadwal) {
+        if (arrJadwal == null) { return null; }
+
+        ArrayList<Movie> movies = new ArrayList<Movie>();
+        
+        ArrayList<String> idsMovie = new ArrayList<String>();
+        for (Jadwal jadwal : arrJadwal) {
+            if (!idsMovie.contains(jadwal.getIdMovie())) {
+                idsMovie.add(jadwal.getIdMovie());
+            }
+        }
+
+        for (String idMovie : idsMovie) {
+            for (int i = 0; i < Data.movies.length; i++) {
+                if (Data.movies[i].getIdMovie().equals(idMovie)) {
+                    movies.add(Data.movies[i]);
+                    break;
+                }
+            }
+        }
+
+        return movies.toArray(new Movie[movies.size()]);
     }
 
     // Studio area
@@ -875,14 +998,15 @@ public class Controller {
             fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
 
             Movie movie = new Movie(
-                    idMovie,
-                    result.getString("judul"),
-                    dateToLocalDate(result.getDate("release_date")),
-                    result.getString("director"),
-                    result.getInt("language"),
-                    result.getInt("durasi"),
-                    result.getString("sinopsis"),
-                    fotoMovie);
+                idMovie,
+                result.getString("judul"),
+                dateToLocalDate(result.getDate("release_date")),
+                result.getString("director"),
+                result.getInt("language"),
+                result.getInt("durasi"),
+                result.getString("sinopsis"),
+                fotoMovie
+            );
 
             result.close();
             statement.close();
@@ -1223,23 +1347,29 @@ public class Controller {
 
                 case 1:
                     user = new Customer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phone_no"),
-                            result.getString("address"), null);
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phone_no"),
+                        result.getString("address"),
+                        null
+                    );
                     break;
 
                 case 2:
                     user = new MembershipCustomer(
-                            result.getString("username"),
-                            result.getString("password"),
-                            result.getString("profile_name"),
-                            result.getString("email"),
-                            result.getString("phone_no"),
-                            result.getString("address"),
-                            null, result.getInt("poin"));
+                        result.getString("id_user"),
+                        result.getString("username"),
+                        result.getString("password"),
+                        result.getString("profile_name"),
+                        result.getString("email"),
+                        result.getString("phone_no"),
+                        result.getString("address"),
+                        null,
+                        result.getInt("poin")
+                    );
                     break;
             }
 
@@ -1344,6 +1474,54 @@ public class Controller {
         }
     }
 
+    // User action
+    public int getTotalBayar(Jadwal jadwal, Seat[] bookedSeat) {
+        return jadwal.getHarga() * bookedSeat.length;
+    }
+
+    public int pesanTiket(String idCustomer, Jadwal jadwal, Seat[] bookedSeat) {
+        System.out.println(idCustomer);
+        if (idCustomer == null || idCustomer.equals("")) {
+            return -1;
+        }
+
+        if (jadwal == null) {
+            return -2;
+        }
+
+        if (bookedSeat == null) {
+            return -3;
+        }
+
+        try {
+            String idTransaction = createTransactionId();
+            conn.open();
+            
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES ('" + idTransaction + "', '" + idCustomer + "', now());"
+            );
+
+            String sql = "INSERT INTO `transaction_jadwal` (`id_transaction`, `id_jadwal`, `id_seat`) VALUES ";
+
+            for (Seat seat : bookedSeat) {
+                sql += "('" + idTransaction + "', '" + jadwal.getIdJadwal() + "', '" + seat.getIdSeat() + "'),";
+            }
+
+            sql = sql.substring(0, sql.length() - 1) + ";";
+
+            statement.executeUpdate(sql);
+            statement.close();
+            conn.close();
+            
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+  
     public int checkUserType(User user) {
         try {
             conn.open();
@@ -1357,6 +1535,47 @@ public class Controller {
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
+        }
+    }
+
+    public String[] getPaymentMethods() {
+        return new String[] { "BCA", "GO-PAY", "DANA", "SHOPEEPAY" };
+    }
+
+    // Transaction
+    public String createTransactionId() {
+        String newId = "";
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT `id_transaction` FROM `transaction` ORDER BY `id_transaction` DESC LIMIT 1;"
+            );
+
+            String lastId = "";
+            if (!result.isBeforeFirst()) {
+                lastId = "0";
+            } else {
+                result.next();
+                lastId = result.getString("id_transaction").replace("T-", "");
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            newId = String.valueOf(Integer.parseInt(lastId) + 1);
+
+            for (int i = newId.length(); i < 18; i++) {
+                newId = "0" + newId;
+            }
+            
+            newId = "T-" + newId;
+
+            return newId;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
         }
     }
 
@@ -1420,9 +1639,9 @@ public class Controller {
         }
     }
 
-    public MembershipCustomer registerMembership(String username, String password, String profileName, String email,
+    public MembershipCustomer registerMembership(String idUser, String username, String password, String profileName, String email,
             String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(username, password, profileName, email,
+        MembershipCustomer membershipCustomer = new MembershipCustomer(idUser, username, password, profileName, email,
                 phoneNumber, address, null, poin);
         return membershipCustomer;
     }
@@ -1590,6 +1809,7 @@ public class Controller {
         }
         return total;
     }
+  
     public int hitungPendapatanPerKotaPerCabang(String namaKota, String namaCabang){
         int total = 0;
         try {
@@ -1616,6 +1836,7 @@ public class Controller {
         return total;
     }
 
+  
     public boolean isKotaExists(String kota) {
         try {
             conn.open();
@@ -1634,6 +1855,7 @@ public class Controller {
             return false;
         }
     }
+    
     public boolean isCabangExists(String cabang) {
         try {
             conn.open();
@@ -1652,6 +1874,7 @@ public class Controller {
             return false;
         }
     }
+    
     public String[] listKotaHP(){
         try {
             conn.open();
@@ -1696,6 +1919,7 @@ public class Controller {
     }
 
     // Function tampilkan list
+  
     public String[] listKota() {
         try {
             conn.open();
@@ -1783,8 +2007,8 @@ public class Controller {
             return null;
         }
     }
-
-    public String[] listMovie(String id_Studio) {
+    
+    public String[] listMovie(String id_Studio){
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -1919,12 +2143,33 @@ public class Controller {
         UserDataSingleton.getInstance().setAddress(address);
         return 1;
     }
+  
+    public String[] listJam(String movie){
+        try{
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `waktu` FROM `jadwal` WHERE `id_movie`='" + movie + "'");
+
+            ArrayList<String> listJam = new ArrayList<String>();
+            while (result.next()) {
+                listJam.add(result.getString("jam"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listJam.toArray(new String[listJam.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
     // Main menu user area
 
     // public int checkMembership(String username){
 
     // }
     public void printTable(){
-        
+
     }
 }

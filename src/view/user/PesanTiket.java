@@ -183,7 +183,7 @@ public class PesanTiket extends JDialog {
                         seats
                     );
 
-                    System.out.println(status);
+                    
                 }
                 
             });

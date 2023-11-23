@@ -2,9 +2,10 @@ package src.view.user;
 
 
 import java.awt.Font;
-
+import java.awt.Dialog.ModalityType;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -19,9 +20,11 @@ public class TransactionHistoryScreen {
     UserDataSingleton userData = UserDataSingleton.getInstance();
 
     public TransactionHistoryScreen() {
-        JFrame frame = new JFrame("Transaction History");
+        JDialog frame = new JDialog();
+        frame.setTitle("Transaction History");
+        frame.setModalityType(ModalityType.DOCUMENT_MODAL);
         frame.setSize(300, 250);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         
         JPanel panel = new JPanel();
@@ -35,15 +38,17 @@ public class TransactionHistoryScreen {
         JButton fnbButton = new JButton("FnB Transaction History");
         fnbButton.setBounds(40, 70, 200, 30);
         fnbButton.addActionListener(e -> {
-            frame.dispose();
+            frame.setVisible(false);
             new PrintTableFnBScreen();
+            frame.setVisible(true);
         });
 
         JButton tiketsButton = new JButton("Tickets Transaction History");
         tiketsButton.setBounds(40, 120, 200, 30);
         tiketsButton.addActionListener(e -> {
-            frame.dispose();
+            frame.setVisible(false);
             new PrintTableTiketsScreen();
+            frame.setVisible(true);
         });
         
         
@@ -51,7 +56,6 @@ public class TransactionHistoryScreen {
         backButton.setBounds(40, 170, 200, 30);
         backButton.addActionListener(e -> {
             frame.dispose();
-            new MainMenuUserScreen();
         });
 
         panel.add(backButton);
@@ -60,8 +64,5 @@ public class TransactionHistoryScreen {
         frame.add(panel);
 
         frame.setVisible(true);
-    }
-    public static void main(String[] args) {
-        new TransactionHistoryScreen();
     }
 }

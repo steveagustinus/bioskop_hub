@@ -192,6 +192,7 @@ public class PesanTiket extends JDialog {
                             "Pesan tiket",
                             JOptionPane.INFORMATION_MESSAGE
                         );
+                        close();
                     } else {
                         if (status == OperationCode.PesanTiket.IDCUSTOMERNOTVALID) { 
                             JOptionPane.showMessageDialog(
@@ -773,6 +774,7 @@ public class PesanTiket extends JDialog {
     private void orderConfirmationClick() {
         OrderConfirmation orderConfirmationDialog = new OrderConfirmation(this);
         orderConfirmationDialog.showDialog();
+        close();
     }
 
     public void close() {

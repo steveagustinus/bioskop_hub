@@ -1,9 +1,10 @@
 package src.view.user;
 
 import java.awt.BorderLayout;
+import java.awt.Dialog.ModalityType;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -17,9 +18,11 @@ public class PrintTableFnBScreen {
     Controller controller = new Controller();
     UserDataSingleton userData = UserDataSingleton.getInstance();
     public PrintTableFnBScreen() {
-        JFrame frame = new JFrame("Transaction History");
+        JDialog frame = new JDialog();
+        frame.setTitle("Transaction History");
+        frame.setModalityType(ModalityType.DOCUMENT_MODAL);
         frame.setSize(500, 500);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 
         controller.printTableFnB(userData.getId(), table, model);
@@ -27,7 +30,6 @@ public class PrintTableFnBScreen {
         backButton.setBounds(40, 170, 200, 30);
         backButton.addActionListener(e -> {
             frame.dispose();
-            new TransactionHistoryScreen();
         });
 
         frame.getContentPane().add(backButton, BorderLayout.SOUTH);

@@ -43,16 +43,18 @@ public class MainMenuUserScreen implements MainInterface {
         pesanTikerButton.setBounds(170, 150, 150, 50);
         panel.add(pesanTikerButton);
         pesanTikerButton.addActionListener(e -> {
+            frame.setVisible(false);
             new PesanTiket(mainFrame);
-            frame.dispose();
+            frame.setVisible(true);
         });
 
         JButton pesanFnBButton = new JButton("Pesan FnB");
         pesanFnBButton.setBounds(370, 150, 150, 50);
         panel.add(pesanFnBButton);
         pesanFnBButton.addActionListener(e -> {
+            frame.setVisible(false);
             new PesanFnb();
-            frame.dispose();
+            frame.setVisible(true);
         });
 
         JButton joinMembershipButton = new JButton("Join Membership");
@@ -60,15 +62,15 @@ public class MainMenuUserScreen implements MainInterface {
         panel.add(joinMembershipButton);
         joinMembershipButton.addActionListener(e -> {
             // new JoinMembership();
-            frame.dispose();
         });
 
         JButton transactionHitoryButton = new JButton("Transaction History");
         transactionHitoryButton.setBounds(370, 220, 150, 50);
         panel.add(transactionHitoryButton);
         transactionHitoryButton.addActionListener(e -> {
+            frame.setVisible(false);
             new TransactionHistoryScreen();
-            frame.dispose();
+            frame.setVisible(true);
         });
 
         JButton logoutButton = new JButton("Logout");
@@ -92,7 +94,6 @@ public class MainMenuUserScreen implements MainInterface {
         panel.add(roundButton);
         roundButton.addActionListener(e -> {
             new CheckUserProfileScreen();
-            frame.dispose();
         });
 
         frame.add(panel);

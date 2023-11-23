@@ -8,6 +8,7 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.event.ListSelectionEvent;
@@ -15,10 +16,12 @@ import javax.swing.event.ListSelectionListener;
 
 import src.controller.Controller;
 import src.controller.ExceptionLogger;
+import src.model.Cinema;
 import src.model.Jadwal;
 import src.model.movie.Movie;
 import src.model.seat.Seat;
 import src.model.seat.SeatStatusInterface;
+import src.model.studio.Studio;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -32,8 +35,126 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class PesanTiket extends JDialog {
+    public class OrderConfirmation extends JDialog {
+
+        public OrderConfirmation(Window owner) {
+            super(owner, ModalityType.DOCUMENT_MODAL);
+
+            initializeComponent();
+        }
+
+        public void showDialog() {
+            this.setVisible(true);
+        }
+
+        public void close() {
+            this.setVisible(false);
+            this.dispose();
+        }
+
+        public void initializeComponent() {
+            this.setLocationRelativeTo(this);
+            this.setSize(500, 500);
+            this.setLayout(null);
+            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+            JLabel labelHeader = new JLabel("Order Confirmation");
+            labelHeader.setSize(this.getWidth(), 50);
+            labelHeader.setLocation(0, 0);
+            labelHeader.setFont(new Font(fontFamily, Font.BOLD, 30));
+            labelHeader.setHorizontalAlignment(SwingConstants.CENTER);
+            labelHeader.setVerticalAlignment(SwingConstants.CENTER);
+
+            Jadwal jadwal = controller.getJadwalById(selectedJadwalId);
+            Studio studio = controller.getStudioById(jadwal.getIdStudio());
+            Cinema cinema = controller.getCinemaById(studio.getIdCinema());
+            Movie movie = controller.getMovieById(jadwal.getIdMovie());
+            Seat[] seats = controller.getSeatFromListSeatString(jadwal.getSeat(), selectedSeatIds);
+
+            JLabel labelCinema = new JLabel(cinema.getNama() + " - " + cinema.getKota());
+            labelCinema.setSize(this.getWidth() - 20, 30);
+            labelCinema.setLocation(10, labelHeader.getY() + labelHeader.getHeight() + 20);
+            labelCinema.setFont(new Font(fontFamily, Font.BOLD, 20));
+            
+            JLabel labelCinemaInfo = new JLabel(cinema.getAlamat());
+            labelCinemaInfo.setSize(labelCinema.getWidth(), 20);
+            labelCinemaInfo.setLocation(
+                labelCinema.getX(),
+                labelCinema.getY() + labelCinema.getHeight() + 5
+            );
+            labelCinemaInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
+
+            JLabel labelStudio = new JLabel(studio.getIdStudio());
+            labelStudio.setSize(this.getWidth() - 20, 25);
+            labelStudio.setLocation(
+                labelCinemaInfo.getX(),
+                labelCinemaInfo.getY() + labelCinemaInfo.getHeight() + 15
+            );
+            labelStudio.setFont(new Font(fontFamily, Font.BOLD, 18));
+
+            JLabel labelStudioInfo = new JLabel(studio.getStudioClass() + " | " + controller.getStudioTypeString(studio.getStudioType()));
+            labelStudioInfo.setSize(labelStudio.getWidth(), 20);
+            labelStudioInfo.setLocation(
+                labelStudio.getX(),
+                labelStudio.getY() + labelStudio.getHeight() + 5
+            );
+            labelStudioInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
+
+            JSeparator separator1 = new JSeparator();
+            separator1.setOrientation(SwingConstants.HORIZONTAL);
+            separator1.setSize(this.getWidth(), 5);
+            separator1.setLocation(0, labelStudioInfo.getY() + labelStudioInfo.getHeight() + 5);
+            separator1.setFont(new Font(fontFamily, Font.BOLD, 20));
+            separator1.setForeground(Color.BLACK);
+
+            JLabel labelMovie = new JLabel(movie.getJudul());
+            labelMovie.setSize(this.getWidth() - 20, 25);
+            labelMovie.setLocation(labelStudioInfo.getX(), separator1.getY() + separator1.getHeight() + 5);
+            labelMovie.setFont(new Font(fontFamily, Font.BOLD, 20));
+
+            JLabel labelMovieInfo = new JLabel(String.valueOf(movie.getDurasi()) + " min");
+            labelMovieInfo.setSize(labelMovie.getWidth(), 15);
+            labelMovieInfo.setLocation(labelMovie.getX(), labelMovie.getY() + labelMovie.getHeight() + 5);
+            labelMovieInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
+
+            String seatMessage = "Kursi yang dipilih:";
+            for (Seat seat : seats) {
+                seatMessage += " " + seat.getSeatCode() + " |";
+            }
+            seatMessage = seatMessage.substring(0, seatMessage.length() - 1);
+
+            JLabel labelSeat = new JLabel(seatMessage);
+            labelSeat.setSize(this.getWidth() - 20, 20);
+            labelSeat.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 10);
+            labelSeat.setFont(new Font(fontFamily, Font.PLAIN, 18));
+
+            JSeparator separator2 = new JSeparator();
+            separator2.setOrientation(SwingConstants.HORIZONTAL);
+            separator2.setSize(this.getWidth(), 5);
+            separator2.setLocation(0, labelSeat.getY() + labelSeat.getHeight() + 5);
+            separator2.setFont(new Font(fontFamily, Font.BOLD, 20));
+            separator2.setForeground(Color.BLACK);
+
+            JLabel labelTotalBayar = new JLabel(String.format(controller.getTotalBayar(jadwal, seats)));
+
+            this.add(labelHeader);
+            this.add(labelCinema);
+            this.add(labelCinemaInfo);
+            this.add(labelStudio);
+            this.add(labelStudioInfo);
+            this.add(separator1);
+            this.add(labelMovie);
+            this.add(labelMovieInfo);
+            this.add(labelSeat);
+            this.add(separator2);
+
+        }
+    }
+
     private Jadwal[] listJadwal = null;
     private Movie[] listMovie = null;
+
+    private String selectedJadwalId = null;
     private ArrayList<String> selectedSeatIds = new ArrayList<String>();
 
     private String fontFamily = "Dialog";
@@ -62,7 +183,7 @@ public class PesanTiket extends JDialog {
         this.setVisible(true);
     }
 
-    public void initializeComponent() {
+    private void initializeComponent() {
         controller.fetchData(); // PLEASE DELETE THIS LINE
         JLabel labelHeader = new JLabel("Pesan Tiket");
         labelHeader.setSize(this.getWidth(), 50);
@@ -225,6 +346,14 @@ public class PesanTiket extends JDialog {
                 showFilm((String) fieldCinema.getSelectedItem());
             }
             
+        });
+
+        buttonOrder.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                orderConfirmationClick();
+            }
         });
 
         panelCinema.add(panelCinemaTitle);
@@ -426,8 +555,8 @@ public class PesanTiket extends JDialog {
 
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                String idJadwal = filteredJadwal[tableJadwal.getSelectedRow()].getIdJadwal();
-                showSeat(idJadwal);
+                selectedJadwalId = filteredJadwal[tableJadwal.getSelectedRow()].getIdJadwal();
+                showSeat(selectedJadwalId);
             }
             
         });
@@ -440,7 +569,7 @@ public class PesanTiket extends JDialog {
     private void showSeat(String idJadwal) {
         buttonOrder.setVisible(false);
         selectedSeatIds.clear();
-        setLabelSelectedSeatsInfoLabel("Selected (0): ");
+        setLabelSelectedSeatsInfoText("Selected (0): ");
 
         // Search for Seat Panel
         JPanel panelSeat = null;
@@ -521,7 +650,7 @@ public class PesanTiket extends JDialog {
                             info += " " + selectedSeatIds.get(i) + " |";
                         }
 
-                        setLabelSelectedSeatsInfoLabel(info.substring(0, info.length() - 1));
+                        setLabelSelectedSeatsInfoText(info.substring(0, info.length() - 1));
 
                         buttonOrder.setVisible(selectedSeatIds.size() != 0);
                     }
@@ -537,7 +666,7 @@ public class PesanTiket extends JDialog {
         panelSeat.repaint();
     }
 
-    private void setLabelSelectedSeatsInfoLabel(String str) {
+    private void setLabelSelectedSeatsInfoText(String str) {
         JPanel panelSeat = null;
         for (Component comp : this.getContentPane().getComponents()) {
             if (comp instanceof JPanel) {
@@ -561,9 +690,14 @@ public class PesanTiket extends JDialog {
         }
     }
 
+    private void orderConfirmationClick() {
+        Jadwal jadwal = controller.getJadwalById(selectedJadwalId);
+        OrderConfirmation orderConfirmationDialog = new OrderConfirmation(this);
+        orderConfirmationDialog.showDialog();
+    }
+
     public void close() {
         this.setVisible(false);
         this.dispose();
     }
 }
-

@@ -209,6 +209,23 @@ public class Controller {
         return null;
     }
 
+    public Seat[] getSeatFromListSeatString(Seat[][] seats, ArrayList<String> seatIds) {
+        Seat[] output = new Seat[seatIds.size()];
+
+        main:for (int i = 0; i < seatIds.size(); i++) {
+            for (Seat[] arrSeat : seats) {
+                for (Seat seat : arrSeat) {
+                    if (seat.getSeatCode().equals(seatIds.get(i))) {
+                        output[i] = seat;
+                        continue main;
+                    }
+                }
+            }
+        }
+
+        return output;
+    }
+
     // Jadwal area
     public Jadwal getJadwalById(String idJadwal) {
         try {
@@ -1449,6 +1466,10 @@ public class Controller {
     }
 
     // User action
+    public int getTotalBayar(Jadwal jadwal, Seat[] bookedSeat) {
+        return jadwal.getHarga() * bookedSeat.length;
+    }
+
     public int pesanTiket(Customer customer, Jadwal jadwal, Seat[] bookedSeat) {
         if (customer == null) {
             return -1;

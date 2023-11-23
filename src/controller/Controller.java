@@ -43,7 +43,6 @@ import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
 import src.model.user.User;
-import src.view.user.CheckUserProfileScreen;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
@@ -567,6 +566,10 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
+    }
+
+    public String[] getListStudioClass() {
+        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
     }
     
     public StudioClassEnum getStudioClassEnum(String studioClass) {
@@ -2258,7 +2261,6 @@ public class Controller {
     }
     
     // Main menu user area
-
     public void printTableFnB(int id, JTable table, DefaultTableModel model) {
         String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
         model.setColumnIdentifiers(columns);
@@ -2308,21 +2310,23 @@ public class Controller {
         try {
             conn.open();
             String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";
-            try (PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery)) {
-                preparedStatement.setString(1, username);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        int membershipStatus = resultSet.getInt("membership_status");
-                        return true;
-                    }
-                }
+            PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, username);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (!resultSet.isBeforeFirst()) {
+                return false;
             }
+
+            resultSet.close();
+            conn.close();
+            return true;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
             return false;
-        } 
-        return false;
+        }
     }
     
     public boolean raiseMembership(String username) {
@@ -2330,7 +2334,7 @@ public class Controller {
             boolean status = checkMembership(username);
             if (!status) {
                 conn.open();
-                String updateQuery = "UPDATE user SET membership_status = '1' WHERE username = ?";
+                String updateQuery = "UPDATE user SET membership_status = 1 WHERE username = ?";
                 try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
                     preparedStatement.setString(1, username);
                     int rowsAffected = preparedStatement.executeUpdate();
@@ -2342,9 +2346,8 @@ public class Controller {
         } catch (Exception ex) {
              new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
-            return false;
-        } 
-        return true;
+        }
+        return false;
     }
 
     public boolean revokeMembership(String username) {
@@ -2368,10 +2371,4 @@ public class Controller {
         }
         return false;
     }
-    
-    public static void main(String[] args) {
-        Controller controller = new Controller();
-        boolean a = controller.checkMembership("raffa");
-        System.out.println(a);
-    }   
 }

@@ -9,7 +9,7 @@ import src.controller.OperationCode;
 import src.view.admin.MainMenuScreen;
 
 public class DeleteFnBScreen {
-    public DeleteFnBScreen(){
+    public DeleteFnBScreen() {
         Controller controller = new Controller();
         JFrame frame = new JFrame();
         frame.setTitle("Delete FnB");
@@ -24,12 +24,12 @@ public class DeleteFnBScreen {
         //kota
         panel.add(namaKota);
         String [] kota2 = controller.listKota();
-        JComboBox kota = new JComboBox<>(kota2);
+        JComboBox<String> kota = new JComboBox<>(kota2);
         panel.add(kota);
 
         //cinema
         panel.add(cinema);
-        JComboBox cinemas = new JComboBox<>();
+        JComboBox<String> cinemas = new JComboBox<>();
         kota.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -42,7 +42,7 @@ public class DeleteFnBScreen {
         //FnB
         panel.add(namaFnB);
         String [] namaFoodAndBevs = controller.listFNB();
-        JComboBox foodsnbevs = new JComboBox<>(namaFoodAndBevs);
+        JComboBox<String> foodsnbevs = new JComboBox<>(namaFoodAndBevs);
         panel.add(foodsnbevs);
 
         panel.add(new JLabel());

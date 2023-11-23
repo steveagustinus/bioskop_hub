@@ -7,6 +7,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
@@ -16,6 +17,7 @@ import javax.swing.event.ListSelectionListener;
 
 import src.controller.Controller;
 import src.controller.ExceptionLogger;
+import src.controller.OperationCode;
 import src.controller.UserDataSingleton;
 import src.model.Cinema;
 import src.model.Jadwal;
@@ -183,7 +185,36 @@ public class PesanTiket extends JDialog {
                         seats
                     );
 
-                    
+                    if (status == OperationCode.PesanTiket.SUCCESS) {
+                        JOptionPane.showMessageDialog(
+                            null,
+                            "Tiket berhasil dipesan!",
+                            "Pesan tiket",
+                            JOptionPane.INFORMATION_MESSAGE
+                        );
+                        close();
+                    } else {
+                        if (status == OperationCode.PesanTiket.IDCUSTOMERNOTVALID) { 
+                            JOptionPane.showMessageDialog(
+                                null, "Harap melakukan login ulang!", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                        else if (status == OperationCode.PesanTiket.NOJADWALSELECTED) {
+                            JOptionPane.showMessageDialog(
+                                null, "Harap pilih jadwal tayang", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                        else if (status == OperationCode.PesanTiket.NOSEATSELECTED) {
+                            JOptionPane.showMessageDialog(
+                                null, "Harap pilih kursi yang ingin dipesan", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                        else if (status == OperationCode.PesanTiket.NOJADWALSELECTED) {
+                            JOptionPane.showMessageDialog(
+                                null, "Terjadi kesalahan!", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                    }
                 }
                 
             });
@@ -218,10 +249,6 @@ public class PesanTiket extends JDialog {
 
     private Controller controller = new Controller();
 
-    public static void main(String[] args) {
-        new PesanTiket(null);
-    }
-
     public PesanTiket(Window owner) {
         super(owner, ModalityType.DOCUMENT_MODAL);
         this.setTitle("Pesan Tiket");
@@ -239,7 +266,6 @@ public class PesanTiket extends JDialog {
     }
 
     private void initializeComponent() {
-        controller.fetchData(); // PLEASE DELETE THIS LINE
         JLabel labelHeader = new JLabel("Pesan Tiket");
         labelHeader.setSize(this.getWidth(), 50);
         labelHeader.setLocation(0, 0);
@@ -438,7 +464,7 @@ public class PesanTiket extends JDialog {
         listJadwal = controller.getJadwalByTimeRange(
             idCinema,
             LocalDate.of(2023, 12, 1), //LocalDate.now(),
-            LocalDate.of(2023, 12, 8) //LocalDate.now().plusWeeks(1)
+            LocalDate.of(2023, 12, 7) //LocalDate.now().plusWeeks(1)
         );
         
         listMovie = controller.extractMoviesFromListJadwal(listJadwal);
@@ -748,6 +774,7 @@ public class PesanTiket extends JDialog {
     private void orderConfirmationClick() {
         OrderConfirmation orderConfirmationDialog = new OrderConfirmation(this);
         orderConfirmationDialog.showDialog();
+        close();
     }
 
     public void close() {

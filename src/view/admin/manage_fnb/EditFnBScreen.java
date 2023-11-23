@@ -7,7 +7,6 @@ import java.awt.event.ActionListener;
 
 import src.controller.Controller;
 import src.controller.OperationCode;
-import src.model.FnB;
 import src.view.admin.MainMenuScreen;
 public class EditFnBScreen {
     public  EditFnBScreen(){
@@ -22,7 +21,7 @@ public class EditFnBScreen {
         JLabel hargaFnBlabel = new JLabel("Update Harga FnB : ");
         JLabel descriptionFnBlabel = new JLabel("Update Deskripsi FnB : ");
         String [] namaFoodAndBevs = controller.listFNB();
-        JComboBox foodsnbevs = new JComboBox<>(namaFoodAndBevs);
+        JComboBox<String> foodsnbevs = new JComboBox<>(namaFoodAndBevs);
         JTextField nama = new JTextField(20);
         JTextField harga = new JTextField(20);;
         JTextArea description= new JTextArea();

@@ -2,6 +2,7 @@ package src.view.admin.hitung_pendapatan;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -58,7 +59,7 @@ public class HitungPendapatanPerKotaPerCabangScreen {
                 String kota = (String) kotaComboBox.getSelectedItem();
                 String cabang = (String) cabangComboBox.getSelectedItem();
                 int result = new Controller().hitungPendapatanPerKotaPerCabang(kota, cabang);
-                JOptionPane.showMessageDialog(null, "Pendapatan Kota : " + kota + "\n Cabang : " + cabang + "\n Pendapatan : Rp " + result+",00");
+                JOptionPane.showMessageDialog(null, "Pendapatan Kota : " + kota + "\n Cabang : " + cabang + "\n Pendapatan : Rp. " + new DecimalFormat("###,###").format(result));
                 frame.dispose();
             }
         });

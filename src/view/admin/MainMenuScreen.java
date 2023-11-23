@@ -2,28 +2,17 @@ package src.view.admin;
 
 import java.awt.Font;
 import java.awt.Panel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JFrame;
-
-import com.mysql.cj.x.protobuf.MysqlxNotice.Frame;
 
 import src.controller.Controller;
-import src.model.user.User;
 import src.view.LoginScreen;
 import src.view.MainInterface;
 import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
-import src.view.admin.manage_jadwal.AddJadwalScreen;
 import src.view.admin.manage_jadwal.EditJadwalScreen;
-import src.view.admin.manage_movie.EditMovieDialog;
-import src.view.admin.manage_movie.EditMovieScreen;
-import src.view.admin.manage_movie.NewMovieDialog;
+import src.view.admin.manage_jadwal.NewJadwalDialog;
 import src.view.admin.manage_studio.EditStudioScreen;
 import src.view.admin.manage_studio.NewStudioDialog;
 
@@ -37,7 +26,6 @@ public class MainMenuScreen implements MainInterface {
 
     public void showMainMenuScreen() {
         mainFrame.setSize(500, 500);
-        mainFrame.setDefaultCloseOperation(mainFrame.EXIT_ON_CLOSE);
 
         Panel panel = new Panel();
         panel.setLayout(null);
@@ -62,13 +50,13 @@ public class MainMenuScreen implements MainInterface {
         JButton manageMovieButton = new JButton("Tambah Movie");
         manageMovieButton.setBounds(40, 170, 200, 30);
         manageMovieButton.addActionListener(e -> {
-            new NewMovieDialog(mainFrame);
+            //new NewMovieDialog(mainFrame);
         });
 
         JButton manageJadwalButton = new JButton("Tambah Jadwal");
         manageJadwalButton.setBounds(40, 220, 200, 30);
         manageJadwalButton.addActionListener(e -> {
-            new AddJadwalScreen();
+            new NewJadwalDialog(mainFrame);
         });
 
         JButton manageCinemaButton2 = new JButton("Edit Cinema");
@@ -86,13 +74,13 @@ public class MainMenuScreen implements MainInterface {
         JButton manageMovieButton2 = new JButton("Edit Movie");
         manageMovieButton2.setBounds(260, 170, 200, 30);
         manageMovieButton2.addActionListener(e -> {
-            new EditMovieScreen(mainFrame);
+            //new EditMovieScreen(mainFrame);
         });
 
         JButton manageJadwalButton2 = new JButton("Edit Jadwal");
         manageJadwalButton2.setBounds(260, 220, 200, 30);
         manageJadwalButton2.addActionListener(e -> {
-            new EditJadwalScreen();
+            new EditJadwalScreen(mainFrame);
         });
 
         JButton hitungPendapatanButton = new JButton("Hitung Pendapatan");

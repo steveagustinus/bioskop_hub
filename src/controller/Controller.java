@@ -553,6 +553,7 @@ public class Controller {
                     getStudioClassEnum(result.getString("studio_class")),
                     result.getInt("studio_type")
                 );
+
                 studioList.add(studio);
             }
 
@@ -565,10 +566,6 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
-    }
-
-    public String[] getListStudioClass() {
-        return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
     }
     
     public StudioClassEnum getStudioClassEnum(String studioClass) {

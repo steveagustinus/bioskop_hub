@@ -7,6 +7,22 @@ public class OperationCode {
         public final static int ANYEXCEPTION = -99;
     }
 
+    public class AddNewJadwal {
+        public final static int SUCCESS = 0;
+        public final static int EMPTYIDJADWAL = -1;
+        public final static int INVALIDIDJADWAL = -2;
+        public final static int EMPTYIDSTUDIO = -3;
+        public final static int STUDIOISNOTEXISTS = -4;
+        public final static int EMPTYIDMOVIE = -5;
+        public final static int MOVIEISNOTEXISTS = -6;
+        public final static int EMPTYHARGA = -7;
+        public final static int INVALIDHARGA = -8;
+        public final static int EMPTYTANGGAL = -9;
+        public final static int EMPTYJAM = -10;
+        public final static int INVALIDWAKTU = -11;
+        public final static int ANYEXCEPTION = -99;
+    }
+
     public class AddNewStudio {
         public final static int SUCCESS = 0;
         public final static int EMPTYIDSTUDIO = -1;
@@ -96,5 +112,26 @@ public class OperationCode {
         public final static int SUCCESS = 0;
         public final static int EMPTYIDMOVIE = -1;
         public final static int ANYEXCEPTION = -99;
+    }
+
+    public class addFnB{
+        public final static int SUCCESS=0;
+        public final static int EMPTYNAME=-1;
+        public final static int EMPTYHARGA=-2;
+        public final static int EMPTYDESCRIPTION=-3;
+        public final static int ANYEXCEPTION=-99;
+    }
+
+    public class DeleteFnB {
+        public final static int SUCCESS = 0;
+        public final static int ANYEXCEPTION = -99;
+    }
+    
+    public class EditFnB{
+        public final static int SUCCESS=0;
+        public final static int EMPTYNAME=-1;
+        public final static int EMPTYHARGA=-2;
+        public final static int EMPTYDESCRIPTION=-3;
+        public final static int ANYEXCEPTION=-99;
     }
 }

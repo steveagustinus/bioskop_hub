@@ -29,7 +29,7 @@ public class HitungPendapatanPerKotaPerCabangScreen {
         kotaLabel.setBounds(25, 10, 275, 20);
 
         String[] listKota = new Controller().listKotaHP();
-        JComboBox<String> kotaComboBox = new JComboBox(listKota);
+        JComboBox<String> kotaComboBox = new JComboBox<String>(listKota);
         kotaComboBox.setBounds(100, 10, 275, 20);
         kotaComboBox.addActionListener(new ActionListener() {
             @Override

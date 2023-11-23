@@ -4,14 +4,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 
 import src.controller.UserDataSingleton;
-import src.model.button.MyButton;
 import src.model.button.MyButton;
 import src.view.LoginScreen;
 
@@ -35,12 +33,16 @@ public class MainMenuUserScreen {
         JLabel usernameLabel = new JLabel("Username : " + userData.getUsername());
         usernameLabel.setBounds(10, 70, 500, 50);
         panel.add(usernameLabel);
+        
+        JLabel membershipPointLabel = new JLabel("Membership Point : " + userData.getMembership_point());
+        membershipPointLabel.setBounds(10, 90, 500, 50);
+        panel.add(membershipPointLabel);
 
         JButton pesanTikerButton = new JButton("Pesan Tiket");
         pesanTikerButton.setBounds(170, 150, 150, 50);
         panel.add(pesanTikerButton);
         pesanTikerButton.addActionListener(e -> {
-            new PesanTiket();
+            new PesanTiket(null);
             frame.dispose();
         });
 

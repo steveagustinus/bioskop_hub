@@ -1,7 +1,6 @@
 package src.model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 
 import src.model.seat.Seat;
 
@@ -11,9 +10,9 @@ public class Jadwal {
     private String idStudio;
     private int harga;
     private LocalDateTime waktu;
-    private ArrayList<Seat> seat;
+    private Seat[][] seat;
 
-    public Jadwal(String idJadwal, String idMovie, String idStudio, int harga, LocalDateTime waktu, ArrayList<Seat> seat) {
+    public Jadwal(String idJadwal, String idMovie, String idStudio, int harga, LocalDateTime waktu, Seat[][] seat) {
         this.idJadwal = idJadwal;
         this.idMovie = idMovie;
         this.idStudio = idStudio;
@@ -62,11 +61,11 @@ public class Jadwal {
         this.waktu = waktu;
     }
 
-    public ArrayList<Seat> getSeat() {
+    public Seat[][] getSeat() {
         return seat;
     }
 
-    public void setSeat(ArrayList<Seat> seat) {
+    public void setSeat(Seat[][] seat) {
         this.seat = seat;
     }
 }

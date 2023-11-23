@@ -56,6 +56,17 @@ public class CheckUserProfileScreen {
 
         JLabel address = new JLabel(UserDataSingleton.getInstance().getAddress());
         address.setBounds(100, 200, 165, 25);
+
+        int statusMembership = UserDataSingleton.getInstance().getMembership_status();
+        String statusMembershipString = "";
+        if(statusMembership == 0){
+            statusMembershipString = "Not Member";
+        }
+        else{
+            statusMembershipString = "Membership";
+        }
+        JLabel membershipStatus = new JLabel("Memebership Status : " + statusMembershipString);
+        membershipStatus.setBounds(10, 230, 300, 25);
         
         JButton backButton = new JButton("Back");
         backButton.setBounds(10, 280, 80, 25);
@@ -85,6 +96,7 @@ public class CheckUserProfileScreen {
         panel.add(phoneNo);
         panel.add(addressLabel);
         panel.add(address);
+        panel.add(membershipStatus);
         panel.add(backButton);
         panel.add(editButton);
         frame.add(panel);

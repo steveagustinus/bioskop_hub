@@ -106,6 +106,7 @@ public class MainMenuUserScreen implements MainInterface {
         roundButton.setPreferredSize(new Dimension(120, 120));
         roundButton.setBackground(backgroundColor);
         roundButton.setBounds(620, 20, 50, 50);
+        roundButton.setFocusPainted(false);
         panel.add(roundButton);
         roundButton.addActionListener(e -> {
             new CheckUserProfileScreen();

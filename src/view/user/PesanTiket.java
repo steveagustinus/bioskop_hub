@@ -22,6 +22,7 @@ import src.model.movie.Movie;
 import src.model.seat.Seat;
 import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
+import src.view.user.payment.PaymentPanel;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -30,6 +31,7 @@ import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,6 +41,10 @@ public class PesanTiket extends JDialog {
 
         public OrderConfirmation(Window owner) {
             super(owner, ModalityType.DOCUMENT_MODAL);
+            this.setLocation(owner.getX(), owner.getY());
+            this.setSize(500, 700);
+            this.setLayout(null);
+            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
             initializeComponent();
         }
@@ -53,11 +59,6 @@ public class PesanTiket extends JDialog {
         }
 
         public void initializeComponent() {
-            this.setLocationRelativeTo(this);
-            this.setSize(500, 500);
-            this.setLayout(null);
-            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
             JLabel labelHeader = new JLabel("Order Confirmation");
             labelHeader.setSize(this.getWidth(), 50);
             labelHeader.setLocation(0, 0);
@@ -148,11 +149,22 @@ public class PesanTiket extends JDialog {
             JLabel labelTotalBayar2 = new JLabel(
                 seats.length + " x Rp. " +
                 jadwal.getHarga() + " = Rp. " + 
-                controller.getTotalBayar(jadwal, seats)
+                new DecimalFormat("###,###").format(controller.getTotalBayar(jadwal, seats))
             );
             labelTotalBayar2.setSize(this.getWidth(), 26);
             labelTotalBayar2.setLocation(labelTotalBayar.getX(), labelTotalBayar.getY() + labelTotalBayar.getHeight() + 5);
             labelTotalBayar2.setFont(new Font(fontFamily, Font.BOLD, 25));
+
+            JSeparator separator3 = new JSeparator();
+            separator3.setOrientation(SwingConstants.HORIZONTAL);
+            separator3.setSize(this.getWidth(), 5);
+            separator3.setLocation(0, labelTotalBayar2.getY() + labelTotalBayar2.getHeight() + 5);
+            separator3.setFont(new Font(fontFamily, Font.BOLD, 20));
+            separator3.setForeground(Color.BLACK);
+
+            int totalBayar = controller.getTotalBayar(jadwal, seats);
+            JPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250, totalBayar);
+            panelPayment.setLocation(labelTotalBayar.getX(), separator3.getY() + separator3.getHeight() + 10);
 
             this.add(labelHeader);
             this.add(labelCinema);
@@ -167,6 +179,8 @@ public class PesanTiket extends JDialog {
             this.add(separator2);
             this.add(labelTotalBayar);
             this.add(labelTotalBayar2);
+            this.add(separator3);
+            this.add(panelPayment);
         }
     }
 
@@ -710,7 +724,6 @@ public class PesanTiket extends JDialog {
     }
 
     private void orderConfirmationClick() {
-        Jadwal jadwal = controller.getJadwalById(selectedJadwalId);
         OrderConfirmation orderConfirmationDialog = new OrderConfirmation(this);
         orderConfirmationDialog.showDialog();
     }

@@ -2266,21 +2266,23 @@ public class Controller {
         try {
             conn.open();
             String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";
-            try (PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery)) {
-                preparedStatement.setString(1, username);
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    if (resultSet.next()) {
-                        int membershipStatus = resultSet.getInt("membership_status");
-                        return true;
-                    }
-                }
+            PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, username);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (!resultSet.isBeforeFirst()) {
+                return false;
             }
+
+            resultSet.close();
+            conn.close();
+            return true;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
             return false;
-        } 
-        return false;
+        }
     }
     
     public boolean raiseMembership(String username) {
@@ -2300,9 +2302,8 @@ public class Controller {
         } catch (Exception ex) {
              new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
-            return false;
-        } 
-        return true;
+        }
+        return false;
     }
 
     public boolean revokeMembership(String username) {

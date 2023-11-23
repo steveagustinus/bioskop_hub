@@ -94,7 +94,7 @@ public class MainMenuScreen implements MainInterface {
         JButton raiseRevokeButton = new JButton("Raise/Revoke Membership");
         raiseRevokeButton.setBounds(260, 270, 200, 30);
         raiseRevokeButton.addActionListener(e -> {
-            // new RaiseRevokeMembershipScreen();
+            new RaiseRevokeMembership();
         });
 
         

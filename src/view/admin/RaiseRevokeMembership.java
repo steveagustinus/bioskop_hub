@@ -7,10 +7,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.awt.*;
-import java.awt.event.ActionListener;
 
 import src.controller.Controller;
-import src.model.user.User;
 
 public class RaiseRevokeMembership {
     public RaiseRevokeMembership() {

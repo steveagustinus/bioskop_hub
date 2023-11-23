@@ -45,8 +45,8 @@ public class MainMenuUserScreen implements MainInterface {
         membershipDateLabel.setBounds(10, 110, 500, 50);
         panel.add(membershipDateLabel);
 
-        boolean isMember = controller.checkMembership(userData.getUsername());
-        if(isMember){
+        int isMember = controller.checkMembership(userData.getUsername());
+        if(isMember == 0){
             membershipPointLabel.setVisible(true);
             membershipDateLabel.setVisible(true);
         }else{

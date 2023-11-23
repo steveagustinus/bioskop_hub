@@ -2409,7 +2409,7 @@ public class Controller {
         }
     }
 
-    public boolean checkMembership(String username) {
+    public int checkMembership(String username) {
         try {
             conn.open();
             String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";

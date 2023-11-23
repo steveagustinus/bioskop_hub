@@ -21,6 +21,8 @@ import java.util.Scanner;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 import src.model.Cinema;
 import src.model.movie.Movie;
@@ -714,9 +716,9 @@ public class Controller {
             }
 
             conn.open();
-            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`)"
+            String sql = "INSERT INTO `user` (`username`, `password`, `email`, `phone_no`, `address`, `profile_name`, `user_type`, `membership_status`, `membership_expiry_date`, `point_membership`)"
                     +
-                    "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
             PreparedStatement ps = conn.connection.prepareStatement(sql);
@@ -727,6 +729,9 @@ public class Controller {
             ps.setString(5, alamat);
             ps.setString(6, username);
             ps.setInt(7, 1);
+            ps.setInt(8, 0);
+            ps.setDate(9, null);
+            ps.setInt(10, 0);
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -739,9 +744,12 @@ public class Controller {
             return -99;
         }
     }
+
     public int checkEmptyFields(String username, String password, String email, String phoneNumber, String alamat) {
         if (username.equals("") || password.equals("") || email.equals("") || phoneNumber.equals("")
-                || alamat.equals("") || username.equals("Enter your Username") || password.equals("Enter your Password") || email.equals("Enter your Email") || phoneNumber.equals("Enter your Phone Number") || alamat.equals("Enter your Address")) {
+                || alamat.equals("") || username.equals("Enter your Username") || password.equals("Enter your Password")
+                || email.equals("Enter your Email") || phoneNumber.equals("Enter your Phone Number")
+                || alamat.equals("Enter your Address")) {
             return 0;
         }
         return 1;
@@ -798,6 +806,9 @@ public class Controller {
             userDataSingleton.setPhone_no(result.getString("phone_no"));
             userDataSingleton.setAddress(result.getString("address"));
             userDataSingleton.setUser_type(result.getInt("user_type"));
+            userDataSingleton.setMembership_status(result.getInt("membership_status"));
+            userDataSingleton.setMembership_expiry_date(result.getDate("membership_expiry_date"));
+            userDataSingleton.setMembership_point(result.getInt("point_membership"));
             conn.close();
             return 1;
         } catch (Exception ex) {
@@ -807,7 +818,7 @@ public class Controller {
     }
 
     public void setPlaceholder(JPasswordField passwordField, String placeholder) {
-        passwordField.setEchoChar((char) 0); 
+        passwordField.setEchoChar((char) 0);
         passwordField.setText(placeholder);
         passwordField.setForeground(Color.GRAY);
 
@@ -816,7 +827,7 @@ public class Controller {
             public void focusGained(FocusEvent e) {
                 if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
                     passwordField.setText("");
-                    passwordField.setEchoChar('*'); 
+                    passwordField.setEchoChar('*');
                     passwordField.setForeground(Color.BLACK);
                 }
             }
@@ -902,25 +913,179 @@ public class Controller {
     }
 
     // Hitung pendapatan area
-    public int hitungPendapatanCabangFNB(String nama) {
+    public int hitungPendapatanCabang(String nama) {
+        int total = 0;
         try {
-            conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT SUM(`harga`) FROM `fnb` WHERE `id_cinema`='" + nama + "'");
-
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.nama = '"
+                            + nama + "';");
             result.next();
-
-            int total = result.getInt(1);
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.nama ='"
+                            + nama + "';");
+            result.next();
+            total += result.getInt(1);
 
             result.close();
             statement.close();
             conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
 
-            return total;
+    public int hitungPendapatanKota(String kota) {
+        int total = 0;
+        try {
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.kota = '"
+                            + kota + "';");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.kota ='"
+                            + kota + "';");
+            result.next();
+            total += result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
+
+    public int hitungPendapatanTotal() {
+        int total = 0;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb;");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT SUM(j.harga) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal;");
+            result.next();
+            total += result.getInt(1);
+            statement.close();
+            conn.close();
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
-            return 0;
+        }
+        return total;
+    }
+    public int hitungPendapatanPerKotaPerCabang(String namaKota, String namaCabang){
+        int total = 0;
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.kota = '"
+                            + namaKota + "' AND c.nama='"+namaCabang+"';");
+            result.next();
+            total += result.getInt(1);
+            result.close();
+            result = statement.executeQuery(
+                    "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.kota = '"
+                            + namaKota + "' AND c.nama='"+namaCabang+"';");
+            result.next();
+            total += result.getInt(1);
+
+            result.close();
+            statement.close();
+            conn.close();
+        } catch (Exception e) {
+            new ExceptionLogger(e.getMessage());
+        }
+        return total;
+    }
+
+    public boolean isKotaExists(String kota) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `cinema` WHERE `kota`='" + kota + "'");
+            if (!result.isBeforeFirst()) {
+                return false;
+            }
+            result.next();
+            conn.close();
+            return true;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return false;
+        }
+    }
+    public boolean isCabangExists(String cabang) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `cinema` WHERE `nama`='" + cabang + "'");
+            if (!result.isBeforeFirst()) {
+                return false;
+            }
+            result.next();
+            conn.close();
+            return true;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return false;
+        }
+    }
+    public String[] listKotaHP(){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT DISTINCT `kota` FROM `cinema` ");
+
+            ArrayList<String> listKota = new ArrayList<String>();
+            while (result.next()) {
+                listKota.add(result.getString("kota"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listKota.toArray(new String[listKota.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    public String[] listCabangHP(String namaKota){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `nama` FROM `cinema` WHERE `kota` = '"+namaKota+"'");
+
+            ArrayList<String> listCabang = new ArrayList<String>();
+            while (result.next()) {
+                listCabang.add(result.getString("nama"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listCabang.toArray(new String[listCabang.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
         }
     }
 
@@ -1150,11 +1315,51 @@ public class Controller {
     }
     // Main menu user area
 
-    public boolean checkMembership(String username){
-        
-        return true;
+    // public int checkMembership(String username){
+
+    // }
+    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String foodName = resultSet.getString("f.nama");
+                int quantity = resultSet.getInt("tf.qty");
+                int totalPrice = resultSet.getInt("f.harga * tf.qty");
+                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
     }
-    public void printTable(){
-        
+
+    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String movieName = resultSet.getString("m.judul");
+                int seat = resultSet.getInt("tj.id_seat");
+                String classType = resultSet.getString("s.studio_class");
+                int totalPrice = resultSet.getInt("j.harga");
+                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
     }
 }

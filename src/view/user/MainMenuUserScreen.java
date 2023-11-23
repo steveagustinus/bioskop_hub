@@ -35,6 +35,10 @@ public class MainMenuUserScreen {
         JLabel usernameLabel = new JLabel("Username : " + userData.getUsername());
         usernameLabel.setBounds(10, 70, 500, 50);
         panel.add(usernameLabel);
+        
+        JLabel membershipPointLabel = new JLabel("Membership Point : " + userData.getMembership_point());
+        membershipPointLabel.setBounds(10, 90, 500, 50);
+        panel.add(membershipPointLabel);
 
         JButton pesanTikerButton = new JButton("Pesan Tiket");
         pesanTikerButton.setBounds(170, 150, 150, 50);

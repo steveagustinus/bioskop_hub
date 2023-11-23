@@ -45,8 +45,8 @@ public class MainMenuUserScreen implements MainInterface {
         membershipDateLabel.setBounds(10, 110, 500, 50);
         panel.add(membershipDateLabel);
 
-        boolean isMember = controller.checkMembership(userData.getUsername());
-        if(isMember){
+        int isMember = controller.checkMembership(userData.getUsername());
+        if(isMember == 0){
             membershipPointLabel.setVisible(true);
             membershipDateLabel.setVisible(true);
         }else{
@@ -106,6 +106,7 @@ public class MainMenuUserScreen implements MainInterface {
         roundButton.setPreferredSize(new Dimension(120, 120));
         roundButton.setBackground(backgroundColor);
         roundButton.setBounds(620, 20, 50, 50);
+        roundButton.setFocusPainted(false);
         panel.add(roundButton);
         roundButton.addActionListener(e -> {
             new CheckUserProfileScreen();

@@ -73,7 +73,6 @@ public class EditUserProfileScreen {
         cancelButton.setBounds(10, 280, 80, 25);
 
         cancelButton.addActionListener(e -> {
-            new CheckUserProfileScreen();
             frame.dispose();
         });
 
@@ -109,7 +108,6 @@ public class EditUserProfileScreen {
             } else if (user == 1) {
                 JOptionPane.showMessageDialog(null,
                         "Update " + UserDataSingleton.getInstance().getUsername() + " successful!");
-                new CheckUserProfileScreen();
                 frame.dispose();
             }
         });

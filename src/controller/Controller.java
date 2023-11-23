@@ -2271,28 +2271,8 @@ public class Controller {
         UserDataSingleton.getInstance().setAddress(address);
         return 1;
     }
-  
-    public String[] listJam(String movie){
-        try{
-            conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT `waktu` FROM `jadwal` WHERE `id_movie`='" + movie + "'");
 
-            ArrayList<String> listJam = new ArrayList<String>();
-            while (result.next()) {
-                listJam.add(result.getString("jam"));
-            }
-
-            return listJam.toArray(new String[listJam.size()]);
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
-    public int addFnB( String [] fnb){
+    public int addFnB(String[] fnb) {
         int harga = Integer.parseInt(fnb[1]);
         if(fnb[0]==null){
             return OperationCode.addFnB.EMPTYNAME;
@@ -2315,7 +2295,8 @@ public class Controller {
             return OperationCode.addFnB.ANYEXCEPTION;
         }
     }
-    public int deleteFnB(String fnbName){
+    
+    public int deleteFnB(String fnbName) {
         try{
             conn.open();
 
@@ -2330,7 +2311,8 @@ public class Controller {
             return -99;
         }
     }
-    public int EditFnB(String fnbName, String [] dataFnB){
+    
+    public int editFnB(String fnbName, String [] dataFnB) {
         int harga = Integer.parseInt(dataFnB[1]);
         if(dataFnB[0]==null){
             return OperationCode.EditFnB.EMPTYNAME;

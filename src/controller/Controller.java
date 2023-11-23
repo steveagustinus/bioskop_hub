@@ -1812,7 +1812,7 @@ public class Controller {
         return decFormat.format(total);
     }
     
-    public void insertTransaksiFnb(String pilihan, int quantity, String studio, int id_user) {
+    public String insertTransaksiFnb(String pilihan, int quantity, String studio, int id_user) {
         try {
             conn.open();
             String selectQuery = "SELECT MAX(CAST(SUBSTRING(id_transaction, 3) AS UNSIGNED)) + 1 AS next_value FROM `transaction`";
@@ -1852,13 +1852,13 @@ public class Controller {
             insertStatement2.setString(4, studio);
 
             if (rowsAffected > 0) {
-                JOptionPane.showMessageDialog(null, "Transaksi Berhasil", "Success", JOptionPane.INFORMATION_MESSAGE);
+                return "Transaksi Berhasil";
             } else {
-                JOptionPane.showMessageDialog(null, "Insert Gagal1", "Error", JOptionPane.ERROR_MESSAGE);
+                return "Insert Gagal";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Insert gagal2.", "Error", JOptionPane.ERROR_MESSAGE);
+                return "Insert gagal.";
         }
     }
     

@@ -25,7 +25,8 @@ public class PesanFnb {
 
     public int status;
     public String response;
-    private void viewPesanFnb() {
+    private void viewPesanFnb(){
+        UserDataSingleton user = UserDataSingleton.getInstance();
         Controller controller = new Controller();
 
         JFrame f = new JFrame("Pesan FNB");
@@ -156,16 +157,17 @@ public class PesanFnb {
                                                 "\n Harga Menu : "+controller.hargaPerFnb((String) boxMenu.getSelectedItem())+
                                                 "\n Jumlah barang : "+quantityField.getText();
                         if(status == 1){
-                            if(controller.checkSufficientPoint(UserDataSingleton.getInstance().getMembership_point(), 10)==true){
+                            if(controller.checkSufficientPoint(user.getInstance().getMembership_point(), 10)==true){
                                 hargaBaru = Integer.parseInt(hargaPerFnb.getText()) / 100 * 90 ;
                                 confirmationText+="\n Pakai 10 poin membership : Ya"+
                                                     "\n Total tunai : "+hargaBaru;
                                 int input = JOptionPane.showConfirmDialog(null, confirmationText, "Konfirmasi Pesanan FNB",JOptionPane.YES_NO_CANCEL_OPTION);
                                 if (input == 0) {
-                                    controller.insertTransaksiFnb(boxMenu.getSelectedItem().toString() ,Integer.parseInt(quantityField.getText()), String.valueOf(hargaBaru), UserDataSingleton.getInstance().getId());
-                                    response = controller.decreasePoinMembership(UserDataSingleton.getInstance().getUsername(),controller.checkMembership(UserDataSingleton.getInstance().getUsername()), 10);
+                                    response = controller.insertTransaksiFnb(boxMenu.getSelectedItem().toString() ,Integer.parseInt(quantityField.getText()), String.valueOf(hargaBaru), user.getInstance().getId());
                                     JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
-                                    response = controller.increasePoinMembership(UserDataSingleton.getInstance().getUsername(),controller.checkMembership(UserDataSingleton.getInstance().getUsername()),5);
+                                    response = controller.decreasePoinMembership(user.getInstance().getUsername(),controller.checkMembership(user.getInstance().getUsername()), 10);
+                                    JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
+                                    response = controller.increasePoinMembership(user.getInstance().getUsername(),controller.checkMembership(user.getInstance().getUsername()),5);
                                     JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
                                     int result = JOptionPane.showOptionDialog(null,"Apakah Anda ingin pesan lagi?","Konfirmasi",JOptionPane.YES_NO_OPTION,
                                     JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Ya", "Tidak"},"Ya");
@@ -185,8 +187,9 @@ public class PesanFnb {
                                             "\n Total tunai : "+controller.totalHasilTransaksiFnb(hargaPerFnb.getText(), quantityField.getText());
                             int input = JOptionPane.showConfirmDialog(null, confirmationText, "Konfirmasi Pesanan FNB",JOptionPane.YES_NO_CANCEL_OPTION);
                                 if (input == 0) {
-                                    controller.insertTransaksiFnb(boxMenu.getSelectedItem().toString() ,Integer.parseInt(quantityField.getText()), hargaPerFnb.getText(), UserDataSingleton.getInstance().getId());
-                                    response = controller.increasePoinMembership(UserDataSingleton.getInstance().getUsername(),controller.checkMembership(UserDataSingleton.getInstance().getUsername()), 5);
+                                    response = controller.insertTransaksiFnb(boxMenu.getSelectedItem().toString() ,Integer.parseInt(quantityField.getText()), hargaPerFnb.getText(), user.getInstance().getId());
+                                    JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
+                                    response = controller.increasePoinMembership(user.getInstance().getUsername(),controller.checkMembership(user.getInstance().getUsername()), 5);
                                     JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
                                     int result = JOptionPane.showOptionDialog(null,"Apakah Anda ingin pesan lagi?","Konfirmasi",JOptionPane.YES_NO_OPTION,
                                     JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Ya", "Tidak"},"Ya");

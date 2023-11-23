@@ -33,8 +33,12 @@ public class DeleteFnBScreen {
         kota.addActionListener(new ActionListener(){
             @Override
             public void actionPerformed(ActionEvent e) {
-                String[] idcinema = controller.listCinema(kota.getSelectedItem().toString());
-                cinemas.setModel(new DefaultComboBoxModel(idcinema));
+                cinemas.removeAllItems();
+                
+                String[] listCinema = controller.listCinema((String) kota.getSelectedItem());
+                for (String cinema : listCinema) {
+                    cinemas.addItem(cinema);
+                }
             }
         });
         panel.add(cinemas);

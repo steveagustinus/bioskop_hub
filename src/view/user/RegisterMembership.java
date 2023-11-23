@@ -5,7 +5,6 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
 import src.controller.Controller;
-import src.controller.UserDataSingleton;
 
 public class RegisterMembership {
     public RegisterMembership(){
@@ -37,7 +36,7 @@ public class RegisterMembership {
             buttonBack.setBounds(170, 290, 150, 50);
             
             buttonRegis.addActionListener(e -> {
-                controller.registerMembership(UserDataSingleton.getInstance().getUsername(), UserDataSingleton.getInstance().getPassword(), UserDataSingleton.getInstance().getPassword(), UserDataSingleton.getInstance().getEmail(), UserDataSingleton.getInstance().getPhone_no(), UserDataSingleton.getInstance().getAddress(), 0);
+                // PANGGIL REGISTER MEMBERSHIP DISINI
                 JOptionPane.showMessageDialog(null, "Anda sudah terdaftar menjadi member, kembali ke menu", "", JOptionPane.INFORMATION_MESSAGE);
                 f.dispose();
                 new MainMenuUserScreen();

@@ -16,6 +16,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -48,10 +50,6 @@ public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
 
     public Controller() { }
-
-    public void fetchData() {
-        Data.movies = getMovies();
-    }
 
     // Seat area
     public int getLastSeatId() {
@@ -461,11 +459,11 @@ public class Controller {
                 idsMovie.add(jadwal.getIdMovie());
             }
         }
-
+        Movie[] arrMovie = getMovies();
         for (String idMovie : idsMovie) {
-            for (int i = 0; i < Data.movies.length; i++) {
-                if (Data.movies[i].getIdMovie().equals(idMovie)) {
-                    movies.add(Data.movies[i]);
+            for (int i = 0; i < arrMovie.length; i++) {
+                if (arrMovie[i].getIdMovie().equals(idMovie)) {
+                    movies.add(arrMovie[i]);
                     break;
                 }
             }
@@ -1071,19 +1069,20 @@ public class Controller {
     }
 
     public Movie[] searchMovie(String input, int limit) {
-        if (Data.movies == null) { return null; }
+        Movie[] movies = getMovies();
+        if (movies == null) { return null; }
 
         ArrayList<Movie> movieList = new ArrayList<Movie>();
 
         if (input.equals("")) {
-            for (int i = 0; i < limit && i < Data.movies.length; i++) {
-                movieList.add(Data.movies[i]);
+            for (int i = 0; i < limit && i < movies.length; i++) {
+                movieList.add(movies[i]);
             }
 
             return movieList.toArray(new Movie[movieList.size()]);
         }
 
-        for (Movie movie : Data.movies) {
+        for (Movie movie : movies) {
             if (movie.getJudul().toLowerCase().contains(input.toLowerCase())) {
                 movieList.add(movie);
             }
@@ -1643,13 +1642,6 @@ public class Controller {
         }
     }
 
-    public MembershipCustomer registerMembership(String idUser, String username, String password, String profileName, String email,
-            String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(idUser, username, password, profileName, email,
-                phoneNumber, address, null, poin);
-        return membershipCustomer;
-    }
-
     // Common services
     public boolean isNumber(String string) {
         for (int i = 0; i < string.length(); i++) {
@@ -1737,8 +1729,205 @@ public class Controller {
         if (!dir.exists()) {
             dir.mkdirs();
         }
+    }
 
-        fetchData();
+    // FnB area
+    public FnB getFnBbyName(String namaFnB) {
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `fnb` WHERE `nama`='" + namaFnB + "' AND `is_deleted`=0;");
+
+            result.next();
+
+            
+            FnB fnB = null;
+            fnB = new FnB(
+                result.getString("nama"),
+                result.getInt("harga"),
+                result.getString("description")
+            );
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return fnB;
+           
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    
+    public String hargaPerFnb(String namaFnb) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery("SELECT `harga` FROM `fnb` WHERE `nama` ='" + namaFnb + "'");
+            if (result.next()) {
+                String harga = result.getString("harga");
+                result.close();
+                statement.close();
+                conn.close();
+                return harga;
+            } else {
+                result.close();
+                statement.close();
+                conn.close();
+                return "Not Found";
+            }
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return "Error";
+        }
+    }
+    
+    public String totalHasilTransaksiFnb(String harga, String quantity) {
+        if (harga.equals("") || quantity.equals("")) {
+            return "0";
+        }
+        if (!isNumber(harga) || !isNumber(quantity)) {
+            return "0";
+        }
+
+        int total = 0;
+        int int_harga = Integer.parseInt(harga);
+        int int_quantity = Integer.parseInt(quantity);
+
+        if (int_quantity < 0) {
+            return "0";
+        }
+
+        total = int_harga * int_quantity;
+
+        DecimalFormat decFormat = new DecimalFormat("###,###");
+        return decFormat.format(total);
+    }
+    
+    public void insertTransaksiFnb(String pilihan, int quantity, String studio, int id_user) {
+        try {
+            conn.open();
+            String selectQuery = "SELECT MAX(CAST(SUBSTRING(id_transaction, 3) AS UNSIGNED)) + 1 AS next_value FROM `transaction`";
+            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+            ResultSet resultSet = selectStatement.executeQuery();
+        
+            long autoIncrementValue = 0;
+            if (resultSet.next()) {
+                autoIncrementValue = resultSet.getLong("next_value");
+            }
+        
+            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES (?, ?, NOW())";
+            PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
+            String transactionId = "T-" + String.format("%018d", autoIncrementValue);
+            insertStatement.setString(1, transactionId);
+            insertStatement.setInt(2, id_user);
+            int rowsAffected = insertStatement.executeUpdate();
+
+            // Get id_fnb
+            String selectIdFnb = "SELECT `id_fnb` FROM `fnb` WHERE `nama` = ?";
+            PreparedStatement selectStatement2 = conn.connection.prepareStatement(selectIdFnb);
+            selectStatement2.setString(1, pilihan);
+            ResultSet resultSet2 = selectStatement2.executeQuery();
+            String resultString = "";
+            if (resultSet2.next()) {
+                resultString = resultSet2.getString("id_fnb");
+            }
+            System.out.println(resultString);
+
+            String insertQuery2 = "INSERT INTO `transaction_fnb` (`id_transaction`, `id_fnb`, `qty`, `id_cinema`) " +
+                    "VALUES (?, ?, ?, ?)";
+            PreparedStatement insertStatement2 = conn.connection.prepareStatement(insertQuery2);
+            insertStatement2.setString(1, transactionId);
+            insertStatement2.setString(2, resultString);
+            insertStatement2.setInt(3, quantity);
+            insertStatement2.setString(4, studio);
+
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(null, "Transaksi Berhasil", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Insert Gagal1", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Insert gagal2.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    // Membership area
+    public boolean checkSufficientPoint(int poinUser, int poinNeeded) {
+        if (poinUser>=poinNeeded) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public String increasePoinMembership(String username, boolean statusMembership, int amountPlusPoin){
+        if (statusMembership == true) {
+            try {
+                conn.open();
+                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+                selectStatement.setString(1, username);
+                ResultSet resultSet = selectStatement.executeQuery();
+    
+                int poin = 0;
+                if (resultSet.next()) {
+                    poin = resultSet.getInt("poin_membership");
+                }
+    
+                int totalPoin = poin + amountPlusPoin;
+    
+                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+                PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
+                updateStatement.setInt(1, totalPoin);
+                updateStatement.setString(2, username);
+                updateStatement.executeUpdate();
+    
+                return "Poin berhasil ditambahkan, poin anda sekarang: "+totalPoin;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "Gagal menambahkan poin";
+            }
+        } else {
+            return "Anda bukan member, poin tidak ditambahkan";
+        }
+    }
+
+    public String decreasePoinMembership(String username, boolean statusMembership, int amountMinusPoin){
+        if (statusMembership == true) {
+            try{
+                conn.open();
+                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+                selectStatement.setString(1, username);
+                ResultSet resultSet = selectStatement.executeQuery();
+    
+                int poin = 0;
+                if (resultSet.next()) {
+                    poin = resultSet.getInt("poin_membership");
+                }
+    
+                int totalPoin = poin - amountMinusPoin;
+    
+                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+                PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
+                updateStatement.setInt(1, totalPoin);
+                updateStatement.setString(2, username);
+                updateStatement.executeUpdate();
+    
+                return "Poin berhasil dikurangi, poin anda sekarang: "+totalPoin;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "Gagal mengurangi poin";
+            }
+        } else {
+            return "Anda bukan member, poin tidak ditambahkan";
+        }
     }
 
     // Hitung pendapatan area
@@ -1839,7 +2028,6 @@ public class Controller {
         }
         return total;
     }
-
   
     public boolean isKotaExists(String kota) {
         try {
@@ -1900,6 +2088,7 @@ public class Controller {
             return null;
         }
     }
+    
     public String[] listCabangHP(String namaKota){
         try {
             conn.open();
@@ -1923,13 +2112,12 @@ public class Controller {
     }
 
     // Function tampilkan list
-  
     public String[] listKota() {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT DISTINCT `kota` FROM `cinema` ");
+                    "SELECT DISTINCT `kota` FROM `cinema`");
 
             ArrayList<String> listKota = new ArrayList<String>();
             while (result.next()) {
@@ -1995,7 +2183,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `nama` FROM `fnb`");
+                    "SELECT `nama` FROM `fnb` WHERE `is_deleted`=0");
 
             ArrayList<String> listFNB = new ArrayList<String>();
             while (result.next()) {
@@ -2017,7 +2205,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "'");
+                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "' WHERE `is_deleted`=0");
 
             ArrayList<String> listMovie = new ArrayList<String>();
             while (result.next()) {
@@ -2030,91 +2218,6 @@ public class Controller {
             return listMovie.toArray(new String[listMovie.size()]);
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
-            return null;
-        }
-    }
-
-    public FnB getFnBbyName (String namaFnB){
-         try {
-            conn.open();
-
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `fnb` WHERE `nama`='" + namaFnB + "' AND `is_deleted`=0;");
-
-            result.next();
-
-            
-            FnB fnB = null;
-            fnB = new FnB(
-                result.getString("nama"),
-                result.getInt("harga"),
-                result.getString("description")
-            );
-
-            result.close();
-            statement.close();
-            conn.close();
-
-            return fnB;
-            
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return null;
-        }
-    }
-
-    public long hargaPerFnb(String namaFnb) {
-        try {
-            conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery("SELECT `harga` FROM `fnb` WHERE `nama` ='" + namaFnb + "'");
-            long harga = 0;
-            harga = result.getLong("harga");
-            result.close();
-            statement.close();
-            conn.close();
-            return harga;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return 0;
-        }
-    }
-
-    public long totalHasilTransaksiFnb(long harga, int quantity) {
-        long total = 0;
-        total = harga * quantity;
-        return total;
-    }
-
-    public String insertTransaksiFnb(String pilihan, int quantity, long harga, String idCinema) {
-        try {
-            // Execute a SELECT statement to get the current auto-increment value
-            conn.open();
-            String selectQuery = "SELECT AUTO_INCREMENT FROM information_schema.TABLES " +
-                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaction'";
-            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
-            ResultSet resultSet = selectStatement.executeQuery();
-
-            long autoIncrementValue = 0;
-            if (resultSet.next()) {
-                autoIncrementValue = resultSet.getLong("AUTO_INCREMENT");
-            }
-
-            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES (?, ?, NOW())";
-            PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
-            insertStatement.setString(1, "T-" + String.format("%018d", autoIncrementValue));
-            insertStatement.setInt(2, 5);
-            int rowsAffected = insertStatement.executeUpdate();
-
-            if (rowsAffected > 0) {
-                return "Transaksi berhasil";
-            } else {
-                return "Transaksi Gagal";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
@@ -2261,7 +2364,52 @@ public class Controller {
     }
     
     // Main menu user area
-    public int checkMembership(String username) {
+    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String foodName = resultSet.getString("f.nama");
+                int quantity = resultSet.getInt("tf.qty");
+                int totalPrice = resultSet.getInt("f.harga * tf.qty");
+                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String movieName = resultSet.getString("m.judul");
+                int seat = resultSet.getInt("tj.id_seat");
+                String classType = resultSet.getString("s.studio_class");
+                int totalPrice = resultSet.getInt("j.harga");
+                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public boolean checkMembership(String username) {
         try {
             conn.open();
             String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";
@@ -2328,50 +2476,5 @@ public class Controller {
             ex.printStackTrace();
         }
         return -99;
-    }
-    
-    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
-        model.setColumnIdentifiers(columns);
-        try {
-            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
-                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
-            PreparedStatement statement = conn.connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
-                String foodName = resultSet.getString("f.nama");
-                int quantity = resultSet.getInt("tf.qty");
-                int totalPrice = resultSet.getInt("f.harga * tf.qty");
-                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice });
-            }
-            conn.close();
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
-        }
-    }
-
-    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price" };
-        model.setColumnIdentifiers(columns);
-        try {
-            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio WHERE u.id_user = "
-                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
-            PreparedStatement statement = conn.connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-            while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
-                String movieName = resultSet.getString("m.judul");
-                int seat = resultSet.getInt("tj.id_seat");
-                String classType = resultSet.getString("s.studio_class");
-                int totalPrice = resultSet.getInt("j.harga");
-                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice });
-            }
-            conn.close();
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
-        }
     }
 }

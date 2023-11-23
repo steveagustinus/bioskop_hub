@@ -7,6 +7,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.awt.*;
+import java.awt.event.ActionListener;
+
 import src.controller.Controller;
 import src.model.user.User;
 
@@ -35,6 +37,50 @@ public class RaiseRevokeMembership {
         panel.add(buttonRaise);
         panel.add(new Label());
         panel.add(backButton);
+        
+        buttonRaise.addActionListener(e -> {
+            int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+            String username = inputUsername.getText().toString();
+            if (username==null) {
+                JOptionPane.showMessageDialog(null, "Username Kosong !" );
+            }else{
+                if(confirmation==0){
+                    boolean result= controller.raiseMembership(username);
+                    if (result) {
+                        JOptionPane.showMessageDialog(null, "Perubahan telah di lakukan!" );
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Error!" );
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null, "Perubahan di batalkan !" );    
+                }
+            }
+        });
+
+        buttonRevoke.addActionListener(e -> {
+            int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+            String username = inputUsername.getText().toString();
+            if (username==null) {
+                JOptionPane.showMessageDialog(null, "Username Kosong !" );
+            }else{
+                if(confirmation==0){
+                    boolean result= controller.revokeMembership(username);
+                    if (result) {
+                        JOptionPane.showMessageDialog(null, "Perubahan telah di lakukan!" );
+                    }else{
+                        JOptionPane.showMessageDialog(null, "Error!" );
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null, "Perubahan di batalkan !" );    
+                }
+            }
+        });
+
+        backButton.addActionListener(e ->{
+            new MainMenuScreen();
+            frame.dispose();
+            
+        });
 
         frame.add(panel);
         frame.setVisible(true);

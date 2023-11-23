@@ -10,13 +10,14 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 
+import src.controller.Controller;
 import src.controller.UserDataSingleton;
-import src.model.button.MyButton;
 import src.model.button.MyButton;
 import src.view.LoginScreen;
 
 public class MainMenuUserScreen {
     UserDataSingleton userData = UserDataSingleton.getInstance();
+    Controller controller = new Controller();
 
     public MainMenuUserScreen() {
         JFrame frame = new JFrame();
@@ -39,6 +40,13 @@ public class MainMenuUserScreen {
         JLabel membershipPointLabel = new JLabel("Membership Point : " + userData.getMembership_point());
         membershipPointLabel.setBounds(10, 90, 500, 50);
         panel.add(membershipPointLabel);
+
+        boolean isMember = controller.checkMembership(userData.getUsername());
+        if(isMember){
+            membershipPointLabel.setVisible(true);
+        }else{
+            membershipPointLabel.setVisible(false);
+        }
 
         JButton pesanTikerButton = new JButton("Pesan Tiket");
         pesanTikerButton.setBounds(170, 150, 150, 50);

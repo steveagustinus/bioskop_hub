@@ -1,127 +1,212 @@
 package src.view.user;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+
 import src.controller.Controller;
+import src.controller.UserDataSingleton;
 
 public class PesanFnb {
     public PesanFnb(){
         viewPesanFnb();
     }
 
-    private void viewPesanFnb(){
+    public static void main(String[] args) {
+        new PesanFnb();
+    }
+
+    public int status;
+    public String response;
+    private void viewPesanFnb() {
         Controller controller = new Controller();
+
         JFrame f = new JFrame("Pesan FNB");
-        f.setSize(600, 900);
+        f.setLayout(null);
+        f.setSize(500, 400);
+
         JLabel labelKota = new JLabel("Kota : ");
-        String kota[] = controller.listKota();
-        JComboBox<String> boxKota = new JComboBox<>(kota);
         labelKota.setBounds(10, 15, 200, 30);
+
+        JComboBox<String> boxKota = new JComboBox<>(controller.listKota());
         boxKota.setBounds(170, 15, 200, 30);
 
-        JLabel labelCinema = new JLabel("Cabang : ");
-        JComboBox<String> boxCinema = new JComboBox<>();
-        final String[] tempCinema = {""};  // Using an array to make it effectively fina
-
-        boxCinema.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Update the combo box model based on user's selection
-                String[] idCinema = controller.listCinema(boxCinema.getSelectedItem().toString());
-                boxCinema.setModel(new DefaultComboBoxModel<>(idCinema));
-
-                // Update the tempCinema variable after the user has interacted
-                tempCinema[0] = (String) boxCinema.getSelectedItem();
-            }
-        });
-
+        JLabel labelCinema = new JLabel("Cinema : ");
         labelCinema.setBounds(10, 60, 200, 30);
+        
+        JComboBox<String> boxCinema = new JComboBox<>(controller.listCinema(boxKota.getSelectedItem().toString()));
         boxCinema.setBounds(170, 60, 200, 30);
 
-        JLabel studio =  new JLabel("Studio : ");
-        JComboBox<String> boxStudio = new JComboBox<>();
-        boxCinema.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String[] idStudio = controller.listStudio(boxCinema.getSelectedItem().toString());
-                boxStudio.setModel(new DefaultComboBoxModel<>(idStudio));
-            }
-        });        
-        studio.setBounds(10, 105, 200, 30);
-        boxStudio.setBounds(170, 105, 200, 30);
-
         JLabel menu =  new JLabel("Pilih Menu : ");
+        menu.setBounds(10, 105, 200, 30);
+
         JComboBox<String> boxMenu = new JComboBox<>(controller.listFNB());
-        String pilihanMenu = boxMenu.getSelectedItem().toString();
-        menu.setBounds(10, 150, 200, 30);
-        boxMenu.setBounds(170, 150, 200, 30);
+        boxMenu.setBounds(170, 105, 200, 30);
 
         JLabel labelHarga = new JLabel("Harga Menu: ");
-        JLabel hargaPerFnb = new JLabel(""+controller.hargaPerFnb(pilihanMenu));
-        long harga  = Long.parseLong(hargaPerFnb.getText());
-        labelHarga.setBounds(10, 195, 200, 30);
-        hargaPerFnb.setBounds(170, 195, 200, 30);
+        labelHarga.setBounds(10, 150, 200, 30);
 
-        JLabel quantityLabel = new JLabel("Enter Quantity:");
+        JLabel hargaPerFnb = new JLabel();
+        hargaPerFnb.setText(controller.hargaPerFnb((String) boxMenu.getSelectedItem()));
+        hargaPerFnb.setBounds(170, 150, 200, 30);
+
+        JLabel quantityLabel = new JLabel("Jumlah Barang:");
+        quantityLabel.setBounds(10, 195, 200, 30);
+
         JTextField quantityField = new JTextField();
-        int quantity=0;
-        try {
-            quantity = Integer.parseInt(quantityField.getText());
-        } catch (NumberFormatException ex) {
-            // Handle the case where parsing fails (e.g., non-integer input)
-            ex.printStackTrace(); // or log the error
-        }
-        quantityLabel.setBounds(10, 240, 200, 30);
-        quantityField.setBounds(170, 240, 200, 30);
+        quantityField.setBounds(170, 195, 200, 30);
+        quantityField.setText("0");
 
         JLabel totalTunaiLabel = new JLabel("Total tunai: ");
-        JLabel totalTunaiHasil = new JLabel(" "+controller.totalHasilTransaksiFnb(harga, quantity));
-        totalTunaiLabel.setBounds(10, 285, 200, 30);
-        totalTunaiHasil.setBounds(170, 285, 200, 30);
+        totalTunaiLabel.setBounds(10, 240, 200, 30);
 
-        JButton buttonToMainMenu = new JButton("Back to Main Menu");
-        buttonToMainMenu.setBounds(10, 640, 200, 30);
-        buttonToMainMenu.addActionListener(new ActionListener() {
-           @Override
-           public void actionPerformed(ActionEvent e) {
-                // new MainMenuUser();
-                f.dispose();
-            }
-        });
-        
-        try {
-            quantity = Integer.parseInt(quantityField.getText());
-        } catch (NumberFormatException ex) {
-            ex.printStackTrace();// or log the error
-        }
+        JLabel totalTunaiHasil = new JLabel();
+        totalTunaiHasil.setBounds(170, 240, 200, 30);
 
         JButton submitButton = new JButton("Submit");
-        submitButton.setBounds(250, 640, 200, 30);
-        submitButton.addActionListener(new ActionListener() {
-           @Override
-           public void actionPerformed(ActionEvent e) {
-                int quantity = 0;
-                try {
-                    quantity = Integer.parseInt(quantityField.getText());
-                } catch (NumberFormatException ex) {
-                    ex.printStackTrace();
+        submitButton.setBounds(250, 320, 200, 30);
+
+        JButton buttonToMainMenu = new JButton("Back to Main Menu");
+        buttonToMainMenu.setBounds(10, 320, 200, 30);
+
+        JLabel labelTogglePoin = new JLabel("Pakai 10 poin (?):");
+        labelTogglePoin.setBounds(10, 272, 200, 30);
+        JLabel labelBenefit = new JLabel("untuk dapatkan diskon 10%");
+        labelBenefit.setBounds(10, 288, 200, 30);
+
+        JCheckBox checkBoxDiskon = new JCheckBox();
+        checkBoxDiskon.setBounds(190, 280, 200, 30);
+        
+        boxKota.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                boxCinema.removeAllItems();
+                String[] listCinema = controller.listCinema((String) boxKota.getSelectedItem());
+                for (String cinema : listCinema) {
+                    boxCinema.addItem(cinema);
                 }
-                controller.insertTransaksiFnb(pilihanMenu,quantity, harga,tempCinema[0]);
-                f.dispose();
+            }
+
+        });
+
+        boxMenu.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                hargaPerFnb.setText(controller.hargaPerFnb(boxMenu.getSelectedItem().toString()));
+            }
+
+        });
+
+        quantityField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                totalTunaiHasil.setText(controller.totalHasilTransaksiFnb(
+                    hargaPerFnb.getText(), quantityField.getText()
+                ));
+            }
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                totalTunaiHasil.setText(controller.totalHasilTransaksiFnb(
+                    hargaPerFnb.getText(), quantityField.getText()
+                ));
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                totalTunaiHasil.setText(controller.totalHasilTransaksiFnb(
+                    hargaPerFnb.getText(), quantityField.getText()
+                ));
+            }
+            
+        });
+        checkBoxDiskon.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                boolean isSelected = checkBoxDiskon.isSelected();
+                status = isSelected ? 1 : 0;
             }
         });
+
+        buttonToMainMenu.addActionListener(e -> {
+            new MainMenuUserScreen();
+            f.dispose();
+        });
+
+        submitButton.addActionListener(new ActionListener() {
+            @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (Integer.parseInt(quantityField.getText()) == 0) {
+                        JOptionPane.showMessageDialog(null, "Jumlah tidak boleh kosong", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                    } else {
+                        int hargaBaru = 0;
+                        String confirmationText = "Kota : "+boxKota.getSelectedItem().toString()+
+                                                "\n Cinema : "+boxCinema.getSelectedItem().toString()+
+                                                "\n Menu : "+boxMenu.getSelectedItem().toString()+
+                                                "\n Harga Menu : "+controller.hargaPerFnb((String) boxMenu.getSelectedItem())+
+                                                "\n Jumlah barang : "+quantityField.getText();
+                        if(status == 1){
+                            if(controller.checkSufficientPoint(UserDataSingleton.getInstance().getMembership_point(), 10)==true){
+                                hargaBaru = Integer.parseInt(hargaPerFnb.getText()) / 100 * 90 ;
+                                confirmationText+="\n Pakai 10 poin membership : Ya"+
+                                                    "\n Total tunai : "+hargaBaru;
+                                int input = JOptionPane.showConfirmDialog(null, confirmationText, "Konfirmasi Pesanan FNB",JOptionPane.YES_NO_CANCEL_OPTION);
+                                if (input == 0) {
+                                    controller.insertTransaksiFnb(boxMenu.getSelectedItem().toString() ,Integer.parseInt(quantityField.getText()), String.valueOf(hargaBaru), UserDataSingleton.getInstance().getId());
+                                    response = controller.decreasePoinMembership(UserDataSingleton.getInstance().getUsername(),controller.checkMembership(UserDataSingleton.getInstance().getUsername()), 10);
+                                    JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
+                                    response = controller.increasePoinMembership(UserDataSingleton.getInstance().getUsername(),controller.checkMembership(UserDataSingleton.getInstance().getUsername()),5);
+                                    JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
+                                    int result = JOptionPane.showOptionDialog(null,"Apakah Anda ingin pesan lagi?","Konfirmasi",JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Ya", "Tidak"},"Ya");
+                                    if (result == JOptionPane.YES_OPTION) {
+                                        new PesanFnb();
+                                        f.dispose();
+                                    } else {
+                                        new MainMenuUserScreen();
+                                        f.dispose();
+                                    }
+                                }
+                            } else {
+                                JOptionPane.showMessageDialog(null, "Maaf Poin Membership kamu tidak cukup, tambah lagi pesanan untuk tambah poin membershipmu", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } else {
+                            confirmationText+="\n Pakai 10 poin membership : Tidak"+
+                                            "\n Total tunai : "+controller.totalHasilTransaksiFnb(hargaPerFnb.getText(), quantityField.getText());
+                            int input = JOptionPane.showConfirmDialog(null, confirmationText, "Konfirmasi Pesanan FNB",JOptionPane.YES_NO_CANCEL_OPTION);
+                                if (input == 0) {
+                                    controller.insertTransaksiFnb(boxMenu.getSelectedItem().toString() ,Integer.parseInt(quantityField.getText()), hargaPerFnb.getText(), UserDataSingleton.getInstance().getId());
+                                    response = controller.increasePoinMembership(UserDataSingleton.getInstance().getUsername(),controller.checkMembership(UserDataSingleton.getInstance().getUsername()), 5);
+                                    JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
+                                    int result = JOptionPane.showOptionDialog(null,"Apakah Anda ingin pesan lagi?","Konfirmasi",JOptionPane.YES_NO_OPTION,
+                                    JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Ya", "Tidak"},"Ya");
+                                    if (result == JOptionPane.YES_OPTION) {
+                                        new PesanFnb();
+                                        f.dispose();
+                                    } else {
+                                        new MainMenuUserScreen();
+                                        f.dispose();
+                                    }
+                                }                        
+                        }
+                    }
+                }            
+            });
 
         f.add(labelKota);
         f.add(boxKota);
         f.add(labelCinema);
         f.add(boxCinema);
-        f.add(studio);
-        f.add(boxStudio);
         f.add(menu);
         f.add(boxMenu);
         f.add(labelHarga);
@@ -132,9 +217,10 @@ public class PesanFnb {
         f.add(totalTunaiHasil);
         f.add(buttonToMainMenu);
         f.add(submitButton);
-
-
-        f.setLayout(null);
+        f.add(labelTogglePoin);
+        f.add(labelBenefit);
+        f.getContentPane().add(checkBoxDiskon);
+        f.setLocationRelativeTo(null);
         f.setVisible(true);
     }
 }

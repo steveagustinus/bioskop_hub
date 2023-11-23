@@ -16,6 +16,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -1643,13 +1645,6 @@ public class Controller {
         }
     }
 
-    public MembershipCustomer registerMembership(String idUser, String username, String password, String profileName, String email,
-            String phoneNumber, String address, int poin) {
-        MembershipCustomer membershipCustomer = new MembershipCustomer(idUser, username, password, profileName, email,
-                phoneNumber, address, null, poin);
-        return membershipCustomer;
-    }
-
     // Common services
     public boolean isNumber(String string) {
         for (int i = 0; i < string.length(); i++) {
@@ -1739,6 +1734,205 @@ public class Controller {
         }
 
         fetchData();
+    }
+
+    // FnB area
+    public FnB getFnBbyName(String namaFnB) {
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT * FROM `fnb` WHERE `nama`='" + namaFnB + "' AND `is_deleted`=0;");
+
+            result.next();
+
+            
+            FnB fnB = null;
+            fnB = new FnB(
+                result.getString("nama"),
+                result.getInt("harga"),
+                result.getString("description")
+            );
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return fnB;
+           
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+    
+    public String hargaPerFnb(String namaFnb) {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery("SELECT `harga` FROM `fnb` WHERE `nama` ='" + namaFnb + "'");
+            if (result.next()) {
+                String harga = result.getString("harga");
+                result.close();
+                statement.close();
+                conn.close();
+                return harga;
+            } else {
+                result.close();
+                statement.close();
+                conn.close();
+                return "Not Found";
+            }
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return "Error";
+        }
+    }
+    
+    public String totalHasilTransaksiFnb(String harga, String quantity) {
+        if (harga.equals("") || quantity.equals("")) {
+            return "0";
+        }
+        if (!isNumber(harga) || !isNumber(quantity)) {
+            return "0";
+        }
+
+        int total = 0;
+        int int_harga = Integer.parseInt(harga);
+        int int_quantity = Integer.parseInt(quantity);
+
+        if (int_quantity < 0) {
+            return "0";
+        }
+
+        total = int_harga * int_quantity;
+
+        DecimalFormat decFormat = new DecimalFormat("###,###");
+        return decFormat.format(total);
+    }
+    
+    public void insertTransaksiFnb(String pilihan, int quantity, String studio, int id_user) {
+        try {
+            conn.open();
+            String selectQuery = "SELECT MAX(CAST(SUBSTRING(id_transaction, 3) AS UNSIGNED)) + 1 AS next_value FROM `transaction`";
+            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+            ResultSet resultSet = selectStatement.executeQuery();
+        
+            long autoIncrementValue = 0;
+            if (resultSet.next()) {
+                autoIncrementValue = resultSet.getLong("next_value");
+            }
+        
+            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                    "VALUES (?, ?, NOW())";
+            PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
+            String transactionId = "T-" + String.format("%018d", autoIncrementValue);
+            insertStatement.setString(1, transactionId);
+            insertStatement.setInt(2, id_user);
+            int rowsAffected = insertStatement.executeUpdate();
+
+            // Get id_fnb
+            String selectIdFnb = "SELECT `id_fnb` FROM `fnb` WHERE `nama` = ?";
+            PreparedStatement selectStatement2 = conn.connection.prepareStatement(selectIdFnb);
+            selectStatement2.setString(1, pilihan);
+            ResultSet resultSet2 = selectStatement2.executeQuery();
+            String resultString = "";
+            if (resultSet2.next()) {
+                resultString = resultSet2.getString("id_fnb");
+            }
+            System.out.println(resultString);
+
+            String insertQuery2 = "INSERT INTO `transaction_fnb` (`id_transaction`, `id_fnb`, `qty`, `id_cinema`) " +
+                    "VALUES (?, ?, ?, ?)";
+            PreparedStatement insertStatement2 = conn.connection.prepareStatement(insertQuery2);
+            insertStatement2.setString(1, transactionId);
+            insertStatement2.setString(2, resultString);
+            insertStatement2.setInt(3, quantity);
+            insertStatement2.setString(4, studio);
+
+            if (rowsAffected > 0) {
+                JOptionPane.showMessageDialog(null, "Transaksi Berhasil", "Success", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Insert Gagal1", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Insert gagal2.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+    
+    // Membership area
+    public boolean checkSufficientPoint(int poinUser, int poinNeeded) {
+        if (poinUser>=poinNeeded) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public String increasePoinMembership(String username, boolean statusMembership, int amountPlusPoin){
+        if (statusMembership == true) {
+            try {
+                conn.open();
+                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+                selectStatement.setString(1, username);
+                ResultSet resultSet = selectStatement.executeQuery();
+    
+                int poin = 0;
+                if (resultSet.next()) {
+                    poin = resultSet.getInt("poin_membership");
+                }
+    
+                int totalPoin = poin + amountPlusPoin;
+    
+                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+                PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
+                updateStatement.setInt(1, totalPoin);
+                updateStatement.setString(2, username);
+                updateStatement.executeUpdate();
+    
+                return "Poin berhasil ditambahkan, poin anda sekarang: "+totalPoin;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "Gagal menambahkan poin";
+            }
+        } else {
+            return "Anda bukan member, poin tidak ditambahkan";
+        }
+    }
+
+    public String decreasePoinMembership(String username, boolean statusMembership, int amountMinusPoin){
+        if (statusMembership == true) {
+            try{
+                conn.open();
+                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
+                selectStatement.setString(1, username);
+                ResultSet resultSet = selectStatement.executeQuery();
+    
+                int poin = 0;
+                if (resultSet.next()) {
+                    poin = resultSet.getInt("poin_membership");
+                }
+    
+                int totalPoin = poin - amountMinusPoin;
+    
+                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+                PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
+                updateStatement.setInt(1, totalPoin);
+                updateStatement.setString(2, username);
+                updateStatement.executeUpdate();
+    
+                return "Poin berhasil dikurangi, poin anda sekarang: "+totalPoin;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return "Gagal mengurangi poin";
+            }
+        } else {
+            return "Anda bukan member, poin tidak ditambahkan";
+        }
     }
 
     // Hitung pendapatan area
@@ -1839,7 +2033,6 @@ public class Controller {
         }
         return total;
     }
-
   
     public boolean isKotaExists(String kota) {
         try {
@@ -1923,7 +2116,6 @@ public class Controller {
     }
 
     // Function tampilkan list
-  
     public String[] listKota() {
         try {
             conn.open();
@@ -2030,91 +2222,6 @@ public class Controller {
             return listMovie.toArray(new String[listMovie.size()]);
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
-            return null;
-        }
-    }
-
-    public FnB getFnBbyName (String namaFnB){
-         try {
-            conn.open();
-
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `fnb` WHERE `nama`='" + namaFnB + "' AND `is_deleted`=0;");
-
-            result.next();
-
-            
-            FnB fnB = null;
-            fnB = new FnB(
-                result.getString("nama"),
-                result.getInt("harga"),
-                result.getString("description")
-            );
-
-            result.close();
-            statement.close();
-            conn.close();
-
-            return fnB;
-            
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return null;
-        }
-    }
-
-    public long hargaPerFnb(String namaFnb) {
-        try {
-            conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery("SELECT `harga` FROM `fnb` WHERE `nama` ='" + namaFnb + "'");
-            long harga = 0;
-            harga = result.getLong("harga");
-            result.close();
-            statement.close();
-            conn.close();
-            return harga;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return 0;
-        }
-    }
-
-    public long totalHasilTransaksiFnb(long harga, int quantity) {
-        long total = 0;
-        total = harga * quantity;
-        return total;
-    }
-
-    public String insertTransaksiFnb(String pilihan, int quantity, long harga, String idCinema) {
-        try {
-            // Execute a SELECT statement to get the current auto-increment value
-            conn.open();
-            String selectQuery = "SELECT AUTO_INCREMENT FROM information_schema.TABLES " +
-                    "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'transaction'";
-            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
-            ResultSet resultSet = selectStatement.executeQuery();
-
-            long autoIncrementValue = 0;
-            if (resultSet.next()) {
-                autoIncrementValue = resultSet.getLong("AUTO_INCREMENT");
-            }
-
-            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES (?, ?, NOW())";
-            PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
-            insertStatement.setString(1, "T-" + String.format("%018d", autoIncrementValue));
-            insertStatement.setInt(2, 5);
-            int rowsAffected = insertStatement.executeUpdate();
-
-            if (rowsAffected > 0) {
-                return "Transaksi berhasil";
-            } else {
-                return "Transaksi Gagal";
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }

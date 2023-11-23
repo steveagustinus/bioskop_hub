@@ -4,14 +4,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 
-import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JLabel;
 
 import src.controller.UserDataSingleton;
-import src.model.button.MyButton;
 import src.model.button.MyButton;
 import src.view.LoginScreen;
 
@@ -40,7 +38,7 @@ public class MainMenuUserScreen {
         pesanTikerButton.setBounds(170, 150, 150, 50);
         panel.add(pesanTikerButton);
         pesanTikerButton.addActionListener(e -> {
-            new PesanTiket();
+            new PesanTiket(null);
             frame.dispose();
         });
 

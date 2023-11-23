@@ -2164,6 +2164,8 @@ public class Controller {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
+    }
+    
     // Main menu user area
 
     // public int checkMembership(String username){

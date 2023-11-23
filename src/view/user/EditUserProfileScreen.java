@@ -1,7 +1,6 @@
 package src.view.user;
 
 import java.awt.Font;
-import java.util.Arrays;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;

@@ -1,5 +1,6 @@
 package src.view.admin.manage_studio;
 
+import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -18,7 +19,7 @@ public abstract class StudioFormDialog extends JDialog {
 
     protected JTextField fieldIdStudio;
     protected JTextField fieldIdCinema;
-    private JButton buttonSelectCinema;
+    protected JButton buttonSelectCinema;
     protected JComboBox<String> fieldStudioClass;
     protected JComboBox<String> fieldStudioType;
     protected JButton buttonSubmit;
@@ -31,33 +32,39 @@ public abstract class StudioFormDialog extends JDialog {
 
     private void initializeComponent() {
         this.setLayout(null);
-        this.setSize(1280, 720);
+        this.setSize(420, 195);
 
-        JLabel labelIdStudio = new JLabel("ID: ");
-        labelIdStudio.setBounds(5, 5, 100, 20);
+        JLabel labelIdStudio = new JLabel("ID Studio: ");
+        labelIdStudio.setBounds(5, 5, 100, 25);
 
-        JLabel labelIdCinema = new JLabel("Cinema: ");
-        labelIdCinema.setBounds(5, 30, 100, 20);
+        JLabel labelIdCinema = new JLabel("ID Cinema: ");
+        labelIdCinema.setBounds(5, 35, 100, 20);
+
+        JLabel labelStudioClass = new JLabel("Kelas Studio: ");
+        labelStudioClass.setBounds(5, 60, 100, 20);
+
+        JLabel labelStudioType = new JLabel("Tipe Studio: ");
+        labelStudioType.setBounds(5, 85, 100, 20);
 
         fieldIdStudio = new JTextField("");
-        fieldIdStudio.setBounds(110, 5, 200, 20);
+        fieldIdStudio.setBounds(110, 5, 305, 25);
+        fieldIdStudio.setFont(new Font("Dialog", Font.PLAIN, 20));
 
         fieldIdCinema = new JTextField("");
-        fieldIdCinema.setBounds(110, 30, 200, 20);
+        fieldIdCinema.setBounds(110, 35, 200, 20);
         fieldIdCinema.setEditable(false);
 
         buttonSelectCinema = new JButton("Pilih cinema");
-        buttonSelectCinema.setBounds(315, 30, 100, 20);
+        buttonSelectCinema.setBounds(315, 35, 100, 20);
 
         fieldStudioClass = new JComboBox<String>(controller.getListStudioClass());
-        fieldStudioClass.setBounds(110, 55, 200, 20);
+        fieldStudioClass.setBounds(110, 60, 305, 20);
 
         fieldStudioType = new JComboBox<String>(controller.getListStudioType());
-        fieldStudioType.setSelectedItem(3);
-        fieldStudioType.setBounds(110, 80, 200, 20);
+        fieldStudioType.setBounds(110, 85, 305, 20);
 
         buttonSubmit = new JButton("");
-        buttonSubmit.setBounds(5, 115, 310, 20);
+        buttonSubmit.setBounds(5, 125, 410, 40);
 
         buttonSelectCinema.addActionListener(new ActionListener() {
 
@@ -67,16 +74,18 @@ public abstract class StudioFormDialog extends JDialog {
             }
             
         });
-        //buttonSubmit.setEnabled(false);
 
         this.add(labelIdStudio);
         this.add(labelIdCinema);
+        this.add(labelStudioClass);
+        this.add(labelStudioType);
 
         this.add(fieldIdStudio);
         this.add(fieldIdCinema);
         this.add(buttonSelectCinema);
         this.add(fieldStudioClass);
         this.add(fieldStudioType);
+
         this.add(buttonSubmit);
     }
 }

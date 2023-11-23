@@ -43,7 +43,6 @@ import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
 import src.model.user.User;
-import src.view.user.CheckUserProfileScreen;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();

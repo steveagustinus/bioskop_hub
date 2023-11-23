@@ -7,7 +7,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import java.awt.*;
-import java.lang.management.OperatingSystemMXBean;
 
 import src.controller.Controller;
 import src.controller.OperationCode;

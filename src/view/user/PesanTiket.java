@@ -117,25 +117,42 @@ public class PesanTiket extends JDialog {
             labelMovieInfo.setLocation(labelMovie.getX(), labelMovie.getY() + labelMovie.getHeight() + 5);
             labelMovieInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
 
-            String seatMessage = "Kursi yang dipilih:";
+            JLabel labelSeat = new JLabel("Kursi yang dipilih: ");
+            labelSeat.setSize(this.getWidth() - 20, 20);
+            labelSeat.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 10);
+            labelSeat.setFont(new Font(fontFamily, Font.PLAIN, 18));
+
+            String seatMessage = "";
             for (Seat seat : seats) {
                 seatMessage += " " + seat.getSeatCode() + " |";
             }
             seatMessage = seatMessage.substring(0, seatMessage.length() - 1);
 
-            JLabel labelSeat = new JLabel(seatMessage);
-            labelSeat.setSize(this.getWidth() - 20, 20);
-            labelSeat.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 10);
-            labelSeat.setFont(new Font(fontFamily, Font.PLAIN, 18));
+            JLabel labelSeat2 = new JLabel(seatMessage);
+            labelSeat2.setSize(this.getWidth() - 20, 20);
+            labelSeat2.setLocation(labelSeat.getX(), labelSeat.getY() + labelSeat.getHeight() + 5);
+            labelSeat2.setFont(new Font(fontFamily, Font.BOLD, 14));
 
             JSeparator separator2 = new JSeparator();
             separator2.setOrientation(SwingConstants.HORIZONTAL);
             separator2.setSize(this.getWidth(), 5);
-            separator2.setLocation(0, labelSeat.getY() + labelSeat.getHeight() + 5);
+            separator2.setLocation(0, labelSeat2.getY() + labelSeat2.getHeight() + 5);
             separator2.setFont(new Font(fontFamily, Font.BOLD, 20));
             separator2.setForeground(Color.BLACK);
 
-            JLabel labelTotalBayar = new JLabel(String.format(controller.getTotalBayar(jadwal, seats)));
+            JLabel labelTotalBayar = new JLabel("Total bayar: ");
+            labelTotalBayar.setSize(this.getWidth(), 26);
+            labelTotalBayar.setLocation(labelSeat.getX(), separator2.getY() + separator2.getHeight() + 5);
+            labelTotalBayar.setFont(new Font(fontFamily, Font.BOLD, 25));
+
+            JLabel labelTotalBayar2 = new JLabel(
+                seats.length + " x Rp. " +
+                jadwal.getHarga() + " = Rp. " + 
+                controller.getTotalBayar(jadwal, seats)
+            );
+            labelTotalBayar2.setSize(this.getWidth(), 26);
+            labelTotalBayar2.setLocation(labelTotalBayar.getX(), labelTotalBayar.getY() + labelTotalBayar.getHeight() + 5);
+            labelTotalBayar2.setFont(new Font(fontFamily, Font.BOLD, 25));
 
             this.add(labelHeader);
             this.add(labelCinema);
@@ -146,8 +163,10 @@ public class PesanTiket extends JDialog {
             this.add(labelMovie);
             this.add(labelMovieInfo);
             this.add(labelSeat);
+            this.add(labelSeat2);
             this.add(separator2);
-
+            this.add(labelTotalBayar);
+            this.add(labelTotalBayar2);
         }
     }
 

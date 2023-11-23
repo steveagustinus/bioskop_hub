@@ -13,6 +13,7 @@ import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.*;
+import java.text.DecimalFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -1466,8 +1467,9 @@ public class Controller {
     }
 
     // User action
-    public int getTotalBayar(Jadwal jadwal, Seat[] bookedSeat) {
-        return jadwal.getHarga() * bookedSeat.length;
+    public String getTotalBayar(Jadwal jadwal, Seat[] bookedSeat) {
+        DecimalFormat decFormat = new DecimalFormat("###,###");
+        return decFormat.format(jadwal.getHarga() * bookedSeat.length);
     }
 
     public int pesanTiket(Customer customer, Jadwal jadwal, Seat[] bookedSeat) {

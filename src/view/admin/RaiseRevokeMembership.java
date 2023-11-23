@@ -35,7 +35,7 @@ public class RaiseRevokeMembership {
         buttonBack.setBounds(170, 360, 150, 50);
 
         buttonRaise.addActionListener(e -> {
-            User user = getUserById(inputUsername.getText().toString());
+           
 
             f.dispose();
         });

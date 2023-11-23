@@ -1151,10 +1151,28 @@ public class Controller {
     // Main menu user area
 
     public boolean checkMembership(String username){
-        
-        return true;
+        try{
+            conn.open();
+            String selectQuery =  "SELECT `membership_status` FROM user WHERE username='"+username+"' AND membership_status=`1`";
+             PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+             ResultSet resultSet = preparedStatement.executeQuery();
+            int membershipStatus = resultSet.getInt("membership_status");
+            if (membershipStatus==1) {
+
+                return true;
+             }
+        }catch  (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+            return false;
+        }
+        return false;  
     }
+
     public void printTable(){
         
     }
+    public boolean revokeMembership (){
+        return true;
+    }   
 }

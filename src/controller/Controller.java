@@ -50,7 +50,8 @@ import src.model.user.User;
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
 
-    public Controller() { }
+    public Controller() {
+    }
 
     public void fetchData() {
         Data.movies = getMovies();
@@ -88,10 +89,18 @@ public class Controller {
 
         Seat[][] seats = new Seat[1][1];
         switch (studio.getStudioClass()) {
-            case REGULER: seats = new Seat[9][15]; break;
-            case LUXE: seats = new Seat[8][8]; break;
-            case JUNIOR: seats = new Seat[9][10]; break;
-            case VIP: seats = new Seat[5][5]; break;
+            case REGULER:
+                seats = new Seat[9][15];
+                break;
+            case LUXE:
+                seats = new Seat[8][8];
+                break;
+            case JUNIOR:
+                seats = new Seat[9][10];
+                break;
+            case VIP:
+                seats = new Seat[5][5];
+                break;
         }
 
         int idSeat = getLastSeatId() + 1;
@@ -142,10 +151,18 @@ public class Controller {
 
         Studio studio = getStudioById(idStudio);
         switch (studio.getStudioClass()) {
-            case REGULER: seats = new Seat[9][15]; break;
-            case LUXE: seats = new Seat[8][8]; break;
-            case JUNIOR: seats = new Seat[9][10]; break;
-            case VIP: seats = new Seat[5][5]; break;
+            case REGULER:
+                seats = new Seat[9][15];
+                break;
+            case LUXE:
+                seats = new Seat[8][8];
+                break;
+            case JUNIOR:
+                seats = new Seat[9][10];
+                break;
+            case VIP:
+                seats = new Seat[5][5];
+                break;
         }
 
         try {
@@ -162,10 +179,9 @@ public class Controller {
                 for (int j = 0; j < seats[i].length; j++) {
                     result.next();
                     seats[i][j] = new Seat(
-                        result.getString("id_seat"),
-                        result.getString("kode"),
-                        SeatStatusInterface.AVAILABLE
-                    );
+                            result.getString("id_seat"),
+                            result.getString("kode"),
+                            SeatStatusInterface.AVAILABLE);
                 }
             }
 
@@ -173,9 +189,8 @@ public class Controller {
 
             statement = conn.connection.createStatement();
             result = statement.executeQuery(
-                "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + idJadwal + 
-                    "' ORDER BY `id_seat` ASC;"
-            );
+                    "SELECT `id_seat` FROM `transaction_jadwal` WHERE `id_jadwal`='" + idJadwal +
+                            "' ORDER BY `id_seat` ASC;");
 
             if (!result.isBeforeFirst()) {
                 return seats;
@@ -183,14 +198,13 @@ public class Controller {
 
             result.next();
 
-            mainloop:for (int i = 0; i < seats.length; i++) {
+            mainloop: for (int i = 0; i < seats.length; i++) {
                 for (int j = 0; j < seats[i].length; j++) {
                     if (seats[i][j].getIdSeat().equals(result.getString("id_seat"))) {
                         seats[i][j].setSeatStatus(SeatStatusInterface.TAKEN);
                         if (result.isLast()) {
                             break mainloop;
-                        }
-                        else {
+                        } else {
                             result.next();
                         }
                     }
@@ -199,7 +213,7 @@ public class Controller {
 
             result.close();
             conn.close();
-            
+
             return seats;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
@@ -207,7 +221,7 @@ public class Controller {
 
         return null;
     }
-    
+
     public Seat[][] getSeatFromJadwal(Jadwal[] arrJadwal, String idJadwal) {
         for (Jadwal jadwal : arrJadwal) {
             if (jadwal.getIdJadwal().equals(idJadwal)) {
@@ -221,7 +235,7 @@ public class Controller {
     public Seat[] getSeatFromListSeatString(Seat[][] seats, ArrayList<String> seatIds) {
         Seat[] output = new Seat[seatIds.size()];
 
-        main:for (int i = 0; i < seatIds.size(); i++) {
+        main: for (int i = 0; i < seatIds.size(); i++) {
             for (Seat[] arrSeat : seats) {
                 for (Seat seat : arrSeat) {
                     if (seat.getSeatCode().equals(seatIds.get(i))) {
@@ -241,21 +255,17 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';"
-            );
+                    "SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';");
 
             result.next();
 
             Jadwal jadwal = new Jadwal(
-                result.getString("id_jadwal"),
-                result.getString("id_movie"),
-                result.getString("id_studio"),
-                result.getInt("harga"),
-                result.getTimestamp("waktu").toLocalDateTime(),
-                getSeatFromJadwal(result.getString("id_jadwal"))
-            );
-
-            
+                    result.getString("id_jadwal"),
+                    result.getString("id_movie"),
+                    result.getString("id_studio"),
+                    result.getInt("harga"),
+                    result.getTimestamp("waktu").toLocalDateTime(),
+                    getSeatFromJadwal(result.getString("id_jadwal")));
 
             result.close();
             statement.close();
@@ -297,7 +307,8 @@ public class Controller {
         return output;
     }
 
-    public int addNewJadwal(String idJadwal, String idStudio, String idMovie, String harga, String tanggal, String jam) {
+    public int addNewJadwal(String idJadwal, String idStudio, String idMovie, String harga, String tanggal,
+            String jam) {
         if (idJadwal == null || idJadwal.equals("")) {
             return -1;
         }
@@ -337,12 +348,11 @@ public class Controller {
         }
 
         return addNewJadwal(
-            idJadwal,
-            idStudio,
-            idMovie,
-            Integer.parseInt(harga),
-            tanggalWaktu
-        );
+                idJadwal,
+                idStudio,
+                idMovie,
+                Integer.parseInt(harga),
+                tanggalWaktu);
     }
 
     private int addNewJadwal(String idJadwal, String idStudio, String idMovie, int harga, LocalDateTime waktu) {
@@ -361,7 +371,7 @@ public class Controller {
             ps.setString(3, idMovie);
             ps.setString(4, waktu.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             ps.setInt(5, harga);
-            
+
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -381,15 +391,15 @@ public class Controller {
 
         try {
             conn.open();
-            
+
             String sql = "SELECT * FROM jadwal " +
-            "WHERE id_studio IN (" +
-                "SELECT id_studio FROM studio " +
-                "WHERE id_cinema = '" + idCinema + "'" +
-            ") " +
-            "AND waktu > '" + startDate + "' " +
-            "AND waktu < '" + endDate + "' " +
-            "ORDER BY waktu ASC;";
+                    "WHERE id_studio IN (" +
+                    "SELECT id_studio FROM studio " +
+                    "WHERE id_cinema = '" + idCinema + "'" +
+                    ") " +
+                    "AND waktu > '" + startDate + "' " +
+                    "AND waktu < '" + endDate + "' " +
+                    "ORDER BY waktu ASC;";
 
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(sql);
@@ -398,18 +408,18 @@ public class Controller {
 
             while (result.next()) {
                 listJadwal.add(
-                    new Jadwal(
-                        result.getString("id_jadwal"),
-                        result.getString("id_movie"),
-                        result.getString("id_studio"),
-                        result.getInt("harga"),
-                        result.getTimestamp("waktu").toLocalDateTime(),
-                        getSeatFromJadwal(result.getString("id_jadwal"))
-                    )
-                );
+                        new Jadwal(
+                                result.getString("id_jadwal"),
+                                result.getString("id_movie"),
+                                result.getString("id_studio"),
+                                result.getInt("harga"),
+                                result.getTimestamp("waktu").toLocalDateTime(),
+                                getSeatFromJadwal(result.getString("id_jadwal"))));
             }
 
-            if (listJadwal.size() == 0) { return null; }
+            if (listJadwal.size() == 0) {
+                return null;
+            }
             return listJadwal.toArray(new Jadwal[listJadwal.size()]);
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
@@ -433,7 +443,9 @@ public class Controller {
         String[][] output = new String[listJadwal.length][5];
 
         for (int i = 0; i < listJadwal.length; i++) {
-            // output[i][0] = listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM hh:mm"));
+            // output[i][0] =
+            // listJadwal[i].getWaktu().format(DateTimeFormatter.ofPattern("dd MMMM
+            // hh:mm"));
             // output[i][1] = getMovieById(listJadwal[i].getIdMovie()).getJudul();
             // Studio studio = getStudioById(listJadwal[i].getIdStudio());
             // output[i][2] = getStudioClassString(studio.getStudioClass());
@@ -445,7 +457,7 @@ public class Controller {
             Studio studio = getStudioById(listJadwal[i].getIdStudio());
             item += " | " + getStudioClassString(studio.getStudioClass());
             item += " | " + getStudioTypeString(studio.getStudioType());
-            item += " | " +String.valueOf(listJadwal[i].getHarga());
+            item += " | " + String.valueOf(listJadwal[i].getHarga());
 
             output[i][0] = item;
         }
@@ -454,10 +466,12 @@ public class Controller {
     }
 
     public Movie[] extractMoviesFromListJadwal(Jadwal[] arrJadwal) {
-        if (arrJadwal == null) { return null; }
+        if (arrJadwal == null) {
+            return null;
+        }
 
         ArrayList<Movie> movies = new ArrayList<Movie>();
-        
+
         ArrayList<String> idsMovie = new ArrayList<String>();
         for (Jadwal jadwal : arrJadwal) {
             if (!idsMovie.contains(jadwal.getIdMovie())) {
@@ -514,17 +528,15 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "' AND `is_deleted`=0;"
-            );
+                    "SELECT * FROM `studio` WHERE `id_studio`='" + idStudio + "' AND `is_deleted`=0;");
 
             result.next();
 
             Studio studio = new Studio(
-                idStudio,
-                result.getString("id_cinema"),
-                getStudioClassEnum(result.getString("studio_class")),
-                result.getInt("studio_type")
-            );
+                    idStudio,
+                    result.getString("id_cinema"),
+                    getStudioClassEnum(result.getString("studio_class")),
+                    result.getInt("studio_type"));
 
             result.close();
             statement.close();
@@ -551,11 +563,10 @@ public class Controller {
             ArrayList<Studio> studioList = new ArrayList<Studio>();
             while (result.next()) {
                 Studio studio = new Studio(
-                    result.getString("id_studio"),
-                    result.getString("id_cinema"),
-                    getStudioClassEnum(result.getString("studio_class")),
-                    result.getInt("studio_type")
-                );
+                        result.getString("id_studio"),
+                        result.getString("id_cinema"),
+                        getStudioClassEnum(result.getString("studio_class")),
+                        result.getInt("studio_type"));
 
                 studioList.add(studio);
             }
@@ -574,7 +585,7 @@ public class Controller {
     public String[] getListStudioClass() {
         return new String[] { "REGULAR", "LUXE", "JUNIOR", "VIP" };
     }
-    
+
     public StudioClassEnum getStudioClassEnum(String studioClass) {
         switch (studioClass.toUpperCase()) {
             case "VIP":
@@ -671,7 +682,8 @@ public class Controller {
         try {
             conn.open();
 
-            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`, `is_deleted`)" +
+            String sql = "INSERT INTO `studio` (`id_studio`, `id_cinema`, `studio_class`, `studio_type`, `is_deleted`)"
+                    +
                     "VALUES (?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
@@ -683,7 +695,7 @@ public class Controller {
             ps.setString(3, getStudioClassString(studioClass).toUpperCase());
             ps.setInt(4, studioType);
             ps.setInt(5, 0);
-            
+
             ps.executeUpdate();
             conn.connection.commit();
             ps.close();
@@ -715,11 +727,10 @@ public class Controller {
             return -3;
         }
 
-        return editStudio (
-            idStudio,
-            getStudioClassEnum(studioClass),
-            getStudioType(studioType)
-        );
+        return editStudio(
+                idStudio,
+                getStudioClassEnum(studioClass),
+                getStudioType(studioType));
     }
 
     private int editStudio(String idStudio, StudioClassEnum studioClass, int studioType) {
@@ -744,7 +755,7 @@ public class Controller {
             return -99;
         }
     }
-    
+
     public int deleteStudio(String idStudio) {
         if (idStudio == null || idStudio.equals("")) {
             return -1;
@@ -753,10 +764,9 @@ public class Controller {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
-            
+
             statement.executeUpdate(
-                "UPDATE `studio` SET `is_deleted`=1 WHERE `id_studio`='" + idStudio + "';"
-            );
+                    "UPDATE `studio` SET `is_deleted`=1 WHERE `id_studio`='" + idStudio + "';");
 
             statement.close();
             conn.close();
@@ -766,7 +776,7 @@ public class Controller {
             return -99;
         }
     }
-    
+
     // Cinema area
     public String[] getCinemaStringList() {
         ArrayList<String> cinemaList = new ArrayList<String>();
@@ -843,13 +853,12 @@ public class Controller {
 
             Cinema cinema = null;
             cinema = new Cinema(
-                idCinema,
-                result.getString("nama"),
-                result.getString("alamat"),
-                result.getString("kota"),
-                fotoCinema,
-                null
-            );
+                    idCinema,
+                    result.getString("nama"),
+                    result.getString("alamat"),
+                    result.getString("kota"),
+                    fotoCinema,
+                    null);
 
             result.close();
             statement.close();
@@ -941,9 +950,8 @@ public class Controller {
             String sql = "UPDATE `cinema` SET `nama`=?, `alamat`=?, `kota`=?, `img`=? WHERE `id_cinema`=?;";
 
             try (
-                FileInputStream fis = new FileInputStream(fotoCinema);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoCinema);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 ps.setString(1, nama);
                 ps.setString(2, alamat);
                 ps.setString(3, kota);
@@ -972,10 +980,9 @@ public class Controller {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
-            
+
             statement.executeUpdate(
-                "UPDATE `cinema` SET `is_deleted`=1 WHERE `id_cinema`='" + idCinema + "';"
-            );
+                    "UPDATE `cinema` SET `is_deleted`=1 WHERE `id_cinema`='" + idCinema + "';");
 
             statement.close();
             conn.close();
@@ -985,7 +992,7 @@ public class Controller {
             return -99;
         }
     }
-    
+
     // Movie area
     public Movie getMovieById(String idMovie) {
         try {
@@ -1005,15 +1012,14 @@ public class Controller {
             fotoMovie = new File(Config.Path.TEMP_DIR + "img.png");
 
             Movie movie = new Movie(
-                idMovie,
-                result.getString("judul"),
-                dateToLocalDate(result.getDate("release_date")),
-                result.getString("director"),
-                result.getInt("language"),
-                result.getInt("durasi"),
-                result.getString("sinopsis"),
-                fotoMovie
-            );
+                    idMovie,
+                    result.getString("judul"),
+                    dateToLocalDate(result.getDate("release_date")),
+                    result.getString("director"),
+                    result.getInt("language"),
+                    result.getInt("durasi"),
+                    result.getString("sinopsis"),
+                    fotoMovie);
 
             result.close();
             statement.close();
@@ -1046,21 +1052,18 @@ public class Controller {
                 fotoMovie = new File(Config.Path.TEMP_DIR + "img_" + counter + ".png");
 
                 Movie movie = new Movie(
-                    result.getString("id_movie"),
-                    result.getString("judul"),
-                    dateToLocalDate(result.getDate("release_date")),
-                    result.getString("director"),
-                    result.getInt("language"),
-                    result.getInt("durasi"),
-                    result.getString("sinopsis"),
-                    fotoMovie
-                );
+                        result.getString("id_movie"),
+                        result.getString("judul"),
+                        dateToLocalDate(result.getDate("release_date")),
+                        result.getString("director"),
+                        result.getInt("language"),
+                        result.getInt("durasi"),
+                        result.getString("sinopsis"),
+                        fotoMovie);
 
                 movieList.add(movie);
                 counter++;
             }
-
-            
 
             result.close();
             statement.close();
@@ -1074,7 +1077,9 @@ public class Controller {
     }
 
     public Movie[] searchMovie(String input, int limit) {
-        if (Data.movies == null) { return null; }
+        if (Data.movies == null) {
+            return null;
+        }
 
         ArrayList<Movie> movieList = new ArrayList<Movie>();
 
@@ -1092,7 +1097,9 @@ public class Controller {
             }
         }
 
-        if (movieList.isEmpty()) { return null; }
+        if (movieList.isEmpty()) {
+            return null;
+        }
 
         return movieList.toArray(new Movie[movieList.size()]);
     }
@@ -1106,7 +1113,7 @@ public class Controller {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
-            String sql =  "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'";
+            String sql = "SELECT * FROM `movie` WHERE `id_movie`='" + idMovie + "'";
 
             if (!includeDeleted) {
                 sql += " AND `is_deleted`=0";
@@ -1128,8 +1135,9 @@ public class Controller {
             return false;
         }
     }
-    
-    public int addNewMovie(String idMovie, String judul, String releaseDate, String director, String language, String durasi, String sinopsis, File fotoMovie) {
+
+    public int addNewMovie(String idMovie, String judul, String releaseDate, String director, String language,
+            String durasi, String sinopsis, File fotoMovie) {
         if (idMovie == null || idMovie.equals("")) {
             return -1;
         }
@@ -1163,30 +1171,30 @@ public class Controller {
         }
 
         return addNewMovie(
-            idMovie,
-            judul,
-            stringToLocalDate(releaseDate, "MMM d, yyyy"),
-            director,
-            getMovieLanguage(language),
-            Integer.parseInt(durasi),
-            sinopsis,
-            fotoMovie
-        );
+                idMovie,
+                judul,
+                stringToLocalDate(releaseDate, "MMM d, yyyy"),
+                director,
+                getMovieLanguage(language),
+                Integer.parseInt(durasi),
+                sinopsis,
+                fotoMovie);
     }
 
-    private int addNewMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
+    private int addNewMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language,
+            int durasi, String sinopsis, File fotoMovie) {
         try {
             conn.open();
 
-            String sql = "INSERT INTO `movie` (`id_movie`, `judul`, `release_date`, `director`, `language`, `durasi`, `sinopsis`, `img`, `is_deleted`)" +
+            String sql = "INSERT INTO `movie` (`id_movie`, `judul`, `release_date`, `director`, `language`, `durasi`, `sinopsis`, `img`, `is_deleted`)"
+                    +
                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             conn.connection.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoMovie);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoMovie);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 ps.setString(1, idMovie);
                 ps.setString(2, judul);
                 ps.setDate(3, java.sql.Date.valueOf(releaseDate));
@@ -1210,7 +1218,8 @@ public class Controller {
         }
     }
 
-    public int editMovie(String idMovie, String judul, String releaseDate, String director, String language, String durasi, String sinopsis, File fotoMovie) {
+    public int editMovie(String idMovie, String judul, String releaseDate, String director, String language,
+            String durasi, String sinopsis, File fotoMovie) {
         if (idMovie == null || idMovie.equals("")) {
             return -1;
         }
@@ -1238,22 +1247,23 @@ public class Controller {
         if (fotoMovie == null) {
             return -9;
         }
-        
+
         return editMovie(
-            idMovie,
-            judul,
-            stringToLocalDate(releaseDate, "MMM d, yyyy"),
-            director,
-            getMovieLanguage(language),
-            Integer.parseInt(durasi),
-            sinopsis,
-            fotoMovie
-        );
+                idMovie,
+                judul,
+                stringToLocalDate(releaseDate, "MMM d, yyyy"),
+                director,
+                getMovieLanguage(language),
+                Integer.parseInt(durasi),
+                sinopsis,
+                fotoMovie);
     }
-    
-    private int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language, int durasi, String sinopsis, File fotoMovie) {
-        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?, `is_deleted`=0 " +
-            "WHERE `id_movie`=?";
+
+    private int editMovie(String idMovie, String judul, LocalDate releaseDate, String director, int language,
+            int durasi, String sinopsis, File fotoMovie) {
+        String sql = "UPDATE `movie` SET `judul`=?, `release_date`=?, `director`=?, `language`=?, `durasi`=?, `sinopsis`=?, `img`=?, `is_deleted`=0 "
+                +
+                "WHERE `id_movie`=?";
 
         try {
             conn.open();
@@ -1261,9 +1271,8 @@ public class Controller {
             conn.connection.setAutoCommit(false);
 
             try (
-                FileInputStream fis = new FileInputStream(fotoMovie);
-                PreparedStatement ps = conn.connection.prepareStatement(sql);
-            ) {
+                    FileInputStream fis = new FileInputStream(fotoMovie);
+                    PreparedStatement ps = conn.connection.prepareStatement(sql);) {
                 ps.setString(1, judul);
                 ps.setDate(2, java.sql.Date.valueOf(releaseDate));
                 ps.setString(3, director);
@@ -1295,10 +1304,9 @@ public class Controller {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
-            
+
             statement.executeUpdate(
-                "UPDATE `movie` SET `is_deleted`=1 WHERE `id_movie`='" + idMovie + "';"
-            );
+                    "UPDATE `movie` SET `is_deleted`=1 WHERE `id_movie`='" + idMovie + "';");
 
             statement.close();
             conn.close();
@@ -1316,18 +1324,24 @@ public class Controller {
 
     public String getMovieLanguageString(int language) {
         switch (language) {
-            case MovieLanguageInterface.ENGLISH: return "English";
-            case MovieLanguageInterface.JAPANESE: return "Japanese";
-            case MovieLanguageInterface.BAHASA_INDONESIA: return "Bahasa_Indonesia";
+            case MovieLanguageInterface.ENGLISH:
+                return "English";
+            case MovieLanguageInterface.JAPANESE:
+                return "Japanese";
+            case MovieLanguageInterface.BAHASA_INDONESIA:
+                return "Bahasa_Indonesia";
         }
         return "";
     }
 
     public int getMovieLanguage(String language) {
         switch (language) {
-            case "English": return MovieLanguageInterface.ENGLISH;
-            case "Japanese": return MovieLanguageInterface.JAPANESE;
-            case "Bahasa_Indonesia": return MovieLanguageInterface.BAHASA_INDONESIA;
+            case "English":
+                return MovieLanguageInterface.ENGLISH;
+            case "Japanese":
+                return MovieLanguageInterface.JAPANESE;
+            case "Bahasa_Indonesia":
+                return MovieLanguageInterface.BAHASA_INDONESIA;
         }
 
         return -1;
@@ -1354,29 +1368,27 @@ public class Controller {
 
                 case 1:
                     user = new Customer(
-                        result.getString("id_user"),
-                        result.getString("username"),
-                        result.getString("password"),
-                        result.getString("profile_name"),
-                        result.getString("email"),
-                        result.getString("phone_no"),
-                        result.getString("address"),
-                        null
-                    );
+                            result.getString("id_user"),
+                            result.getString("username"),
+                            result.getString("password"),
+                            result.getString("profile_name"),
+                            result.getString("email"),
+                            result.getString("phone_no"),
+                            result.getString("address"),
+                            null);
                     break;
 
                 case 2:
                     user = new MembershipCustomer(
-                        result.getString("id_user"),
-                        result.getString("username"),
-                        result.getString("password"),
-                        result.getString("profile_name"),
-                        result.getString("email"),
-                        result.getString("phone_no"),
-                        result.getString("address"),
-                        null,
-                        result.getInt("poin")
-                    );
+                            result.getString("id_user"),
+                            result.getString("username"),
+                            result.getString("password"),
+                            result.getString("profile_name"),
+                            result.getString("email"),
+                            result.getString("phone_no"),
+                            result.getString("address"),
+                            null,
+                            result.getInt("poin"));
                     break;
             }
 
@@ -1500,12 +1512,11 @@ public class Controller {
         try {
             String idTransaction = createTransactionId();
             conn.open();
-            
+
             Statement statement = conn.connection.createStatement();
             statement.executeUpdate(
-                "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES ('" + idTransaction + "', '" + idCustomer + "', now());"
-            );
+                    "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
+                            "VALUES ('" + idTransaction + "', '" + idCustomer + "', now());");
 
             String sql = "INSERT INTO `transaction_jadwal` (`id_transaction`, `id_jadwal`, `id_seat`) VALUES ";
 
@@ -1518,14 +1529,14 @@ public class Controller {
             statement.executeUpdate(sql);
             statement.close();
             conn.close();
-            
+
             return 0;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
-  
+
     public int checkUserType(User user) {
         try {
             conn.open();
@@ -1553,8 +1564,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                "SELECT `id_transaction` FROM `transaction` ORDER BY `id_transaction` DESC LIMIT 1;"
-            );
+                    "SELECT `id_transaction` FROM `transaction` ORDER BY `id_transaction` DESC LIMIT 1;");
 
             String lastId = "";
             if (!result.isBeforeFirst()) {
@@ -1573,7 +1583,7 @@ public class Controller {
             for (int i = newId.length(); i < 18; i++) {
                 newId = "0" + newId;
             }
-            
+
             newId = "T-" + newId;
 
             return newId;
@@ -1668,7 +1678,9 @@ public class Controller {
     }
 
     public LocalDate stringToLocalDate(String str, String pattern) {
-        if (str.equals("")) { return null; }
+        if (str.equals("")) {
+            return null;
+        }
         LocalDate output = null;
         try {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
@@ -1683,7 +1695,7 @@ public class Controller {
     public String localDateToString(LocalDate date, String pattern) {
         return date.format(DateTimeFormatter.ofPattern(pattern));
     }
-    
+
     public String sha256(String content) {
         try {
             MessageDigest messageDigest = MessageDigest.getInstance("SHA-256");
@@ -1748,26 +1760,24 @@ public class Controller {
 
             result.next();
 
-            
             FnB fnB = null;
             fnB = new FnB(
-                result.getString("nama"),
-                result.getInt("harga"),
-                result.getString("description")
-            );
+                    result.getString("nama"),
+                    result.getInt("harga"),
+                    result.getString("description"));
 
             result.close();
             statement.close();
             conn.close();
 
             return fnB;
-           
+
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return null;
         }
     }
-    
+
     public String hargaPerFnb(String namaFnb) {
         try {
             conn.open();
@@ -1790,7 +1800,7 @@ public class Controller {
             return "Error";
         }
     }
-    
+
     public String totalHasilTransaksiFnb(String harga, String quantity) {
         if (harga.equals("") || quantity.equals("")) {
             return "0";
@@ -1812,19 +1822,19 @@ public class Controller {
         DecimalFormat decFormat = new DecimalFormat("###,###");
         return decFormat.format(total);
     }
-    
+
     public void insertTransaksiFnb(String pilihan, int quantity, String studio, int id_user) {
         try {
             conn.open();
             String selectQuery = "SELECT MAX(CAST(SUBSTRING(id_transaction, 3) AS UNSIGNED)) + 1 AS next_value FROM `transaction`";
             PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
             ResultSet resultSet = selectStatement.executeQuery();
-        
+
             long autoIncrementValue = 0;
             if (resultSet.next()) {
                 autoIncrementValue = resultSet.getLong("next_value");
             }
-        
+
             String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
                     "VALUES (?, ?, NOW())";
             PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
@@ -1862,17 +1872,17 @@ public class Controller {
             JOptionPane.showMessageDialog(null, "Insert gagal2.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     // Membership area
     public boolean checkSufficientPoint(int poinUser, int poinNeeded) {
-        if (poinUser>=poinNeeded) {
+        if (poinUser >= poinNeeded) {
             return true;
         } else {
             return false;
         }
     }
 
-    public String increasePoinMembership(String username, boolean statusMembership, int amountPlusPoin){
+    public String increasePoinMembership(String username, boolean statusMembership, int amountPlusPoin) {
         if (statusMembership == true) {
             try {
                 conn.open();
@@ -1880,21 +1890,21 @@ public class Controller {
                 PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
                 selectStatement.setString(1, username);
                 ResultSet resultSet = selectStatement.executeQuery();
-    
+
                 int poin = 0;
                 if (resultSet.next()) {
                     poin = resultSet.getInt("poin_membership");
                 }
-    
+
                 int totalPoin = poin + amountPlusPoin;
-    
+
                 String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
                 PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);
                 updateStatement.executeUpdate();
-    
-                return "Poin berhasil ditambahkan, poin anda sekarang: "+totalPoin;
+
+                return "Poin berhasil ditambahkan, poin anda sekarang: " + totalPoin;
             } catch (Exception e) {
                 e.printStackTrace();
                 return "Gagal menambahkan poin";
@@ -1904,29 +1914,29 @@ public class Controller {
         }
     }
 
-    public String decreasePoinMembership(String username, boolean statusMembership, int amountMinusPoin){
+    public String decreasePoinMembership(String username, boolean statusMembership, int amountMinusPoin) {
         if (statusMembership == true) {
-            try{
+            try {
                 conn.open();
                 String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
                 PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
                 selectStatement.setString(1, username);
                 ResultSet resultSet = selectStatement.executeQuery();
-    
+
                 int poin = 0;
                 if (resultSet.next()) {
                     poin = resultSet.getInt("poin_membership");
                 }
-    
+
                 int totalPoin = poin - amountMinusPoin;
-    
+
                 String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
                 PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);
                 updateStatement.executeUpdate();
-    
-                return "Poin berhasil dikurangi, poin anda sekarang: "+totalPoin;
+
+                return "Poin berhasil dikurangi, poin anda sekarang: " + totalPoin;
             } catch (Exception e) {
                 e.printStackTrace();
                 return "Gagal mengurangi poin";
@@ -2008,21 +2018,21 @@ public class Controller {
         }
         return total;
     }
-  
-    public int hitungPendapatanPerKotaPerCabang(String namaKota, String namaCabang){
+
+    public int hitungPendapatanPerKotaPerCabang(String namaKota, String namaCabang) {
         int total = 0;
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
                     "SELECT SUM(f.harga * tf.qty) FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema WHERE c.kota = '"
-                            + namaKota + "' AND c.nama='"+namaCabang+"';");
+                            + namaKota + "' AND c.nama='" + namaCabang + "';");
             result.next();
             total += result.getInt(1);
             result.close();
             result = statement.executeQuery(
                     "SELECT COALESCE(SUM(j.harga), 0) FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON c.id_cinema = s.id_cinema WHERE c.kota = '"
-                            + namaKota + "' AND c.nama='"+namaCabang+"';");
+                            + namaKota + "' AND c.nama='" + namaCabang + "';");
             result.next();
             total += result.getInt(1);
 
@@ -2034,7 +2044,7 @@ public class Controller {
         }
         return total;
     }
-  
+
     public boolean isKotaExists(String kota) {
         try {
             conn.open();
@@ -2053,7 +2063,7 @@ public class Controller {
             return false;
         }
     }
-    
+
     public boolean isCabangExists(String cabang) {
         try {
             conn.open();
@@ -2072,8 +2082,8 @@ public class Controller {
             return false;
         }
     }
-    
-    public String[] listKotaHP(){
+
+    public String[] listKotaHP() {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -2094,12 +2104,13 @@ public class Controller {
             return null;
         }
     }
-    public String[] listCabangHP(String namaKota){
+
+    public String[] listCabangHP(String namaKota) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `nama` FROM `cinema` WHERE `kota` = '"+namaKota+"'");
+                    "SELECT `nama` FROM `cinema` WHERE `kota` = '" + namaKota + "'");
 
             ArrayList<String> listCabang = new ArrayList<String>();
             while (result.next()) {
@@ -2204,8 +2215,8 @@ public class Controller {
             return null;
         }
     }
-    
-    public String[] listMovie(String id_Studio){
+
+    public String[] listMovie(String id_Studio) {
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -2285,9 +2296,9 @@ public class Controller {
         UserDataSingleton.getInstance().setAddress(address);
         return 1;
     }
-  
-    public String[] listJam(String movie){
-        try{
+
+    public String[] listJam(String movie) {
+        try {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
@@ -2306,31 +2317,33 @@ public class Controller {
         }
     }
 
-    public int addFnB( String [] fnb){
+    public int addFnB(String[] fnb) {
         int harga = Integer.parseInt(fnb[1]);
-        if(fnb[0]==null){
+        if (fnb[0] == null) {
             return OperationCode.addFnB.EMPTYNAME;
-        }else if (fnb[1]==null) {
+        } else if (fnb[1] == null) {
             return OperationCode.addFnB.EMPTYHARGA;
-        }else if (fnb[2]==null) {
+        } else if (fnb[2] == null) {
             return OperationCode.addFnB.EMPTYDESCRIPTION;
         }
-        try{
+        try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
             statement.executeUpdate(
-                    "INSERT INTO `fnb` (`nama`,`harga`,`description`,`is_deleted`) VALUES ('"+fnb[0]+"','"+harga+"','"+fnb[2]+"',0)");
+                    "INSERT INTO `fnb` (`nama`,`harga`,`description`,`is_deleted`) VALUES ('" + fnb[0] + "','" + harga
+                            + "','" + fnb[2] + "',0)");
             statement.close();
             conn.close();
             return OperationCode.addFnB.SUCCESS;
-        } catch (Exception ex){
+        } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return OperationCode.addFnB.ANYEXCEPTION;
         }
     }
-    public int deleteFnB(String fnbName){
-        try{
+
+    public int deleteFnB(String fnbName) {
+        try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
@@ -2339,41 +2352,43 @@ public class Controller {
             statement.close();
             conn.close();
             return 0;
-        } catch (Exception ex){
+        } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return -99;
         }
     }
-    public int EditFnB(String fnbName, String [] dataFnB){
+
+    public int EditFnB(String fnbName, String[] dataFnB) {
         int harga = Integer.parseInt(dataFnB[1]);
-        if(dataFnB[0]==null){
+        if (dataFnB[0] == null) {
             return OperationCode.EditFnB.EMPTYNAME;
-        }else if (dataFnB[1]==null) {
+        } else if (dataFnB[1] == null) {
             return OperationCode.EditFnB.EMPTYHARGA;
-        }else if (dataFnB[2]==null) {
+        } else if (dataFnB[2] == null) {
             return OperationCode.EditFnB.EMPTYDESCRIPTION;
         }
-        try{
+        try {
             conn.open();
 
             Statement statement = conn.connection.createStatement();
             statement.executeUpdate(
-                    "UPDATE `fnb` SET `nama`='"+dataFnB[0]+"', `harga`='"+harga+"', `description`='"+dataFnB[2]+"' WHERE nama='" + fnbName + "'");
+                    "UPDATE `fnb` SET `nama`='" + dataFnB[0] + "', `harga`='" + harga + "', `description`='"
+                            + dataFnB[2] + "' WHERE nama='" + fnbName + "'");
             statement.close();
             conn.close();
             return OperationCode.EditFnB.SUCCESS;
-        } catch (Exception ex){
+        } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             return OperationCode.EditFnB.ANYEXCEPTION;
         }
     }
-    
+
     // Main menu user area
     public void printTableFnB(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price" };
+        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price", "City", "Cinema" };
         model.setColumnIdentifiers(columns);
         try {
-            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty, c.kota, c.nama FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
                     + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
             PreparedStatement statement = conn.connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
@@ -2382,7 +2397,9 @@ public class Controller {
                 String foodName = resultSet.getString("f.nama");
                 int quantity = resultSet.getInt("tf.qty");
                 int totalPrice = resultSet.getInt("f.harga * tf.qty");
-                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice });
+                String kota = resultSet.getString("c.kota");
+                String nama = resultSet.getString("c.nama");
+                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice, kota, nama });
             }
             conn.close();
         } catch (Exception ex) {
@@ -2392,10 +2409,10 @@ public class Controller {
     }
 
     public void printTableTickets(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price" };
+        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price", "City", "Cinema" };
         model.setColumnIdentifiers(columns);
         try {
-            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio WHERE u.id_user = "
+            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga, c.kota, c.nama FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON s.id_cinema = c.id_cinema WHERE u.id_user = "
                     + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
             PreparedStatement statement = conn.connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
@@ -2405,7 +2422,9 @@ public class Controller {
                 int seat = resultSet.getInt("tj.id_seat");
                 String classType = resultSet.getString("s.studio_class");
                 int totalPrice = resultSet.getInt("j.harga");
-                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice });
+                String kota = resultSet.getString("c.kota");
+                String nama = resultSet.getString("c.nama");
+                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice, kota, nama });
             }
             conn.close();
         } catch (Exception ex) {
@@ -2433,7 +2452,7 @@ public class Controller {
             return -99;
         }
     }
-    
+
     public int raiseMembership(String username) {
         try {
             int status = checkMembership(username);
@@ -2456,15 +2475,16 @@ public class Controller {
                 }
             }
         } catch (Exception ex) {
-             new ExceptionLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
         }
         return -99;
     }
-    public int extendMembership(String username){
-        try{
+
+    public int extendMembership(String username) {
+        try {
             int status = checkMembership(username);
-            if(status == 1){
+            if (status == 1) {
                 conn.open();
                 String selectQuery = "SELECT `membership_expiry_date` FROM user WHERE username=? AND membership_status = 1";
                 PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
@@ -2487,10 +2507,10 @@ public class Controller {
                     UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
                     return 1;
                 }
-            }else{
+            } else {
                 return 0;
             }
-        }catch (Exception ex){
+        } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
         }
@@ -2512,7 +2532,7 @@ public class Controller {
                 }
             }
         } catch (Exception ex) {
-             new ExceptionLogger(ex.getMessage());
+            new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
             return false;
         }

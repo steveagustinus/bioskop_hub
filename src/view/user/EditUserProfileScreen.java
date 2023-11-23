@@ -92,7 +92,6 @@ public class EditUserProfileScreen {
             String addressText = address.getText();
             int user = new Controller().editProfile(usernameText, oldPasswordText, newPasswordText, profileNameText,
                     emailText, phoneNoText, addressText);
-            System.out.println(user);
             if (user == -1) {
                 JOptionPane.showMessageDialog(null, "Username tidak boleh kosong!");
             } else if (user == -2) {

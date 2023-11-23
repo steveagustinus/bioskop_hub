@@ -72,7 +72,7 @@ public class MainMenuUserScreen implements MainInterface {
             frame.setVisible(true);
         });
 
-        JButton joinMembershipButton = new JButton("Join Membership");
+        JButton joinMembershipButton = new JButton("Membership");
         joinMembershipButton.setBounds(170, 220, 150, 50);
         panel.add(joinMembershipButton);
         joinMembershipButton.addActionListener(e -> {

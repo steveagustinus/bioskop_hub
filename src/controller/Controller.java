@@ -1181,7 +1181,7 @@ public class Controller {
             boolean status = checkMembership(username);
             if (!status) {
                 conn.open();
-                String updateQuery = "UPDATE user SET membership_status = '1' WHERE username = ?";
+                String updateQuery = "UPDATE user SET membership_status = 1 WHERE username = ?";
                 try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
                     preparedStatement.setString(1, username);
                     int rowsAffected = preparedStatement.executeUpdate();
@@ -1219,10 +1219,4 @@ public class Controller {
         }
         return false;
     }
-    
-    public static void main(String[] args) {
-        Controller controller = new Controller();
-        boolean a = controller.checkMembership("raffa");
-        System.out.println(a);
-    }   
 }

@@ -68,9 +68,4 @@ public class AddFnBScreen {
         });
 
     }
-
-    public static void main(String[] args) {
-
-        new AddFnBScreen();
-    }
 }

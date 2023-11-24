@@ -9,12 +9,13 @@ import javax.swing.JPanel;
 
 import src.controller.Controller;
 import src.controller.UserDataSingleton;
+import src.view.MainInterface;
 
 import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 
-public class RegisterMembership extends JDialog {
+public class RegisterMembership extends JDialog implements MainInterface {
     UserDataSingleton user;
     Controller controller = new Controller();
     public RegisterMembership(Window owner){
@@ -25,15 +26,20 @@ public class RegisterMembership extends JDialog {
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel panel = new JPanel();
+        panel.setBackground(getForeground());
         panel.setLayout(null);
 
         JLabel mainLabel = new JLabel("Membership Menu");
         mainLabel.setBounds(43, 10, 250, 25);
         mainLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        mainLabel.setForeground(TEXT_BACKGROUND);
         panel.add(mainLabel);
 
         JButton registerButton = new JButton("Register");
         registerButton.setBounds(40, 50, 170, 25);
+        registerButton.setFocusPainted(false);
+        registerButton.setBackground(BUTTON_BACKGROUND);
+        registerButton.setForeground(BUTTON_FOREGROUND);
         panel.add(registerButton);
         registerButton.addActionListener(new ActionListener() {
             @Override
@@ -51,6 +57,9 @@ public class RegisterMembership extends JDialog {
 
         JButton backButton = new JButton("Back");
         backButton.setBounds(40, 170, 170, 25);
+        backButton.setFocusPainted(false);
+        backButton.setBackground(BUTTON_BACKGROUND);
+        backButton.setForeground(BUTTON_FOREGROUND);
         panel.add(backButton);
         backButton.addActionListener(e -> {
             close();
@@ -58,6 +67,9 @@ public class RegisterMembership extends JDialog {
 
         JButton extendButton = new JButton("Extend");
         extendButton.setBounds(40, 90, 170, 25);
+        extendButton.setFocusPainted(false);
+        extendButton.setBackground(BUTTON_BACKGROUND);
+        extendButton.setForeground(BUTTON_FOREGROUND);
         panel.add(extendButton);
         extendButton.addActionListener(new ActionListener() {
             @Override
@@ -75,6 +87,8 @@ public class RegisterMembership extends JDialog {
 
         JButton unsubscribeButton = new JButton("Unsubscribe");
         unsubscribeButton.setBounds(40, 130, 170, 25);
+        unsubscribeButton.setBackground(BUTTON_BACKGROUND);
+        unsubscribeButton.setForeground(BUTTON_FOREGROUND);
         panel.add(unsubscribeButton);
         unsubscribeButton.addActionListener(new ActionListener() {
             @Override

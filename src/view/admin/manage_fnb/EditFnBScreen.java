@@ -182,6 +182,9 @@ public class EditFnBScreen {
                 // new MainMenuScreen();
             }else if(edit.isSelected()){
                 FnB fnb = controller.getFnBbyName(foodsnbevs.getSelectedItem().toString());
+                fnb.setNama(nama.getText());
+                fnb.setHarga(Integer.parseInt(harga.getText()));
+                fnb.setDescription(description.getText());
                 String[] tempFnB = { fnb.getNama() , String.valueOf(fnb.getHarga()) , fnb.getDescription()};
                 controller.editFnB(foodsnbevs.getSelectedItem().toString(), tempFnB);
                 new MainMenuScreen();

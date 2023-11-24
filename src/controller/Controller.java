@@ -867,6 +867,56 @@ public class Controller {
         }
     }
 
+    public Cinema[] getCinemas(String kota) {
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                "SELECT * FROM `cinema` WHERE `kota`='" + kota + "' AND `is_deleted`=0;"
+            );
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
+
+            ArrayList<Cinema> cinemaList = new ArrayList<Cinema>();
+
+            int cinemaCounter = 0;
+            while(result.next()) {
+
+                File fotoCinema = new File(Config.Path.TEMP_DIR + "img_cinema_" + cinemaCounter + ".png");
+                fotoCinema.createNewFile();
+
+                Path target = fotoCinema.toPath();
+                Files.copy(result.getBinaryStream("img"), target, StandardCopyOption.REPLACE_EXISTING);
+
+                fotoCinema = new File(Config.Path.TEMP_DIR + "img_cinema_" + cinemaCounter + ".png");
+
+                Cinema cinema = new Cinema(
+                    result.getString("id_cinema"),
+                    result.getString("nama"),
+                    result.getString("alamat"),
+                    result.getString("kota"),
+                    fotoCinema,
+                    null
+                );
+
+                cinemaList.add(cinema);
+                cinemaCounter++;
+            }
+
+            result.close();
+            statement.close();
+            conn.close();
+
+            return cinemaList.toArray(new Cinema[cinemaList.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
+
     public int addNewCinema(String idCinema, String nama, String alamat, String kota, File fotoCinema) {
         if (idCinema == null || idCinema.equals("")) {
             return -1;

@@ -41,7 +41,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class PesanTiket extends JDialog implements MainInterface{
+public class PesanTiket extends JDialog implements MainInterface {
+    Cinema[] listCinema;
+    int pilihanCinema;
+
     public class OrderConfirmation extends JDialog implements MainInterface {
 
         public OrderConfirmation(Window owner) {
@@ -351,7 +354,7 @@ public class PesanTiket extends JDialog implements MainInterface{
         labelCinema.setFont(new Font(FONTFAMILY, Font.PLAIN, 20));
         labelCinema.setForeground(TEXT_BACKGROUND);
         
-        JComboBox<String> fieldCinema = new JComboBox<String>(controller.listCinema((String) fieldKota.getSelectedItem()));
+        JComboBox<String> fieldCinema = new JComboBox<String>();
         fieldCinema.setSize(fieldWidth, fieldHeight);
         fieldCinema.setLocation(
             labelCinema.getX(),
@@ -459,9 +462,9 @@ public class PesanTiket extends JDialog implements MainInterface{
             public void actionPerformed(ActionEvent arg0) {
                 fieldCinema.removeAllItems();
                 
-                String[] listCinema = controller.listCinema((String) fieldKota.getSelectedItem());
-                for (String cinema : listCinema) {
-                    fieldCinema.addItem(cinema);
+                listCinema = controller.getCinemas(((String) fieldKota.getSelectedItem()));
+                for (Cinema cinema : listCinema) {
+                    fieldCinema.addItem(cinema.getNama());
                 }
             }
 
@@ -471,7 +474,14 @@ public class PesanTiket extends JDialog implements MainInterface{
 
             @Override
             public void actionPerformed(ActionEvent arg0) {
-                showFilm((String) fieldCinema.getSelectedItem());
+                String selectedIdCinema = "";
+                String selectedString = (String) fieldCinema.getSelectedItem();
+                for (Cinema cinema : listCinema) {
+                    if (cinema.getNama().equals(selectedString)) {
+                        selectedIdCinema = cinema.getId();
+                    }
+                }
+                showFilm(selectedIdCinema);
             }
             
         });

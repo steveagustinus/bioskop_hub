@@ -1,15 +1,12 @@
 package src.view.admin.manage_fnb;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import src.controller.Controller;
-import src.controller.OperationCode;
 import src.model.FnB;
 import src.view.admin.MainMenuScreen;
 

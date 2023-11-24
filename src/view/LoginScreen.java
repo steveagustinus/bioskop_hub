@@ -45,15 +45,16 @@ public class LoginScreen implements MainInterface {
         passwordLabel.setForeground(TEXT_BACKGROUND);
 
         JTextField usernameField = new JTextField(20);
-        usernameField.setFont(new Font(FONTFAMILY, Font.PLAIN, usernameField.getFont().getSize()));
+        usernameField.setFont(new Font(FONTFAMILY, Font.BOLD, 15));
         usernameField.setBounds(30, 70, 250, 25);
         usernameField.setText("Enter your Username");
+        usernameField.setBackground(FRAME_BACKGROUND);
         usernameField.setForeground(Color.GRAY);
         usernameField.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 if (usernameField.getText().equals("Enter your Username")) {
                     usernameField.setText("");
-                    usernameField.setForeground(Color.BLACK);
+                    usernameField.setForeground(TEXT_BACKGROUND);
                 }
             }
 
@@ -67,6 +68,8 @@ public class LoginScreen implements MainInterface {
 
         JPasswordField passwordField = new JPasswordField(20);
         passwordField.setBounds(30, 120, 250, 25);
+        passwordField.setFont(new Font(FONTFAMILY, Font.BOLD, 15));
+        passwordField.setBackground(FRAME_BACKGROUND);
         controller.setPlaceholder(passwordField, "Enter your Password");
 
         JButton loginButton = new JButton("Login");

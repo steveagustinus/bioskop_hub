@@ -45,6 +45,7 @@ import src.model.user.Admin;
 import src.model.user.Customer;
 import src.model.user.MembershipCustomer;
 import src.model.user.User;
+import src.view.MainInterface;
 
 public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
@@ -1628,7 +1629,7 @@ public class Controller {
                 if (String.valueOf(passwordField.getPassword()).equals(placeholder)) {
                     passwordField.setText("");
                     passwordField.setEchoChar('*');
-                    passwordField.setForeground(Color.BLACK);
+                    passwordField.setForeground(MainInterface.TEXT_BACKGROUND);
                 }
             }
 

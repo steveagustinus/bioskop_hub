@@ -2360,10 +2360,10 @@ public class Controller {
 
     // Main menu user area
     public void printTableFnB(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price", "City", "Cinema" };
+        String[] columns = { "Transaction Date", "City", "Cinema", "Transaction Items", "Quantity", "Total Price", "Payment Method" };
         model.setColumnIdentifiers(columns);
         try {
-            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty, c.kota, c.nama FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty, c.kota, c.nama, t.payment_method FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
                     + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
             PreparedStatement statement = conn.connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
@@ -2374,7 +2374,8 @@ public class Controller {
                 int totalPrice = resultSet.getInt("f.harga * tf.qty");
                 String kota = resultSet.getString("c.kota");
                 String nama = resultSet.getString("c.nama");
-                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice, kota, nama });
+                String paymentMethod = resultSet.getString("t.payment_method");
+                model.addRow(new Object[] { transactionDate, kota, nama, foodName, quantity, totalPrice, paymentMethod });
             }
             conn.close();
         } catch (Exception ex) {

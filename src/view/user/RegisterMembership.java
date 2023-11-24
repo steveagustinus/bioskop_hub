@@ -17,7 +17,7 @@ public class RegisterMembership {
     Controller controller = new Controller();
     public RegisterMembership(){
         JFrame frame = new JFrame("Membership");
-        frame.setSize(270, 210);
+        frame.setSize(270, 260);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
@@ -46,7 +46,7 @@ public class RegisterMembership {
         });
 
         JButton backButton = new JButton("Back");
-        backButton.setBounds(40, 130, 170, 25);
+        backButton.setBounds(40, 170, 170, 25);
         panel.add(backButton);
         backButton.addActionListener(e -> {
             frame.setVisible(false);
@@ -64,6 +64,23 @@ public class RegisterMembership {
                 if(isMember == 1){
                     controller.extendMembership(user.getUsername());
                     JOptionPane.showMessageDialog(null, "Membership extended!");
+                }else{
+                    JOptionPane.showMessageDialog(null, "You don't have a membership!");
+                }
+            }
+        });
+
+        JButton unsubscribeButton = new JButton("Unsubscribe");
+        unsubscribeButton.setBounds(40, 130, 170, 25);
+        panel.add(unsubscribeButton);
+        unsubscribeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                user = UserDataSingleton.getInstance();
+                int isMember = controller.checkMembership(user.getUsername());
+                if(isMember == 1){
+                    controller.revokeMembership(user.getUsername());
+                    JOptionPane.showMessageDialog(null, "Membership unsubscribed!");
                 }else{
                     JOptionPane.showMessageDialog(null, "You don't have a membership!");
                 }

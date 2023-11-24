@@ -6,11 +6,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-
 import src.controller.Controller;
-import src.controller.OperationCode;
 import src.model.Jadwal;
 
 public class EditJadwalDialog extends JadwalFormDialog {

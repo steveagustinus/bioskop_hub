@@ -41,7 +41,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 
-public class PesanTiket extends JDialog {
+public class PesanTiket extends JDialog implements MainInterface{
     public class OrderConfirmation extends JDialog implements MainInterface {
 
         public OrderConfirmation(Window owner) {
@@ -49,7 +49,7 @@ public class PesanTiket extends JDialog {
             this.setLocation(owner.getX(), owner.getY());
             this.setSize(500, 750);
             this.setLayout(null);
-            this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            this.getContentPane().setBackground(FRAME_BACKGROUND);
 
             initializeComponent();
         }
@@ -64,18 +64,13 @@ public class PesanTiket extends JDialog {
         }
 
         public void initializeComponent() {
-            JPanel dialogPanel = new JPanel();
-            dialogPanel.setLayout(null);
-            dialogPanel.setBackground(FRAME_BACKGROUND);
-            dialogPanel.setForeground(TEXT_BACKGROUND);
-            this.add(dialogPanel);
-
             JLabel labelHeader = new JLabel("Order Confirmation");
             labelHeader.setSize(this.getWidth(), 50);
             labelHeader.setLocation(0, 0);
-            labelHeader.setFont(new Font(fontFamily, Font.BOLD, 30));
+            labelHeader.setFont(new Font(FONTFAMILY, Font.BOLD, 30));
             labelHeader.setHorizontalAlignment(SwingConstants.CENTER);
             labelHeader.setVerticalAlignment(SwingConstants.CENTER);
+            labelHeader.setForeground(TEXT_BACKGROUND);
 
             Jadwal jadwal = controller.getJadwalById(selectedJadwalId);
             Studio studio = controller.getStudioById(jadwal.getIdStudio());
@@ -86,7 +81,8 @@ public class PesanTiket extends JDialog {
             JLabel labelCinema = new JLabel(cinema.getNama() + " - " + cinema.getKota());
             labelCinema.setSize(this.getWidth() - 20, 30);
             labelCinema.setLocation(10, labelHeader.getY() + labelHeader.getHeight() + 20);
-            labelCinema.setFont(new Font(fontFamily, Font.BOLD, 20));
+            labelCinema.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
+            labelCinema.setForeground(TEXT_BACKGROUND);
             
             JLabel labelCinemaInfo = new JLabel(cinema.getAlamat());
             labelCinemaInfo.setSize(labelCinema.getWidth(), 20);
@@ -94,7 +90,8 @@ public class PesanTiket extends JDialog {
                 labelCinema.getX(),
                 labelCinema.getY() + labelCinema.getHeight() + 5
             );
-            labelCinemaInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
+            labelCinemaInfo.setFont(new Font(FONTFAMILY, Font.PLAIN, 15));
+            labelCinemaInfo.setForeground(TEXT_BACKGROUND);
 
             JLabel labelStudio = new JLabel(studio.getIdStudio());
             labelStudio.setSize(this.getWidth() - 20, 25);
@@ -102,7 +99,8 @@ public class PesanTiket extends JDialog {
                 labelCinemaInfo.getX(),
                 labelCinemaInfo.getY() + labelCinemaInfo.getHeight() + 15
             );
-            labelStudio.setFont(new Font(fontFamily, Font.BOLD, 18));
+            labelStudio.setFont(new Font(FONTFAMILY, Font.BOLD, 18));
+            labelStudio.setForeground(TEXT_BACKGROUND);
 
             JLabel labelStudioInfo = new JLabel(studio.getStudioClass() + " | " + controller.getStudioTypeString(studio.getStudioType()));
             labelStudioInfo.setSize(labelStudio.getWidth(), 20);
@@ -110,36 +108,41 @@ public class PesanTiket extends JDialog {
                 labelStudio.getX(),
                 labelStudio.getY() + labelStudio.getHeight() + 5
             );
-            labelStudioInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
+            labelStudioInfo.setFont(new Font(FONTFAMILY, Font.PLAIN, 15));
+            labelStudioInfo.setForeground(TEXT_BACKGROUND);
 
             JSeparator separator1 = new JSeparator();
             separator1.setOrientation(SwingConstants.HORIZONTAL);
             separator1.setSize(this.getWidth(), 5);
             separator1.setLocation(0, labelStudioInfo.getY() + labelStudioInfo.getHeight() + 5);
-            separator1.setFont(new Font(fontFamily, Font.BOLD, 20));
-            separator1.setForeground(Color.BLACK);
+            separator1.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
+            separator1.setForeground(Color.WHITE);
 
             JLabel labelMovie = new JLabel(movie.getJudul());
             labelMovie.setSize(this.getWidth() - 20, 25);
             labelMovie.setLocation(labelStudioInfo.getX(), separator1.getY() + separator1.getHeight() + 5);
-            labelMovie.setFont(new Font(fontFamily, Font.BOLD, 20));
+            labelMovie.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
+            labelMovie.setForeground(TEXT_BACKGROUND);
 
             JLabel labelMovieInfo = new JLabel(String.valueOf(movie.getDurasi()) + " min");
             labelMovieInfo.setSize(labelMovie.getWidth(), 15);
             labelMovieInfo.setLocation(labelMovie.getX(), labelMovie.getY() + labelMovie.getHeight() + 5);
-            labelMovieInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
+            labelMovieInfo.setFont(new Font(FONTFAMILY, Font.PLAIN, 15));
+            labelMovieInfo.setForeground(TEXT_BACKGROUND);
 
             JLabel labelShowtime = new JLabel(
                 jadwal.getWaktu().format(DateTimeFormatter.ofPattern("hh:mm dd MMMM yyyy"))
             );
             labelShowtime.setSize(this.getWidth() - 20, 25);
             labelShowtime.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 5);
-            labelShowtime.setFont(new Font(fontFamily, Font.BOLD, 18));
+            labelShowtime.setFont(new Font(FONTFAMILY, Font.BOLD, 18));
+            labelShowtime.setForeground(TEXT_BACKGROUND);
 
             JLabel labelSeat = new JLabel("Kursi yang dipilih: ");
             labelSeat.setSize(this.getWidth() - 20, 20);
             labelSeat.setLocation(labelShowtime.getX(), labelShowtime.getY() + labelShowtime.getHeight() + 10);
-            labelSeat.setFont(new Font(fontFamily, Font.PLAIN, 18));
+            labelSeat.setFont(new Font(FONTFAMILY, Font.PLAIN, 18));
+            labelSeat.setForeground(TEXT_BACKGROUND);
 
             String seatMessage = "";
             for (Seat seat : seats) {
@@ -150,19 +153,21 @@ public class PesanTiket extends JDialog {
             JLabel labelSeat2 = new JLabel(seatMessage);
             labelSeat2.setSize(this.getWidth() - 20, 20);
             labelSeat2.setLocation(labelSeat.getX(), labelSeat.getY() + labelSeat.getHeight() + 5);
-            labelSeat2.setFont(new Font(fontFamily, Font.BOLD, 14));
+            labelSeat2.setFont(new Font(FONTFAMILY, Font.BOLD, 14));
+            labelSeat2.setForeground(TEXT_BACKGROUND);
 
             JSeparator separator2 = new JSeparator();
             separator2.setOrientation(SwingConstants.HORIZONTAL);
             separator2.setSize(this.getWidth(), 5);
             separator2.setLocation(0, labelSeat2.getY() + labelSeat2.getHeight() + 5);
-            separator2.setFont(new Font(fontFamily, Font.BOLD, 20));
+            separator2.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
             separator2.setForeground(Color.BLACK);
 
             JLabel labelTotalBayar = new JLabel("Total bayar: ");
             labelTotalBayar.setSize(this.getWidth(), 26);
             labelTotalBayar.setLocation(labelSeat.getX(), separator2.getY() + separator2.getHeight() + 5);
-            labelTotalBayar.setFont(new Font(fontFamily, Font.BOLD, 25));
+            labelTotalBayar.setFont(new Font(FONTFAMILY, Font.BOLD, 25));
+            labelTotalBayar.setForeground(TEXT_BACKGROUND);
 
             JLabel labelTotalBayar2 = new JLabel(
                 seats.length + " x Rp. " +
@@ -171,13 +176,14 @@ public class PesanTiket extends JDialog {
             );
             labelTotalBayar2.setSize(this.getWidth(), 26);
             labelTotalBayar2.setLocation(labelTotalBayar.getX(), labelTotalBayar.getY() + labelTotalBayar.getHeight() + 5);
-            labelTotalBayar2.setFont(new Font(fontFamily, Font.BOLD, 25));
+            labelTotalBayar2.setFont(new Font(FONTFAMILY, Font.BOLD, 25));
+            labelTotalBayar2.setForeground(TEXT_BACKGROUND);
 
             JSeparator separator3 = new JSeparator();
             separator3.setOrientation(SwingConstants.HORIZONTAL);
             separator3.setSize(this.getWidth(), 5);
             separator3.setLocation(0, labelTotalBayar2.getY() + labelTotalBayar2.getHeight() + 5);
-            separator3.setFont(new Font(fontFamily, Font.BOLD, 20));
+            separator3.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
             separator3.setForeground(Color.BLACK);
 
             PaymentPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250);
@@ -189,6 +195,8 @@ public class PesanTiket extends JDialog {
                 buttonPesan.getWidth(),
                 panelPayment.getY() + panelPayment.getHeight() + 10
             );
+            buttonPesan.setBackground(BUTTON_BACKGROUND);
+            buttonPesan.setForeground(BUTTON_FOREGROUND);
 
             buttonPesan.addActionListener(new ActionListener() {
 
@@ -239,23 +247,23 @@ public class PesanTiket extends JDialog {
                 }
                 
             });
-            dialogPanel.add(labelHeader);
-            dialogPanel.add(labelCinema);
-            dialogPanel.add(labelCinemaInfo);
-            dialogPanel.add(labelStudio);
-            dialogPanel.add(labelStudioInfo);
-            dialogPanel.add(separator1);
-            dialogPanel.add(labelMovie);
-            dialogPanel.add(labelMovieInfo);
-            dialogPanel.add(labelShowtime);
-            dialogPanel.add(labelSeat);
-            dialogPanel.add(labelSeat2);
-            dialogPanel.add(separator2);
-            dialogPanel.add(labelTotalBayar);
-            dialogPanel.add(labelTotalBayar2);
-            dialogPanel.add(separator3);
-            dialogPanel.add(panelPayment);
-            dialogPanel.add(buttonPesan);
+            this.add(labelHeader);
+            this.add(labelCinema);
+            this.add(labelCinemaInfo);
+            this.add(labelStudio);
+            this.add(labelStudioInfo);
+            this.add(separator1);
+            this.add(labelMovie);
+            this.add(labelMovieInfo);
+            this.add(labelShowtime);
+            this.add(labelSeat);
+            this.add(labelSeat2);
+            this.add(separator2);
+            this.add(labelTotalBayar);
+            this.add(labelTotalBayar2);
+            this.add(separator3);
+            this.add(panelPayment);
+            this.add(buttonPesan);
         }
     }
 
@@ -265,7 +273,7 @@ public class PesanTiket extends JDialog {
     private String selectedJadwalId = null;
     private ArrayList<String> selectedSeatIds = new ArrayList<String>();
 
-    private String fontFamily = "Dialog";
+    private String FONTFAMILY = "Dialog";
 
     private JButton buttonOrder;
 
@@ -277,6 +285,7 @@ public class PesanTiket extends JDialog {
         this.setSize(1280, 950);
         this.setLayout(null);
         this.setLocationRelativeTo(owner);
+        this.getContentPane().setBackground(FRAME_BACKGROUND);
 
         initializeComponent();
 
@@ -291,22 +300,24 @@ public class PesanTiket extends JDialog {
         JLabel labelHeader = new JLabel("Pesan Tiket");
         labelHeader.setSize(this.getWidth(), 50);
         labelHeader.setLocation(0, 0);
-        labelHeader.setFont(new Font(fontFamily, Font.BOLD, 30));
+        labelHeader.setFont(new Font(FONTFAMILY, Font.BOLD, 30));
         labelHeader.setHorizontalAlignment(SwingConstants.CENTER);
         labelHeader.setVerticalAlignment(SwingConstants.CENTER);
+        labelHeader.setForeground(TEXT_BACKGROUND);
 
         JPanel panelCinema = new JPanel();
         panelCinema.setSize(this.getWidth() - 40, 160);
         panelCinema.setLocation(20, 50);
         panelCinema.setLayout(null);
         panelCinema.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        panelCinema.setBackground(FRAME_BACKGROUND);
 
         JLabel panelCinemaTitle = new JLabel("Pilih cinema di kota pilihan anda");
         panelCinemaTitle.setLocation(1, 1);
         panelCinemaTitle.setSize(panelCinema.getWidth() - 2, 30);
-        panelCinemaTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
+        panelCinemaTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelCinemaTitle.setOpaque(true);
-        panelCinemaTitle.setBackground(Color.LIGHT_GRAY);
+        panelCinemaTitle.setBackground(TEXT_BACKGROUND);
         panelCinemaTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelCinemaTitle.setVerticalAlignment(SwingConstants.CENTER);
 
@@ -316,7 +327,8 @@ public class PesanTiket extends JDialog {
         JLabel labelKota = new JLabel("Pilih Kota: ");
         labelKota.setSize(fieldWidth, fieldHeight);
         labelKota.setLocation(20, 55);
-        labelKota.setFont(new Font(fontFamily, Font.PLAIN, 20));
+        labelKota.setFont(new Font(FONTFAMILY, Font.PLAIN, 20));
+        labelKota.setForeground(TEXT_BACKGROUND);
 
         JComboBox<String> fieldKota = new JComboBox<String>(controller.listKota());
         fieldKota.setSize(fieldWidth, fieldHeight);
@@ -324,7 +336,7 @@ public class PesanTiket extends JDialog {
             labelKota.getX(),
             labelKota.getY() + labelKota.getHeight() + 5
         );
-        fieldKota.setFont(new Font(fontFamily, Font.PLAIN, 20));
+        fieldKota.setFont(new Font(FONTFAMILY, Font.PLAIN, 20));
         fieldKota.setSelectedIndex(-1);
         
         JLabel labelCinema = new JLabel("Pilih Cinema: ");
@@ -333,7 +345,8 @@ public class PesanTiket extends JDialog {
             labelKota.getX() + labelKota.getWidth() + 20,
             labelKota.getY()
         );
-        labelCinema.setFont(new Font(fontFamily, Font.PLAIN, 20));
+        labelCinema.setFont(new Font(FONTFAMILY, Font.PLAIN, 20));
+        labelCinema.setForeground(TEXT_BACKGROUND);
         
         JComboBox<String> fieldCinema = new JComboBox<String>(controller.listCinema((String) fieldKota.getSelectedItem()));
         fieldCinema.setSize(fieldWidth, fieldHeight);
@@ -341,7 +354,7 @@ public class PesanTiket extends JDialog {
             labelCinema.getX(),
             labelCinema.getY() + labelCinema.getHeight() + 5
         );
-        fieldCinema.setFont(new Font(fontFamily, Font.PLAIN, 20));
+        fieldCinema.setFont(new Font(FONTFAMILY, Font.PLAIN, 20));
 
         JPanel panelFilm = new JPanel();
         panelFilm.setName("mainpanel_movie");
@@ -353,15 +366,17 @@ public class PesanTiket extends JDialog {
         panelFilm.setLayout(null);
         panelFilm.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         panelFilm.setVisible(false);
+        panelFilm.setBackground(FRAME_BACKGROUND);
 
         JLabel panelFilmTitle = new JLabel("Pilih film");
         panelFilmTitle.setLocation(1, 1);
         panelFilmTitle.setSize(panelFilm.getWidth() - 2, 30);
-        panelFilmTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
+        panelFilmTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelFilmTitle.setOpaque(true);
-        panelFilmTitle.setBackground(Color.LIGHT_GRAY);
+        panelFilmTitle.setBackground(TEXT_BACKGROUND);
         panelFilmTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelFilmTitle.setVerticalAlignment(SwingConstants.CENTER);
+        panelFilmTitle.setForeground(FRAME_BACKGROUND);
 
         JPanel panelJadwal = new JPanel();
         panelJadwal.setName("mainpanel_jadwal");
@@ -376,15 +391,17 @@ public class PesanTiket extends JDialog {
         panelJadwal.setLayout(null);
         panelJadwal.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         panelJadwal.setVisible(false);
+        panelJadwal.setBackground(FRAME_BACKGROUND);
         
         JLabel panelJadwalTitle = new JLabel("Pilih showtime");
         panelJadwalTitle.setLocation(1, 1);
         panelJadwalTitle.setSize(panelJadwal.getWidth() - 2, 30);
-        panelJadwalTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
+        panelJadwalTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelJadwalTitle.setOpaque(true);
-        panelJadwalTitle.setBackground(Color.LIGHT_GRAY);
+        panelJadwalTitle.setBackground(TEXT_BACKGROUND);
         panelJadwalTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelJadwalTitle.setVerticalAlignment(SwingConstants.CENTER);
+        panelJadwalTitle.setForeground(FRAME_BACKGROUND);
 
         JPanel panelSeat = new JPanel();
         panelSeat.setName("mainpanel_seat");
@@ -399,15 +416,17 @@ public class PesanTiket extends JDialog {
         panelSeat.setLayout(null);
         panelSeat.setBorder(BorderFactory.createLineBorder(Color.BLACK));
         panelSeat.setVisible(false);
+        panelSeat.setBackground(FRAME_BACKGROUND);
         
         JLabel panelSeatTitle = new JLabel("Pilih kursi");
         panelSeatTitle.setLocation(1, 1);
         panelSeatTitle.setSize(panelSeat.getWidth() - 2, 30);
-        panelSeatTitle.setFont(new Font(fontFamily, Font.BOLD, 20));
+        panelSeatTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelSeatTitle.setOpaque(true);
-        panelSeatTitle.setBackground(Color.LIGHT_GRAY);
+        panelSeatTitle.setBackground(TEXT_BACKGROUND);
         panelSeatTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelSeatTitle.setVerticalAlignment(SwingConstants.CENTER);
+        panelSeatTitle.setForeground(FRAME_BACKGROUND);
 
         JLabel labelSelectedSeatsInfo = new JLabel();
         labelSelectedSeatsInfo.setName("label_selectedseatsinfo");
@@ -423,8 +442,9 @@ public class PesanTiket extends JDialog {
             panelSeat.getY() + panelSeat.getHeight() + 5
         );
         buttonOrder.setOpaque(true);
-        buttonOrder.setBackground(Color.WHITE);
-        buttonOrder.setFont(new Font(fontFamily, Font.BOLD, 20));
+        buttonOrder.setBackground(BUTTON_BACKGROUND);
+        buttonOrder.setForeground(BUTTON_FOREGROUND);
+        buttonOrder.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         buttonOrder.setFocusPainted(false);
         buttonOrder.setVisible(false);
 
@@ -552,14 +572,14 @@ public class PesanTiket extends JDialog {
                 }
             }
 
-            moviePanel.setBackground(Color.magenta);
+            moviePanel.setBackground(BUTTON_BACKGROUND);
             panels[i] = moviePanel;
 
             JLabel movieLabel = new JLabel(listMovie[i].getJudul());
             movieLabel.setName("label_movie");
             movieLabel.setSize(moviePanel.getWidth(), 30);
             movieLabel.setLocation(0, 240);
-            movieLabel.setFont(new Font(fontFamily, Font.BOLD, 15));
+            movieLabel.setFont(new Font(FONTFAMILY, Font.BOLD, 15));
             movieLabel.setVerticalAlignment(SwingConstants.CENTER);
             movieLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
@@ -644,13 +664,15 @@ public class PesanTiket extends JDialog {
         JTable tableJadwal = new JTable(rowData, columnHeader) {
             public boolean isCellEditable(int row,int column) {
                 return false;
-            }  
+            }
         };
 
         tableJadwal.setName("table_jadwal");
         tableJadwal.setSize(panelJadwal.getWidth() - 2, panelJadwal.getHeight() - 33);
         tableJadwal.setLocation(1, 32);
-        tableJadwal.setFont(new Font(fontFamily, Font.BOLD, 12));
+        tableJadwal.setBackground(FRAME_BACKGROUND);
+        tableJadwal.setForeground(TEXT_BACKGROUND);
+        tableJadwal.setFont(new Font(FONTFAMILY, Font.BOLD, 12));
         tableJadwal.setRowHeight(40);
         tableJadwal.setShowGrid(false);
 
@@ -715,7 +737,7 @@ public class PesanTiket extends JDialog {
                     button.setBackground(Color.WHITE);
                 }
 
-                button.setFont(new Font(fontFamily, Font.BOLD, 12));
+                button.setFont(new Font(FONTFAMILY, Font.BOLD, 12));
                 
                 if (i == 0 && j == 0) {
                     button.setLocation(5, 35);
@@ -738,10 +760,12 @@ public class PesanTiket extends JDialog {
                         String currentSeatId = ((JButton) e.getSource()).getName().replace("button_seat_", "");
                         if (!selectedSeatIds.contains(currentSeatId)) {
                             selectedSeatIds.add(currentSeatId);
-                            button.setBackground(Color.CYAN);
+                            button.setBackground(Color.BLUE);
+                            button.setForeground(Color.WHITE);
                         } else {
                             selectedSeatIds.remove(currentSeatId);
                             button.setBackground(Color.WHITE);
+                            button.setForeground(Color.BLACK);
                         }
 
                         button.setFocusPainted(false);

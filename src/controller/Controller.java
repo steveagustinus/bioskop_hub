@@ -461,6 +461,26 @@ public class Controller {
         return output;
     }
 
+    public boolean deleteJadwal (String idJadwal){
+        try{
+            conn.open();
+            String deleteQuery = "DELETE FROM `jadwal` WHERE `id_jadwal` = ? AND NOT EXISTS (SELECT `id_jadwal` FROM `transaction_jadwal` WHERE `id_jadwal` = ?)";
+            try (PreparedStatement preparedStatement = conn.connection.prepareStatement(deleteQuery)) {
+                preparedStatement.setString(1, idJadwal);
+                preparedStatement.setString(2, idJadwal);
+                int rowsAffected = preparedStatement.executeUpdate();
+                if (rowsAffected > 0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        } catch (Exception ex){
+            new ExceptionLogger(ex.getMessage());
+            return false;
+        }
+    }
+
     public Movie[] extractMoviesFromListJadwal(Jadwal[] arrJadwal) {
         if (arrJadwal == null) {
             return null;

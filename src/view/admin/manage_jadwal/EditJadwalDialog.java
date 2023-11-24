@@ -5,8 +5,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import src.controller.Controller;
+import src.controller.OperationCode;
 import src.model.Jadwal;
 
 public class EditJadwalDialog extends JadwalFormDialog {
@@ -48,9 +52,32 @@ public class EditJadwalDialog extends JadwalFormDialog {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                // TODO Auto-generated method stub
-                throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
+                boolean status = controller.deleteJadwal(idJadwal);System.out.println(idJadwal);
+                    if(status==true){
+                        JOptionPane.showMessageDialog(null, "Masuk ke pengaturan edit jadwal.", "Konfirmasi", JOptionPane.INFORMATION_MESSAGE);
+                        close();
+                        new NewJadwalDialog(owner);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Gagal menghapus jadwal, telah terdapat transaksi user", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                        close();
+                    }
             }
+        });        
+
+        buttonDelete.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String idJadwal = fieldID.getText();
+                boolean status = controller.deleteJadwal(idJadwal);System.out.println(idJadwal);
+                    if(status==true){
+                        JOptionPane.showMessageDialog(null, "Jadwal telah terhapus.", "Konfirmasi", JOptionPane.INFORMATION_MESSAGE);
+                        close();
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Gagal menghapus jadwal, telah terdapat transaksi user", "Peringatan", JOptionPane.WARNING_MESSAGE);
+                        close();
+                    }
+                }
             
         });
 

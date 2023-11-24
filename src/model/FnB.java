@@ -6,6 +6,9 @@ public class FnB {
     private int harga;
     private String description;
     
+    public FnB() {
+        
+    }
     public FnB(String nama, int harga, String description) {
         this.nama = nama;
         this.harga = harga;

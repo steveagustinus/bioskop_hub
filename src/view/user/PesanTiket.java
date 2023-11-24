@@ -173,7 +173,7 @@ public class PesanTiket extends JDialog {
             separator3.setFont(new Font(fontFamily, Font.BOLD, 20));
             separator3.setForeground(Color.BLACK);
 
-            JPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250);
+            PaymentPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250);
             panelPayment.setLocation(labelTotalBayar.getX(), separator3.getY() + separator3.getHeight() + 10);
 
             JButton buttonPesan = new JButton("Pesan");
@@ -190,7 +190,8 @@ public class PesanTiket extends JDialog {
                     int status = controller.pesanTiket(
                         String.valueOf(UserDataSingleton.getInstance().getId()),
                         jadwal,
-                        seats
+                        seats,
+                        panelPayment.getPaymentMethod()
                     );
 
                     if (status == OperationCode.PesanTiket.SUCCESS) {
@@ -217,7 +218,12 @@ public class PesanTiket extends JDialog {
                                 null, "Harap pilih kursi yang ingin dipesan", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
                             );
                         }
-                        else if (status == OperationCode.PesanTiket.NOJADWALSELECTED) {
+                        else if (status == OperationCode.PesanTiket.NOPAYMENTMETHOD) {
+                            JOptionPane.showMessageDialog(
+                                null, "Harap pilih metode pembayaran", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                        else if (status == OperationCode.PesanTiket.ANYEXCEPTION) {
                             JOptionPane.showMessageDialog(
                                 null, "Terjadi kesalahan!", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
                             );

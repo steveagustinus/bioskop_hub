@@ -119,10 +119,11 @@ public class OperationCode {
         public final static int IDCUSTOMERNOTVALID = -1;
         public final static int NOJADWALSELECTED = -2;
         public final static int NOSEATSELECTED = -3;
+        public final static int NOPAYMENTMETHOD = -4;
         public final static int ANYEXCEPTION = -99;
     }
 
-    public class addFnB{
+    public class AddFnB {
         public final static int SUCCESS=0;
         public final static int EMPTYNAME=-1;
         public final static int EMPTYHARGA=-2;

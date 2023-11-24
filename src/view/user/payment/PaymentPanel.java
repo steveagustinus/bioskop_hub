@@ -1,6 +1,8 @@
 package src.view.user.payment;
 
 import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
@@ -48,6 +50,20 @@ public class PaymentPanel extends JPanel {
                 radioButton.setLocation(20, labelInfo.getY() + labelInfo.getHeight() + 10 + i * (10 + radioButton.getHeight()));
             }
 
+            radioButton.addActionListener(new ActionListener() {
+
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (e.getSource() instanceof JRadioButton) {
+                        int index = Integer.parseInt(((JRadioButton) e.getSource()).getName().replace("radiobutton_", ""));
+                        paymentMethod = paymentMethods[index];
+                    }
+                }
+                
+            });
+
+            
+
             groupPaymentMethod.add(radioButton);
             this.add(radioButton);
         }
@@ -56,7 +72,7 @@ public class PaymentPanel extends JPanel {
         this.add(labelInfo);
     }
 
-    public String getPaymentMethods() {
+    public String getPaymentMethod() {
         return this.paymentMethod;
     }
 }

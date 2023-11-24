@@ -63,12 +63,12 @@ public class DeleteFnBScreen {
                     String data = foodsnbevs.getSelectedItem().toString();
                     int konfirmasi = controller.deleteFnB(data);
                     String status="";
-                    if(konfirmasi==OperationCode.addFnB.SUCCESS){
+                    if(konfirmasi==OperationCode.AddFnB.SUCCESS){
                         status="Berhasil!";
                         JOptionPane.showMessageDialog(null,status);
                         frame.dispose();
                         new MainMenuScreen();
-                    }else if(konfirmasi==OperationCode.addFnB.ANYEXCEPTION){
+                    }else if(konfirmasi==OperationCode.AddFnB.ANYEXCEPTION){
                         status="Error!";
                     }
                     JOptionPane.showMessageDialog(null,status);

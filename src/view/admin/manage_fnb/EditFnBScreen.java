@@ -193,8 +193,4 @@ public class EditFnBScreen {
         frame.setLocationRelativeTo(null);
 
     }
-
-    public static void main(String[] args) {
-        new EditFnBScreen();
-    }
 }

@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 
 import src.controller.Controller;
 import src.controller.UserDataSingleton;
+import src.view.MainInterface;
 
 public class PrintTableTiketsScreen {
     JTable table;
@@ -28,14 +29,22 @@ public class PrintTableTiketsScreen {
         controller.printTableTickets(userData.getId(), table, model);
         JButton backButton = new JButton("Back");
         backButton.setBounds(40, 170, 200, 30);
+        backButton.setBackground(MainInterface.BUTTON_BACKGROUND);
+        backButton.setForeground(MainInterface.BUTTON_FOREGROUND);
         backButton.addActionListener(e -> {
             frame.dispose();
         });
         frame.getContentPane().add(backButton, BorderLayout.SOUTH);
 
         table = new JTable(model);
+        table.setBackground(MainInterface.FRAME_BACKGROUND);
+        table.setForeground(MainInterface.TEXT_BACKGROUND);
+        
         JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.getViewport().setBackground(MainInterface.FRAME_BACKGROUND);
+        
         frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
+        frame.getContentPane().setBackground(MainInterface.FRAME_BACKGROUND);
         frame.setVisible(true);
     }
 }

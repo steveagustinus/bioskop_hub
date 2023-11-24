@@ -15,7 +15,7 @@ public interface MainInterface {
     public final static String FONTFAMILY = "Arial";
 
     // Bioskop hub
-    // public final static Color FRAME_BACKGROUND = new Color(207,229,235);
+    // public final static Color FRAME_BACKGROUND = new Color(121, 121, 121);
     // public final static Color TEXT_BACKGROUND = Color.BLACK;
     // public final static Color BUTTON_BACKGROUND = new Color(0, 100, 219);
     // public final static Color BUTTON_FOREGROUND = Color.WHITE;

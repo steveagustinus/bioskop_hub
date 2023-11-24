@@ -1,9 +1,11 @@
 package src.view.user;
 
 import java.awt.Font;
+import java.awt.Window;
+import java.awt.Dialog.ModalityType;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -14,10 +16,13 @@ import src.controller.Controller;
 import src.controller.UserDataSingleton;
 
 public class EditUserProfileScreen {
-    public EditUserProfileScreen() {
-        JFrame frame = new JFrame("Edit User Profile");
+    public EditUserProfileScreen(Window owner) {
+        JDialog frame = new JDialog(owner);
+        frame.setTitle("Edit User Profile");
+        frame.setModalityType(ModalityType.DOCUMENT_MODAL);
         frame.setSize(500, 500);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(frame);
 
         JPanel panel = new JPanel();
         panel.setLayout(null);

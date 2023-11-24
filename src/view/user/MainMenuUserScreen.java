@@ -1,9 +1,9 @@
 package src.view.user;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -31,23 +31,28 @@ public class MainMenuUserScreen implements MainInterface {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
+        panel.setBackground(FRAME_BACKGROUND);
         panel.setLayout(null);
 
         mainlabel = new JLabel("Welcome " + UserDataSingleton.getInstance().getProfile_name() + " to the Main Menu!");
         mainlabel.setBounds(175, 10, 500, 50);
         panel.add(mainlabel);
-        mainlabel.setFont(new Font("Arial", Font.BOLD, 24));
+        mainlabel.setFont(new Font(FONTFAMILY, Font.BOLD, 24));
+        mainlabel.setForeground(TEXT_BACKGROUND);
 
         usernameLabel = new JLabel("Username : " + UserDataSingleton.getInstance().getUsername());
         usernameLabel.setBounds(10, 70, 500, 50);
+        usernameLabel.setForeground(TEXT_BACKGROUND);
         panel.add(usernameLabel);
         
         membershipPointLabel = new JLabel("Membership Point : " + UserDataSingleton.getInstance().getMembership_point());
         membershipPointLabel.setBounds(10, 90, 500, 50);
+        membershipPointLabel.setForeground(TEXT_BACKGROUND);
         panel.add(membershipPointLabel);
 
         membershipDateLabel = new JLabel("Membership Date : " + UserDataSingleton.getInstance().getMembership_expiry_date());
         membershipDateLabel.setBounds(10, 110, 500, 50);
+        membershipDateLabel.setForeground(TEXT_BACKGROUND);
         panel.add(membershipDateLabel);
 
         int isMember = controller.checkMembership(UserDataSingleton.getInstance().getUsername());
@@ -61,6 +66,10 @@ public class MainMenuUserScreen implements MainInterface {
 
         JButton pesanTiketButton = new JButton("Pesan Tiket");
         pesanTiketButton.setBounds(170, 150, 150, 50);
+        pesanTiketButton.setOpaque(true);
+        pesanTiketButton.setBackground(BUTTON_BACKGROUND);
+        pesanTiketButton.setForeground(BUTTON_FOREGROUND);
+        pesanTiketButton.setFocusPainted(false);
         panel.add(pesanTiketButton);
         pesanTiketButton.addActionListener(e -> {
             frame.setVisible(false);
@@ -70,6 +79,10 @@ public class MainMenuUserScreen implements MainInterface {
 
         JButton pesanFnBButton = new JButton("Pesan FnB");
         pesanFnBButton.setBounds(370, 150, 150, 50);
+        pesanFnBButton.setOpaque(true);
+        pesanFnBButton.setBackground(BUTTON_BACKGROUND);
+        pesanFnBButton.setForeground(BUTTON_FOREGROUND);
+        pesanFnBButton.setFocusPainted(false);
         panel.add(pesanFnBButton);
         pesanFnBButton.addActionListener(e -> {
             frame.setVisible(false);
@@ -80,6 +93,10 @@ public class MainMenuUserScreen implements MainInterface {
 
         JButton joinMembershipButton = new JButton("Membership");
         joinMembershipButton.setBounds(170, 220, 150, 50);
+        joinMembershipButton.setOpaque(true);
+        joinMembershipButton.setBackground(BUTTON_BACKGROUND);
+        joinMembershipButton.setForeground(BUTTON_FOREGROUND);
+        joinMembershipButton.setFocusPainted(false);
         panel.add(joinMembershipButton);
         joinMembershipButton.addActionListener(e -> {
             new RegisterMembership(frame);
@@ -88,6 +105,10 @@ public class MainMenuUserScreen implements MainInterface {
 
         JButton transactionHitoryButton = new JButton("Transaction History");
         transactionHitoryButton.setBounds(370, 220, 150, 50);
+        transactionHitoryButton.setOpaque(true);
+        transactionHitoryButton.setBackground(BUTTON_BACKGROUND);
+        transactionHitoryButton.setForeground(BUTTON_FOREGROUND);
+        transactionHitoryButton.setFocusPainted(false);
         panel.add(transactionHitoryButton);
         transactionHitoryButton.addActionListener(e -> {
             frame.setVisible(false);
@@ -97,6 +118,10 @@ public class MainMenuUserScreen implements MainInterface {
 
         JButton logoutButton = new JButton("Logout");
         logoutButton.setBounds(275, 330, 150, 50);
+        logoutButton.setOpaque(true);
+        logoutButton.setBackground(BUTTON_BACKGROUND);
+        logoutButton.setForeground(BUTTON_FOREGROUND);
+        logoutButton.setFocusPainted(false);
         panel.add(logoutButton);
         logoutButton.addActionListener(e -> {
             new LoginScreen();
@@ -104,20 +129,19 @@ public class MainMenuUserScreen implements MainInterface {
         });
 
         // background color
-        float[] hsb = Color.RGBtoHSB(238, 238, 238, null);
-        Color backgroundColor = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
 
         MyButton roundButton = new MyButton();
         roundButton.setText(UserDataSingleton.getInstance().getUsername().substring(0, 1).toUpperCase());
-        roundButton.setFont(new Font("Arial", Font.PLAIN, 18));
+        roundButton.setFont(new Font(FONTFAMILY, Font.PLAIN, 18));
         roundButton.setPreferredSize(new Dimension(120, 120));
-        roundButton.setBackground(backgroundColor);
+        roundButton.setBackground(BUTTON_BACKGROUND);
         roundButton.setBounds(620, 20, 50, 50);
         roundButton.setFocusPainted(false);
+        roundButton.setBorder(BorderFactory.createEmptyBorder());
         panel.add(roundButton);
         roundButton.addActionListener(e -> {
             frame.setVisible(false);
-            new CheckUserProfileScreen();
+            new CheckUserProfileScreen(mainFrame);
             updateData();
             frame.setVisible(true);
         });
@@ -137,7 +161,7 @@ public class MainMenuUserScreen implements MainInterface {
         if(isMember == 1){
             membershipPointLabel.setVisible(true);
             membershipDateLabel.setVisible(true);
-        }else{
+        } else {
             membershipPointLabel.setVisible(false);
             membershipDateLabel.setVisible(false);
         }

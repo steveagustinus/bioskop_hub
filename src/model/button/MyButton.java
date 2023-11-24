@@ -8,6 +8,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JButton;
 
+import src.view.MainInterface;
+
 public class MyButton extends JButton {
 
     public boolean isOver() {
@@ -62,22 +64,24 @@ public class MyButton extends JButton {
     public MyButton() {
         //  Init Color
 
-        setColor(Color.WHITE);
-        colorOver = new Color(179, 250, 160);
-        colorClick = new Color(152, 184, 144);
-        borderColor = new Color(30, 136, 56);
+        setColor(MainInterface.BUTTON_BACKGROUND);
+        colorOver = Color.BLACK; //new Color(179, 250, 160);
+        colorClick = Color.GRAY; //new Color(152, 184, 144);
+        borderColor = MainInterface.BUTTON_BACKGROUND; //new Color(30, 136, 56);
         setContentAreaFilled(false);
         //  Add event mouse
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent me) {
                 setBackground(colorOver);
+                setForeground(Color.WHITE);
                 over = true;
             }
 
             @Override
             public void mouseExited(MouseEvent me) {
                 setBackground(color);
+                setForeground(Color.BLACK);
                 over = false;
 
             }

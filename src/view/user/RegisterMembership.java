@@ -1,6 +1,7 @@
 package src.view.user;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -10,15 +11,18 @@ import src.controller.Controller;
 import src.controller.UserDataSingleton;
 
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.event.ActionListener;
 
-public class RegisterMembership {
+public class RegisterMembership extends JDialog {
     UserDataSingleton user;
     Controller controller = new Controller();
-    public RegisterMembership(){
-        JFrame frame = new JFrame("Membership");
-        frame.setSize(270, 260);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    public RegisterMembership(Window owner){
+        super(owner, ModalityType.DOCUMENT_MODAL);
+        this.setLocationRelativeTo(owner);
+        this.setTitle("Membership");
+        this.setSize(270, 260);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel panel = new JPanel();
         panel.setLayout(null);
@@ -49,8 +53,7 @@ public class RegisterMembership {
         backButton.setBounds(40, 170, 170, 25);
         panel.add(backButton);
         backButton.addActionListener(e -> {
-            frame.setVisible(false);
-            new MainMenuUserScreen();
+            close();
         });
 
         JButton extendButton = new JButton("Extend");
@@ -87,8 +90,13 @@ public class RegisterMembership {
             }
         });
 
-        frame.add(panel);
-        frame.setVisible(true);
-        frame.setLocationRelativeTo(null);
+        this.add(panel);
+        this.setVisible(true);
+        this.setLocationRelativeTo(null);
+    }
+
+    public void close() {
+        this.setVisible(false);
+        this.dispose();
     }
 }

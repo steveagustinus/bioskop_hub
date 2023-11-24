@@ -76,7 +76,7 @@ public class MainMenuUserScreen implements MainInterface {
         joinMembershipButton.setBounds(170, 220, 150, 50);
         panel.add(joinMembershipButton);
         joinMembershipButton.addActionListener(e -> {
-            new RegisterMembership();
+            new RegisterMembership(frame);
         });
 
         JButton transactionHitoryButton = new JButton("Transaction History");

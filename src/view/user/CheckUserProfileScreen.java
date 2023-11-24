@@ -1,6 +1,7 @@
 package src.view.user;
 
 import java.awt.Font;
+import java.awt.Window;
 import java.awt.Dialog.ModalityType;
 
 import javax.swing.JButton;
@@ -11,13 +12,14 @@ import javax.swing.JPanel;
 import src.controller.UserDataSingleton;
 
 public class CheckUserProfileScreen {
-    public CheckUserProfileScreen(){
-        JDialog frame = new JDialog();
+    public CheckUserProfileScreen(Window owner){
+        JDialog frame = new JDialog(owner);
+
         frame.setTitle("Check User Profile");
         frame.setModalityType(ModalityType.DOCUMENT_MODAL);
         frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
+        frame.setLocationRelativeTo(owner);
 
         JPanel panel = new JPanel();
         panel.setLayout(null);
@@ -85,8 +87,10 @@ public class CheckUserProfileScreen {
         editButton.setBounds(200, 280, 80, 25);
 
         editButton.addActionListener(e -> {
-            frame.dispose();
-            new EditUserProfileScreen();
+            frame.setVisible(false);
+            new EditUserProfileScreen(owner);
+            frame.setVisible(false);
+            
         });
 
         panel.add(usernameLabel);

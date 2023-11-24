@@ -18,7 +18,7 @@ import src.view.admin.MainMenuScreen;
 import src.view.user.MainMenuUserScreen;
 import src.controller.Controller;
 
-public class LoginScreen {
+public class LoginScreen implements MainInterface {
     public LoginScreen() {
         Controller controller = new Controller();
         controller.programStart();
@@ -31,15 +31,21 @@ public class LoginScreen {
 
         JLabel mainlabel = new JLabel("Welcome to Bioskop HUB!");
         mainlabel.setBounds(30, 10, 500, 50);
-        mainlabel.setFont(new Font("Arial", Font.BOLD, 18));
+        mainlabel.setFont(new Font(FONTFAMILY, Font.BOLD, 19));
+        mainlabel.setForeground(TEXT_BACKGROUND);
 
         JLabel usernameLabel = new JLabel("Username");
+        usernameLabel.setFont(new Font(FONTFAMILY, Font.PLAIN, usernameLabel.getFont().getSize()));
         usernameLabel.setBounds(30, 50, 80, 25);
+        usernameLabel.setForeground(TEXT_BACKGROUND);
 
         JLabel passwordLabel = new JLabel("Password");
+        passwordLabel.setFont(new Font(FONTFAMILY, Font.PLAIN, passwordLabel.getFont().getSize()));
         passwordLabel.setBounds(30, 100, 80, 25);
+        passwordLabel.setForeground(TEXT_BACKGROUND);
 
         JTextField usernameField = new JTextField(20);
+        usernameField.setFont(new Font(FONTFAMILY, Font.PLAIN, usernameField.getFont().getSize()));
         usernameField.setBounds(30, 70, 250, 25);
         usernameField.setText("Enter your Username");
         usernameField.setForeground(Color.GRAY);
@@ -64,13 +70,25 @@ public class LoginScreen {
         controller.setPlaceholder(passwordField, "Enter your Password");
 
         JButton loginButton = new JButton("Login");
+        loginButton.setFont(new Font(FONTFAMILY, Font.BOLD, loginButton.getFont().getSize()));
         loginButton.setBounds(210, 170, 80, 25);
+        loginButton.setOpaque(true);
+        loginButton.setBackground(BUTTON_BACKGROUND);
+        loginButton.setForeground(BUTTON_FOREGROUND);
+        loginButton.setFocusPainted(false);
 
         JLabel registerLabel = new JLabel("Don't have an account?");
+        registerLabel.setFont(new Font(FONTFAMILY, Font.PLAIN, registerLabel.getFont().getSize()));
         registerLabel.setBounds(10, 150, 150, 25);
+        registerLabel.setForeground(TEXT_BACKGROUND);
 
         JButton registerButton = new JButton("Register");
+        registerButton.setFont(new Font(FONTFAMILY, Font.BOLD, registerButton.getFont().getSize()));
         registerButton.setBounds(20, 170, 100, 25);
+        registerButton.setOpaque(true);
+        registerButton.setForeground(BUTTON_FOREGROUND);
+        registerButton.setBackground(BUTTON_BACKGROUND);
+        registerButton.setFocusPainted(false);
         registerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -80,7 +98,12 @@ public class LoginScreen {
         });
 
         JButton exiButton = new JButton("Exit");
+        exiButton.setFont(new Font(FONTFAMILY, Font.BOLD, exiButton.getFont().getSize()));
         exiButton.setBounds(120, 210, 80, 25);
+        exiButton.setOpaque(true);
+        exiButton.setForeground(BUTTON_FOREGROUND);
+        exiButton.setBackground(BUTTON_BACKGROUND);
+        exiButton.setFocusPainted(false);
         exiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -95,6 +118,7 @@ public class LoginScreen {
         });
 
         JPanel panel = new JPanel();
+        panel.setBackground(FRAME_BACKGROUND);
         panel.setLayout(null);
 
         panel.add(usernameLabel);
@@ -147,7 +171,7 @@ public class LoginScreen {
                                     "Membership will expire in " + checkExpired + " days!",
                                     "Warning", JOptionPane.WARNING_MESSAGE);
                         } else {
-                            JOptionPane.showMessageDialog(null, "Membership is still active!");
+                            //JOptionPane.showMessageDialog(null, "Membership is still active!");
                         }
                     }
                     new MainMenuUserScreen();

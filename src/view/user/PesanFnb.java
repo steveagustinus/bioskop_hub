@@ -34,7 +34,7 @@ public class PesanFnb {
             this.data = data;
 
             this.setLocation(owner.getX(), owner.getY());
-            this.setSize(400, 700);
+            this.setSize(400, 600);
             this.setLayout(null);
             this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 

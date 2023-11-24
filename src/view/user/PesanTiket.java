@@ -25,6 +25,7 @@ import src.model.movie.Movie;
 import src.model.seat.Seat;
 import src.model.seat.SeatStatusInterface;
 import src.model.studio.Studio;
+import src.view.MainInterface;
 import src.view.user.payment.PaymentPanel;
 
 import java.awt.Color;
@@ -41,7 +42,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 public class PesanTiket extends JDialog {
-    public class OrderConfirmation extends JDialog {
+    public class OrderConfirmation extends JDialog implements MainInterface {
 
         public OrderConfirmation(Window owner) {
             super(owner, ModalityType.DOCUMENT_MODAL);
@@ -63,6 +64,12 @@ public class PesanTiket extends JDialog {
         }
 
         public void initializeComponent() {
+            JPanel dialogPanel = new JPanel();
+            dialogPanel.setLayout(null);
+            dialogPanel.setBackground(FRAME_BACKGROUND);
+            dialogPanel.setForeground(TEXT_BACKGROUND);
+            this.add(dialogPanel);
+
             JLabel labelHeader = new JLabel("Order Confirmation");
             labelHeader.setSize(this.getWidth(), 50);
             labelHeader.setLocation(0, 0);
@@ -232,23 +239,23 @@ public class PesanTiket extends JDialog {
                 }
                 
             });
-            this.add(labelHeader);
-            this.add(labelCinema);
-            this.add(labelCinemaInfo);
-            this.add(labelStudio);
-            this.add(labelStudioInfo);
-            this.add(separator1);
-            this.add(labelMovie);
-            this.add(labelMovieInfo);
-            this.add(labelShowtime);
-            this.add(labelSeat);
-            this.add(labelSeat2);
-            this.add(separator2);
-            this.add(labelTotalBayar);
-            this.add(labelTotalBayar2);
-            this.add(separator3);
-            this.add(panelPayment);
-            this.add(buttonPesan);
+            dialogPanel.add(labelHeader);
+            dialogPanel.add(labelCinema);
+            dialogPanel.add(labelCinemaInfo);
+            dialogPanel.add(labelStudio);
+            dialogPanel.add(labelStudioInfo);
+            dialogPanel.add(separator1);
+            dialogPanel.add(labelMovie);
+            dialogPanel.add(labelMovieInfo);
+            dialogPanel.add(labelShowtime);
+            dialogPanel.add(labelSeat);
+            dialogPanel.add(labelSeat2);
+            dialogPanel.add(separator2);
+            dialogPanel.add(labelTotalBayar);
+            dialogPanel.add(labelTotalBayar2);
+            dialogPanel.add(separator3);
+            dialogPanel.add(panelPayment);
+            dialogPanel.add(buttonPesan);
         }
     }
 

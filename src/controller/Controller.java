@@ -24,6 +24,7 @@ import java.time.Period;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -2517,25 +2518,55 @@ public class Controller {
         return -99;
     }
 
-    public boolean revokeMembership(String username) {
+    public int revokeMembership(String username) {
         try {
-            boolean status = checkMembership(username);
-            if (status) {
+            int status = checkMembership(username);
+            if (status == 1) {
                 conn.open();
-                String updateQuery = "UPDATE user SET membership_status = 0 WHERE username = ?";
+                String updateQuery = "UPDATE user SET membership_status = 0, membership_expiry_date = ? WHERE username = ?";
                 try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
-                    preparedStatement.setString(1, username);
+                    preparedStatement.setDate(1, null);
+                    preparedStatement.setString(2, username);
                     int rowsAffected = preparedStatement.executeUpdate();
                     if (rowsAffected > 0) {
-                        return true;
+                        UserDataSingleton.getInstance().setMembership_status(0);
+                        return 1;
+                    } else {
+                        return 0;
                     }
                 }
             }
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
-            return false;
         }
-        return false;
+        return -99;
+    }
+    public int checkExpiredMembership(String username) {
+        try {
+            conn.open();
+            String selectQuery = "SELECT `membership_expiry_date` FROM user WHERE username=? AND membership_status = 1";
+            PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (!resultSet.isBeforeFirst()) {
+                return 0;
+            }
+            resultSet.next();
+            Date date = resultSet.getDate("membership_expiry_date");
+            LocalDate localDate = dateToLocalDate(date);
+            LocalDate now = LocalDate.now();
+            int selisihHarinya = (int) ChronoUnit.DAYS.between(now, localDate);
+            if (localDate.isBefore(now)) {
+                return 1;
+            }
+            resultSet.close();
+            conn.close();
+            return selisihHarinya;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+            return -99;
+        }
     }
 }

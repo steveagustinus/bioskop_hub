@@ -1867,7 +1867,7 @@ public class Controller {
     }
 
     public String increasePoinMembership(String username, int statusMembership, int amountPlusPoin){
-        if (statusMembership == 0) {
+        if (statusMembership == 1) {
             try {
                 conn.open();
                 String selectQuery = "SELECT `point_membership` FROM `user` WHERE `username` = ?";
@@ -1899,7 +1899,7 @@ public class Controller {
     }
 
     public String decreasePoinMembership(String username, int statusMembership, int amountMinusPoin){
-        if (statusMembership == 0) {
+        if (statusMembership == 1) {
             try{
                 conn.open();
                 String selectQuery = "SELECT `point_membership` FROM `user` WHERE `username` = ?";
@@ -2405,11 +2405,11 @@ public class Controller {
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.isBeforeFirst()) {
-                return -99;
+                return 0;
             }
             resultSet.close();
             conn.close();
-            return 0;
+            return 1;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();

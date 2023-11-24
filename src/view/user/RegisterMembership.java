@@ -74,7 +74,4 @@ public class RegisterMembership {
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
     }
-    public static void main(String[] args) {
-        new RegisterMembership();
-    }
 }

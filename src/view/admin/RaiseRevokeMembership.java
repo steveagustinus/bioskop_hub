@@ -14,7 +14,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 
 import src.controller.Controller;
-import src.controller.OperationCode;
 
 public class RaiseRevokeMembership {
     public RaiseRevokeMembership() {

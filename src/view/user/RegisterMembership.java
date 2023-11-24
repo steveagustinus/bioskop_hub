@@ -2,56 +2,76 @@ package src.view.user;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 import src.controller.Controller;
 import src.controller.UserDataSingleton;
 
+import java.awt.Font;
+import java.awt.event.ActionListener;
+
 public class RegisterMembership {
+    UserDataSingleton user;
+    Controller controller = new Controller();
     public RegisterMembership(){
-        regisMembership();
-    }
+        JFrame frame = new JFrame("Membership");
+        frame.setSize(270, 210);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-    public static void main(String[] args) {
-        new RegisterMembership();
-    }
+        JPanel panel = new JPanel();
+        panel.setLayout(null);
 
-    private void regisMembership(){
-        Controller controller = new Controller();
-        boolean checkStatus = controller.checkMembership(UserDataSingleton.getInstance().getUsername());
+        JLabel mainLabel = new JLabel("Membership Menu");
+        mainLabel.setBounds(43, 10, 250, 25);
+        mainLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(mainLabel);
 
-        if(checkStatus == true){
-            JOptionPane.showMessageDialog(null, "Anda sudah terdaftar menjadi member, kembali ke menu", "", JOptionPane.INFORMATION_MESSAGE);
+        JButton registerButton = new JButton("Register");
+        registerButton.setBounds(40, 50, 170, 25);
+        panel.add(registerButton);
+        registerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                user = UserDataSingleton.getInstance();
+                int isMember = controller.checkMembership(user.getUsername());
+                if(isMember == 1){
+                    JOptionPane.showMessageDialog(null, "You already have a membership!");
+                }else{
+                    controller.raiseMembership(user.getUsername());
+                    JOptionPane.showMessageDialog(null, "Membership registered!");
+                }
+            }
+        });
+
+        JButton backButton = new JButton("Back");
+        backButton.setBounds(40, 130, 170, 25);
+        panel.add(backButton);
+        backButton.addActionListener(e -> {
+            frame.setVisible(false);
             new MainMenuUserScreen();
-        } else {
-            JFrame f = new JFrame();
-            f.setTitle("Menu Register");
-            f.setSize(720, 480);
-            f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        });
 
-            JButton buttonRegis = new JButton("Register Membership");
-            buttonRegis.setBounds(50, 200, 250, 50);
+        JButton extendButton = new JButton("Extend");
+        extendButton.setBounds(40, 90, 170, 25);
+        panel.add(extendButton);
+        extendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                user = UserDataSingleton.getInstance();
+                int isMember = controller.checkMembership(user.getUsername());
+                if(isMember == 1){
+                    controller.extendMembership(user.getUsername());
+                    JOptionPane.showMessageDialog(null, "Membership extended!");
+                }else{
+                    JOptionPane.showMessageDialog(null, "You don't have a membership!");
+                }
+            }
+        });
 
-            JButton buttonBack = new JButton("< Back to Main Menu");
-            buttonBack.setBounds(400, 200, 250, 50);
-            
-            buttonRegis.addActionListener(e -> {
-                controller.registerMembership(UserDataSingleton.getInstance().getUsername(), UserDataSingleton.getInstance().getPassword(), UserDataSingleton.getInstance().getPassword(), UserDataSingleton.getInstance().getEmail(), UserDataSingleton.getInstance().getPhone_no(), UserDataSingleton.getInstance().getAddress(), 0);
-                JOptionPane.showMessageDialog(null, "Anda sudah terdaftar menjadi member, kembali ke menu", "", JOptionPane.INFORMATION_MESSAGE);
-                f.dispose();
-                new MainMenuUserScreen();
-            });
-
-            buttonBack.addActionListener(e -> {
-                new MainMenuUserScreen();
-                f.dispose();
-            });
-            f.add(buttonRegis);
-            f.add(buttonBack);
-            f.setLayout(null);
-            f.setLocationRelativeTo(null);
-            f.setVisible(true);
-            
-        }
+        frame.add(panel);
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
     }
 }

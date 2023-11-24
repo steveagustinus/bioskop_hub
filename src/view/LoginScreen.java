@@ -64,7 +64,7 @@ public class LoginScreen {
         controller.setPlaceholder(passwordField, "Enter your Password");
 
         JButton loginButton = new JButton("Login");
-        loginButton.setBounds(210,170 , 80, 25);
+        loginButton.setBounds(210, 170, 80, 25);
 
         JLabel registerLabel = new JLabel("Don't have an account?");
         registerLabel.setBounds(10, 150, 150, 25);
@@ -84,8 +84,9 @@ public class LoginScreen {
         exiButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int temp = JOptionPane.showOptionDialog(null, "Are you sure you want to exit?", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
-                if (temp == 0 ) {
+                int temp = JOptionPane.showOptionDialog(null, "Are you sure you want to exit?", "Exit",
+                        JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+                if (temp == 0) {
                     JOptionPane.showMessageDialog(null, "Thank you for using Bioskop HUB!");
                     loginJFrame.dispose();
                     System.exit(0);
@@ -117,21 +118,38 @@ public class LoginScreen {
                 }
                 User user = new Controller().login(username, password);
                 if (user == null) {
-                    JOptionPane.showMessageDialog(null, "Invalid username or password!", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Invalid username or password!", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 int checkUserType = new Controller().checkUserType(user);
                 int insertToSingelton = new Controller().insertToSingelton(user.getUsername());
                 if (insertToSingelton == -1) {
-                    JOptionPane.showMessageDialog(null, "Failed to insert to singleton!", "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Failed to insert to singleton!", "Error",
+                            JOptionPane.ERROR_MESSAGE);
                     return;
                 }
                 if (checkUserType == 0) {
                     JOptionPane.showMessageDialog(null, "Welcome to admin menu!");
                     new MainMenuScreen();
                     loginJFrame.dispose();
-                }else{
+                } else {
                     JOptionPane.showMessageDialog(null, "Welcome, " + usernameField.getText() + "!");
+                    int checkMembership = new Controller().checkMembership(username);
+                    if (checkMembership == 1) {
+                        int checkExpired = new Controller().checkExpiredMembership(username);
+                        if (checkExpired == 1) {
+                            JOptionPane.showMessageDialog(null, "Membership has expired!", "Warning",
+                                    JOptionPane.WARNING_MESSAGE);
+                            controller.revokeMembership(username);
+                        } else if (checkExpired <= 7) {
+                            JOptionPane.showMessageDialog(null,
+                                    "Membership will expire in " + checkExpired + " days!",
+                                    "Warning", JOptionPane.WARNING_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Membership is still active!");
+                        }
+                    }
                     new MainMenuUserScreen();
                     loginJFrame.dispose();
                 }

@@ -46,7 +46,7 @@ public class MainMenuUserScreen implements MainInterface {
         panel.add(membershipDateLabel);
 
         int isMember = controller.checkMembership(userData.getUsername());
-        if(isMember == 0){
+        if(isMember == 1){
             membershipPointLabel.setVisible(true);
             membershipDateLabel.setVisible(true);
         }else{
@@ -72,11 +72,11 @@ public class MainMenuUserScreen implements MainInterface {
             frame.setVisible(true);
         });
 
-        JButton joinMembershipButton = new JButton("Join Membership");
+        JButton joinMembershipButton = new JButton("Membership");
         joinMembershipButton.setBounds(170, 220, 150, 50);
         panel.add(joinMembershipButton);
         joinMembershipButton.addActionListener(e -> {
-            // new JoinMembership();
+            new RegisterMembership();
         });
 
         JButton transactionHitoryButton = new JButton("Transaction History");

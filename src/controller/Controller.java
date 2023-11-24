@@ -1826,16 +1826,18 @@ public class Controller {
         return total < 0 ? 0 : total;
     }
     
-    public String insertTransaksiFnb(String pilihan, int quantity, String cinema, int id_user) {
+    public String insertTransaksiFnb(String pilihan, int quantity, String cinema, int id_user, String paymentMethod) {
         try {
+            if (paymentMethod == null || paymentMethod.equals("")) { return "Pilih metode pembayaran"; }
             conn.open();
             String currentIdTransaction = createTransactionId();
         
-            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES (?, ?, NOW())";
+            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`, `payment_method`) " +
+                    "VALUES (?, ?, NOW(), ?)";
             PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
             insertStatement.setString(1, currentIdTransaction);
             insertStatement.setInt(2, id_user);
+            insertStatement.setString(3, paymentMethod);
             insertStatement.executeUpdate();
 
             // Get id_fnb

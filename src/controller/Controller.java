@@ -1489,8 +1489,7 @@ public class Controller {
         return jadwal.getHarga() * bookedSeat.length;
     }
 
-    public int pesanTiket(String idCustomer, Jadwal jadwal, Seat[] bookedSeat) {
-        System.out.println(idCustomer);
+    public int pesanTiket(String idCustomer, Jadwal jadwal, Seat[] bookedSeat, String paymentMethod) {
         if (idCustomer == null || idCustomer.equals("")) {
             return -1;
         }
@@ -1503,14 +1502,18 @@ public class Controller {
             return -3;
         }
 
+        if (paymentMethod == null || paymentMethod.equals("")) {
+            return -4;
+        }
+
         try {
             String idTransaction = createTransactionId();
             conn.open();
 
             Statement statement = conn.connection.createStatement();
             statement.executeUpdate(
-                    "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                            "VALUES ('" + idTransaction + "', '" + idCustomer + "', now());");
+                    "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`, `payment_method`) " +
+                            "VALUES ('" + idTransaction + "', '" + idCustomer + "', now(), '" + paymentMethod + "');");
 
             String sql = "INSERT INTO `transaction_jadwal` (`id_transaction`, `id_jadwal`, `id_seat`) VALUES ";
 
@@ -1793,12 +1796,18 @@ public class Controller {
         }
     }
 
-    public String totalHasilTransaksiFnb(String harga, String quantity) {
+    public String formatCurrency(int number) {
+        DecimalFormat decFormat = new DecimalFormat("###,###");
+
+        return decFormat.format(number);
+    }
+
+    public int totalHasilTransaksiFnb(String harga, String quantity, boolean discount) {
         if (harga.equals("") || quantity.equals("")) {
-            return "0";
+            return 0;
         }
         if (!isNumber(harga) || !isNumber(quantity)) {
-            return "0";
+            return 0;
         }
 
         int total = 0;
@@ -1806,25 +1815,29 @@ public class Controller {
         int int_quantity = Integer.parseInt(quantity);
 
         if (int_quantity < 0) {
-            return "0";
+            return 0;
         }
 
         total = int_harga * int_quantity;
 
-        DecimalFormat decFormat = new DecimalFormat("###,###");
-        return decFormat.format(total);
+        if (discount) {
+            total = total - 100000;
+        }
+        return total < 0 ? 0 : total;
     }
     
-    public String insertTransaksiFnb(String pilihan, int quantity, String cinema, int id_user) {
+    public String insertTransaksiFnb(String pilihan, int quantity, String cinema, int id_user, String paymentMethod) {
         try {
+            if (paymentMethod == null || paymentMethod.equals("")) { return "Pilih metode pembayaran"; }
             conn.open();
             String currentIdTransaction = createTransactionId();
         
-            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
-                    "VALUES (?, ?, NOW())";
+            String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`, `payment_method`) " +
+                    "VALUES (?, ?, NOW(), ?)";
             PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
             insertStatement.setString(1, currentIdTransaction);
             insertStatement.setInt(2, id_user);
+            insertStatement.setString(3, paymentMethod);
             insertStatement.executeUpdate();
 
             // Get id_fnb
@@ -1859,11 +1872,7 @@ public class Controller {
 
     // Membership area
     public boolean checkSufficientPoint(int poinUser, int poinNeeded) {
-        if (poinUser >= poinNeeded) {
-            return true;
-        } else {
-            return false;
-        }
+        return poinUser >= poinNeeded;
     }
 
     public String increasePoinMembership(String username, int statusMembership, int amountPlusPoin){
@@ -1887,6 +1896,7 @@ public class Controller {
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);
                 updateStatement.executeUpdate();
+                UserDataSingleton.getInstance().setMembership_point(totalPoin);
 
                 return "Poin berhasil ditambahkan, poin anda sekarang: " + totalPoin;
             } catch (Exception e) {
@@ -1919,6 +1929,7 @@ public class Controller {
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);
                 updateStatement.executeUpdate();
+                UserDataSingleton.getInstance().setMembership_point(totalPoin);
 
                 return "Poin berhasil dikurangi, poin anda sekarang: " + totalPoin;
             } catch (Exception e) {
@@ -2284,11 +2295,11 @@ public class Controller {
     public int addFnB(String[] fnb) {
         int harga = Integer.parseInt(fnb[1]);
         if (fnb[0] == null) {
-            return OperationCode.addFnB.EMPTYNAME;
+            return OperationCode.AddFnB.EMPTYNAME;
         } else if (fnb[1] == null) {
-            return OperationCode.addFnB.EMPTYHARGA;
+            return OperationCode.AddFnB.EMPTYHARGA;
         } else if (fnb[2] == null) {
-            return OperationCode.addFnB.EMPTYDESCRIPTION;
+            return OperationCode.AddFnB.EMPTYDESCRIPTION;
         }
         try {
             conn.open();
@@ -2299,10 +2310,10 @@ public class Controller {
                             + "','" + fnb[2] + "',0)");
             statement.close();
             conn.close();
-            return OperationCode.addFnB.SUCCESS;
+            return OperationCode.AddFnB.SUCCESS;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
-            return OperationCode.addFnB.ANYEXCEPTION;
+            return OperationCode.AddFnB.ANYEXCEPTION;
         }
     }
     
@@ -2349,21 +2360,31 @@ public class Controller {
 
     // Main menu user area
     public void printTableFnB(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Transaction Items", "Quantity", "Total Price", "City", "Cinema" };
+        String[] columns = { "Transaction Date", "City", "Cinema", "Transaction Items", "Quantity", "Total Price", "Payment Method" };
         model.setColumnIdentifiers(columns);
         try {
-            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty, c.kota, c.nama FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty, c.kota, c.nama, t.payment_method FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
                     + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
             PreparedStatement statement = conn.connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
+
+            String lastDate = "x";
             while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String transactionDate = resultSet.getString("t.transaction_date");
+                if (!lastDate.equals("x")) {
+                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
+                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
+                    }
+                }
+                lastDate = transactionDate.substring(8, 10);
+
                 String foodName = resultSet.getString("f.nama");
                 int quantity = resultSet.getInt("tf.qty");
-                int totalPrice = resultSet.getInt("f.harga * tf.qty");
+                String totalPrice = formatCurrency(resultSet.getInt("f.harga * tf.qty"));
                 String kota = resultSet.getString("c.kota");
                 String nama = resultSet.getString("c.nama");
-                model.addRow(new Object[] { transactionDate, foodName, quantity, totalPrice, kota, nama });
+                String paymentMethod = resultSet.getString("t.payment_method");
+                model.addRow(new Object[] { transactionDate, kota, nama, foodName, quantity, totalPrice, paymentMethod });
             }
             conn.close();
         } catch (Exception ex) {
@@ -2373,22 +2394,42 @@ public class Controller {
     }
 
     public void printTableTickets(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "Movie Name", "Seat", "Class Type", "Total Price", "City", "Cinema" };
+        String[] columns = { "Transaction Date", "City", "Cinema", "Movie Name", "Showtime", "Seat", "Class Type", "Total Price", "Payment method" };
         model.setColumnIdentifiers(columns);
         try {
-            String sql = "SELECT t.transaction_date, m.judul, tj.id_seat, s.studio_class, j.harga, c.kota, c.nama FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON s.id_cinema = c.id_cinema WHERE u.id_user = "
-                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class;";
+            String sql = "SELECT t.transaction_date, m.judul, j.waktu, GROUP_CONCAT(se.kode SEPARATOR ', '), s.studio_class, SUM(j.harga), c.kota, c.nama, t.payment_method FROM transaction t " +
+                "JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction " + 
+                "JOIN jadwal j ON j.id_jadwal = tj.id_jadwal " + 
+                "JOIN movie m ON m.id_movie = j.id_movie " +
+                "JOIN user u ON u.id_user = t.id_user " +
+                "JOIN studio s ON s.id_studio = j.id_studio " +
+                "JOIN cinema c ON s.id_cinema = c.id_cinema " +
+                "JOIN seat se ON tj.id_seat = se.id_seat " +
+                "WHERE u.id_user = " + id + " " +
+                "GROUP BY t.id_transaction " +
+                "ORDER BY t.transaction_date;";
             PreparedStatement statement = conn.connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
+
+            String lastDate = "x";
             while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String transactionDate = resultSet.getString("t.transaction_date");
+                if (!lastDate.equals("x")) {
+                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
+                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
+                    }
+                }
+                lastDate = transactionDate.substring(8, 10);
+
                 String movieName = resultSet.getString("m.judul");
-                int seat = resultSet.getInt("tj.id_seat");
+                String showtime = resultSet.getString("j.waktu");
+                String seat = resultSet.getString("GROUP_CONCAT(se.kode SEPARATOR ', ')");
                 String classType = resultSet.getString("s.studio_class");
-                int totalPrice = resultSet.getInt("j.harga");
+                String totalPrice = formatCurrency(resultSet.getInt("SUM(j.harga)"));
                 String kota = resultSet.getString("c.kota");
                 String nama = resultSet.getString("c.nama");
-                model.addRow(new Object[] { transactionDate, movieName, seat, classType, totalPrice, kota, nama });
+                String paymentMethod = resultSet.getString("t.payment_method");
+                model.addRow(new Object[] { transactionDate, kota, nama, movieName, showtime, seat, classType, totalPrice, paymentMethod });
             }
             conn.close();
         } catch (Exception ex) {

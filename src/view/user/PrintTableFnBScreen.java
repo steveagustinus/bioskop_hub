@@ -21,7 +21,7 @@ public class PrintTableFnBScreen {
         JDialog frame = new JDialog();
         frame.setTitle("Transaction History");
         frame.setModalityType(ModalityType.DOCUMENT_MODAL);
-        frame.setSize(700, 700);
+        frame.setSize(1000, 700);
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
 

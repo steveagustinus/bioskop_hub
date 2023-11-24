@@ -72,7 +72,7 @@ public class EditFnBScreen {
                 data[2]=description.getText();
                 int konfirmasi = controller.editFnB(oldNameFnB,data);
                 String status="";
-                if(konfirmasi==OperationCode.addFnB.SUCCESS){
+                if(konfirmasi==OperationCode.AddFnB.SUCCESS){
                     status="Berhasil!";
                     JOptionPane.showMessageDialog(null,status);
                     frame.dispose();

@@ -49,16 +49,16 @@ public class AddFnBScreen {
                 data[2]=description.getText();
                 int konfirmasi = controller.addFnB(data);
                 String status="";
-                if(konfirmasi==OperationCode.addFnB.SUCCESS){
+                if(konfirmasi==OperationCode.AddFnB.SUCCESS){
                     status="Berhasil!";
                     JOptionPane.showMessageDialog(null,status);
                     frame.dispose();
                     new MainMenuScreen();
-                }else if(konfirmasi==OperationCode.addFnB.EMPTYNAME){
+                }else if(konfirmasi==OperationCode.AddFnB.EMPTYNAME){
                     status="Nama Kosong!";
-                }else if (konfirmasi==OperationCode.addFnB.EMPTYHARGA){
+                }else if (konfirmasi==OperationCode.AddFnB.EMPTYHARGA){
                     status="Harga Kosong!";
-                }else if(konfirmasi==OperationCode.addFnB.ANYEXCEPTION){
+                }else if(konfirmasi==OperationCode.AddFnB.ANYEXCEPTION){
                     status="Error!";
                 }
                  JOptionPane.showMessageDialog(null,status);

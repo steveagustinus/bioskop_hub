@@ -36,6 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -121,9 +122,16 @@ public class PesanTiket extends JDialog {
             labelMovieInfo.setLocation(labelMovie.getX(), labelMovie.getY() + labelMovie.getHeight() + 5);
             labelMovieInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
 
+            JLabel labelShowtime = new JLabel(
+                jadwal.getWaktu().format(DateTimeFormatter.ofPattern("hh:mm dd MMMM yyyy"))
+            );
+            labelShowtime.setSize(this.getWidth() - 20, 25);
+            labelShowtime.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 5);
+            labelShowtime.setFont(new Font(fontFamily, Font.BOLD, 18));
+
             JLabel labelSeat = new JLabel("Kursi yang dipilih: ");
             labelSeat.setSize(this.getWidth() - 20, 20);
-            labelSeat.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 10);
+            labelSeat.setLocation(labelShowtime.getX(), labelShowtime.getY() + labelShowtime.getHeight() + 10);
             labelSeat.setFont(new Font(fontFamily, Font.PLAIN, 18));
 
             String seatMessage = "";
@@ -165,7 +173,7 @@ public class PesanTiket extends JDialog {
             separator3.setFont(new Font(fontFamily, Font.BOLD, 20));
             separator3.setForeground(Color.BLACK);
 
-            JPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250);
+            PaymentPanel panelPayment = new PaymentPanel(this.getWidth() - 20, 250);
             panelPayment.setLocation(labelTotalBayar.getX(), separator3.getY() + separator3.getHeight() + 10);
 
             JButton buttonPesan = new JButton("Pesan");
@@ -182,7 +190,8 @@ public class PesanTiket extends JDialog {
                     int status = controller.pesanTiket(
                         String.valueOf(UserDataSingleton.getInstance().getId()),
                         jadwal,
-                        seats
+                        seats,
+                        panelPayment.getPaymentMethod()
                     );
 
                     if (status == OperationCode.PesanTiket.SUCCESS) {
@@ -209,7 +218,12 @@ public class PesanTiket extends JDialog {
                                 null, "Harap pilih kursi yang ingin dipesan", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
                             );
                         }
-                        else if (status == OperationCode.PesanTiket.NOJADWALSELECTED) {
+                        else if (status == OperationCode.PesanTiket.NOPAYMENTMETHOD) {
+                            JOptionPane.showMessageDialog(
+                                null, "Harap pilih metode pembayaran", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
+                            );
+                        }
+                        else if (status == OperationCode.PesanTiket.ANYEXCEPTION) {
                             JOptionPane.showMessageDialog(
                                 null, "Terjadi kesalahan!", "Pesan Tiket", JOptionPane.ERROR_MESSAGE
                             );
@@ -226,6 +240,7 @@ public class PesanTiket extends JDialog {
             this.add(separator1);
             this.add(labelMovie);
             this.add(labelMovieInfo);
+            this.add(labelShowtime);
             this.add(labelSeat);
             this.add(labelSeat2);
             this.add(separator2);

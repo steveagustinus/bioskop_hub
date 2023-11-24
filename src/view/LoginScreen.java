@@ -160,9 +160,4 @@ public class LoginScreen {
         loginJFrame.setLocationRelativeTo(null);
         loginJFrame.setVisible(true);
     }
-
-    // test area
-    public static void main(String[] args) {
-        new LoginScreen();
-    }
 }

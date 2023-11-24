@@ -28,7 +28,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -52,10 +51,6 @@ public class Controller {
     static DatabaseHandler conn = new DatabaseHandler();
 
     public Controller() {
-    }
-
-    public void fetchData() {
-        Data.movies = getMovies();
     }
 
     // Seat area
@@ -479,11 +474,11 @@ public class Controller {
                 idsMovie.add(jadwal.getIdMovie());
             }
         }
-
+        Movie[] arrMovie = getMovies();
         for (String idMovie : idsMovie) {
-            for (int i = 0; i < Data.movies.length; i++) {
-                if (Data.movies[i].getIdMovie().equals(idMovie)) {
-                    movies.add(Data.movies[i]);
+            for (int i = 0; i < arrMovie.length; i++) {
+                if (arrMovie[i].getIdMovie().equals(idMovie)) {
+                    movies.add(arrMovie[i]);
                     break;
                 }
             }
@@ -1078,21 +1073,20 @@ public class Controller {
     }
 
     public Movie[] searchMovie(String input, int limit) {
-        if (Data.movies == null) {
-            return null;
-        }
+        Movie[] movies = getMovies();
+        if (movies == null) { return null; }
 
         ArrayList<Movie> movieList = new ArrayList<Movie>();
 
         if (input.equals("")) {
-            for (int i = 0; i < limit && i < Data.movies.length; i++) {
-                movieList.add(Data.movies[i]);
+            for (int i = 0; i < limit && i < movies.length; i++) {
+                movieList.add(movies[i]);
             }
 
             return movieList.toArray(new Movie[movieList.size()]);
         }
 
-        for (Movie movie : Data.movies) {
+        for (Movie movie : movies) {
             if (movie.getJudul().toLowerCase().contains(input.toLowerCase())) {
                 movieList.add(movie);
             }
@@ -1746,8 +1740,6 @@ public class Controller {
         if (!dir.exists()) {
             dir.mkdirs();
         }
-
-        fetchData();
     }
 
     // FnB area
@@ -1823,26 +1815,18 @@ public class Controller {
         DecimalFormat decFormat = new DecimalFormat("###,###");
         return decFormat.format(total);
     }
-
-    public void insertTransaksiFnb(String pilihan, int quantity, String studio, int id_user) {
+    
+    public String insertTransaksiFnb(String pilihan, int quantity, String cinema, int id_user) {
         try {
             conn.open();
-            String selectQuery = "SELECT MAX(CAST(SUBSTRING(id_transaction, 3) AS UNSIGNED)) + 1 AS next_value FROM `transaction`";
-            PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
-            ResultSet resultSet = selectStatement.executeQuery();
-
-            long autoIncrementValue = 0;
-            if (resultSet.next()) {
-                autoIncrementValue = resultSet.getLong("next_value");
-            }
-
+            String currentIdTransaction = createTransactionId();
+        
             String insertQuery = "INSERT INTO `transaction` (`id_transaction`, `id_user`, `transaction_date`) " +
                     "VALUES (?, ?, NOW())";
             PreparedStatement insertStatement = conn.connection.prepareStatement(insertQuery);
-            String transactionId = "T-" + String.format("%018d", autoIncrementValue);
-            insertStatement.setString(1, transactionId);
+            insertStatement.setString(1, currentIdTransaction);
             insertStatement.setInt(2, id_user);
-            int rowsAffected = insertStatement.executeUpdate();
+            insertStatement.executeUpdate();
 
             // Get id_fnb
             String selectIdFnb = "SELECT `id_fnb` FROM `fnb` WHERE `nama` = ?";
@@ -1853,24 +1837,24 @@ public class Controller {
             if (resultSet2.next()) {
                 resultString = resultSet2.getString("id_fnb");
             }
-            System.out.println(resultString);
 
             String insertQuery2 = "INSERT INTO `transaction_fnb` (`id_transaction`, `id_fnb`, `qty`, `id_cinema`) " +
                     "VALUES (?, ?, ?, ?)";
             PreparedStatement insertStatement2 = conn.connection.prepareStatement(insertQuery2);
-            insertStatement2.setString(1, transactionId);
+            insertStatement2.setString(1, currentIdTransaction);
             insertStatement2.setString(2, resultString);
             insertStatement2.setInt(3, quantity);
-            insertStatement2.setString(4, studio);
+            insertStatement2.setString(4, cinema);
+            int rowsAffected2 = insertStatement2.executeUpdate();
 
-            if (rowsAffected > 0) {
-                JOptionPane.showMessageDialog(null, "Transaksi Berhasil", "Success", JOptionPane.INFORMATION_MESSAGE);
+            if (rowsAffected2 > 0) {
+                return "Transaksi Berhasil";
             } else {
-                JOptionPane.showMessageDialog(null, "Insert Gagal1", "Error", JOptionPane.ERROR_MESSAGE);
+                return "Insert Gagal";
             }
         } catch (Exception e) {
             e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Insert gagal2.", "Error", JOptionPane.ERROR_MESSAGE);
+                return "Insert Gagal";
         }
     }
 
@@ -1883,23 +1867,23 @@ public class Controller {
         }
     }
 
-    public String increasePoinMembership(String username, boolean statusMembership, int amountPlusPoin) {
-        if (statusMembership == true) {
+    public String increasePoinMembership(String username, int statusMembership, int amountPlusPoin){
+        if (statusMembership == 0) {
             try {
                 conn.open();
-                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                String selectQuery = "SELECT `point_membership` FROM `user` WHERE `username` = ?";
                 PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
                 selectStatement.setString(1, username);
                 ResultSet resultSet = selectStatement.executeQuery();
 
                 int poin = 0;
                 if (resultSet.next()) {
-                    poin = resultSet.getInt("poin_membership");
+                    poin = resultSet.getInt("point_membership");
                 }
 
                 int totalPoin = poin + amountPlusPoin;
-
-                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+    
+                String updateQuery = "UPDATE `user` SET `point_membership` = ? WHERE `username` = ?";
                 PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);
@@ -1915,23 +1899,23 @@ public class Controller {
         }
     }
 
-    public String decreasePoinMembership(String username, boolean statusMembership, int amountMinusPoin) {
-        if (statusMembership == true) {
-            try {
+    public String decreasePoinMembership(String username, int statusMembership, int amountMinusPoin){
+        if (statusMembership == 0) {
+            try{
                 conn.open();
-                String selectQuery = "SELECT `poin_membership` FROM `user` WHERE `username` = ?";
+                String selectQuery = "SELECT `point_membership` FROM `user` WHERE `username` = ?";
                 PreparedStatement selectStatement = conn.connection.prepareStatement(selectQuery);
                 selectStatement.setString(1, username);
                 ResultSet resultSet = selectStatement.executeQuery();
 
                 int poin = 0;
                 if (resultSet.next()) {
-                    poin = resultSet.getInt("poin_membership");
+                    poin = resultSet.getInt("point_membership");
                 }
 
                 int totalPoin = poin - amountMinusPoin;
-
-                String updateQuery = "UPDATE `user` SET `poin_membership` = ? WHERE `username` = ?";
+    
+                String updateQuery = "UPDATE `user` SET `point_membership` = ? WHERE `username` = ?";
                 PreparedStatement updateStatement = conn.connection.prepareStatement(updateQuery);
                 updateStatement.setInt(1, totalPoin);
                 updateStatement.setString(2, username);
@@ -2105,8 +2089,8 @@ public class Controller {
             return null;
         }
     }
-
-    public String[] listCabangHP(String namaKota) {
+    
+    public String[] listCabangHP(String namaKota){
         try {
             conn.open();
             Statement statement = conn.connection.createStatement();
@@ -2134,7 +2118,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT DISTINCT `kota` FROM `cinema` ");
+                    "SELECT DISTINCT `kota` FROM `cinema`");
 
             ArrayList<String> listKota = new ArrayList<String>();
             while (result.next()) {
@@ -2200,7 +2184,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `nama` FROM `fnb`");
+                    "SELECT `nama` FROM `fnb` WHERE `is_deleted`=0");
 
             ArrayList<String> listFNB = new ArrayList<String>();
             while (result.next()) {
@@ -2222,7 +2206,7 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "'");
+                    "SELECT `id_movie` FROM `jadwal` WHERE `id_studio`='" + id_Studio + "' WHERE `is_deleted`=0");
 
             ArrayList<String> listMovie = new ArrayList<String>();
             while (result.next()) {
@@ -2298,26 +2282,6 @@ public class Controller {
         return 1;
     }
 
-    public String[] listJam(String movie) {
-        try {
-            conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT `waktu` FROM `jadwal` WHERE `id_movie`='" + movie + "'");
-
-            ArrayList<String> listJam = new ArrayList<String>();
-            while (result.next()) {
-                listJam.add(result.getString("jam"));
-            }
-
-            return listJam.toArray(new String[listJam.size()]);
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            ex.printStackTrace();
-            return null;
-        }
-    }
-
     public int addFnB(String[] fnb) {
         int harga = Integer.parseInt(fnb[1]);
         if (fnb[0] == null) {
@@ -2342,9 +2306,9 @@ public class Controller {
             return OperationCode.addFnB.ANYEXCEPTION;
         }
     }
-
+    
     public int deleteFnB(String fnbName) {
-        try {
+        try{
             conn.open();
 
             Statement statement = conn.connection.createStatement();
@@ -2358,8 +2322,8 @@ public class Controller {
             return -99;
         }
     }
-
-    public int EditFnB(String fnbName, String[] dataFnB) {
+    
+    public int editFnB(String fnbName, String [] dataFnB) {
         int harga = Integer.parseInt(dataFnB[1]);
         if (dataFnB[0] == null) {
             return OperationCode.EditFnB.EMPTYNAME;
@@ -2442,11 +2406,11 @@ public class Controller {
             preparedStatement.setString(1, username);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.isBeforeFirst()) {
-                return 0;
+                return -99;
             }
             resultSet.close();
             conn.close();
-            return 1;
+            return 0;
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
             ex.printStackTrace();
@@ -2474,6 +2438,8 @@ public class Controller {
                     UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
                     return 1;
                 }
+            }else{
+                return -1;
             }
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());
@@ -2535,6 +2501,8 @@ public class Controller {
                         return 0;
                     }
                 }
+            }else{
+                return -2;
             }
         } catch (Exception ex) {
             new ExceptionLogger(ex.getMessage());

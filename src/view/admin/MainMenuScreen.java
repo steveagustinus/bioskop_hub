@@ -11,6 +11,9 @@ import src.view.LoginScreen;
 import src.view.MainInterface;
 import src.view.admin.manage_cinema.EditCinemaScreen;
 import src.view.admin.manage_cinema.NewCinemaDialog;
+import src.view.admin.manage_fnb.AddFnBScreen;
+import src.view.admin.manage_fnb.DeleteFnBScreen;
+import src.view.admin.manage_fnb.EditFnBScreen;
 import src.view.admin.manage_jadwal.EditJadwalScreen;
 import src.view.admin.manage_jadwal.NewJadwalDialog;
 import src.view.admin.manage_movie.EditMovieScreen;
@@ -85,14 +88,33 @@ public class MainMenuScreen implements MainInterface {
             new EditJadwalScreen(mainFrame);
         });
 
+        JButton manageFnBButton = new JButton("Tambah FnB");
+        manageFnBButton.setBounds(40, 270, 133, 30);
+        manageFnBButton.addActionListener(e -> {
+            new AddFnBScreen();
+        });
+
+        JButton manageFnBButton2 = new JButton("Edit FnB");
+        manageFnBButton2.setBounds(183, 270, 133, 30);
+        manageFnBButton2.addActionListener(e -> {
+            new EditFnBScreen();
+        });
+        
+
+        JButton manageFnBButton3 = new JButton("Delete FnB");
+        manageFnBButton3.setBounds(326, 270, 133, 30);
+        manageFnBButton3.addActionListener(e -> {
+            new DeleteFnBScreen();
+        });
+
         JButton hitungPendapatanButton = new JButton("Hitung Pendapatan");
-        hitungPendapatanButton.setBounds(40, 270, 200, 30);
+        hitungPendapatanButton.setBounds(40, 320, 200, 30);
         hitungPendapatanButton.addActionListener(e -> {
             new HitungPendapatanScreen();
         });
 
         JButton raiseRevokeButton = new JButton("Raise/Revoke Membership");
-        raiseRevokeButton.setBounds(260, 270, 200, 30);
+        raiseRevokeButton.setBounds(260, 320, 200, 30);
         raiseRevokeButton.addActionListener(e -> {
             new RaiseRevokeMembership();
         });
@@ -102,10 +124,13 @@ public class MainMenuScreen implements MainInterface {
         panel.add(manageStudioButton);
         panel.add(manageMovieButton);
         panel.add(manageJadwalButton);
+        panel.add(manageFnBButton);
         panel.add(manageCinemaButton2);
         panel.add(manageStudioButton2);
         panel.add(manageMovieButton2);
         panel.add(manageJadwalButton2);
+        panel.add(manageFnBButton2);
+        panel.add(manageFnBButton3);
         panel.add(raiseRevokeButton);
         panel.add(hitungPendapatanButton);
 

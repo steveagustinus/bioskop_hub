@@ -9,8 +9,8 @@ import src.controller.Controller;
 public class HitungPendapatanKotaScreen {
         public HitungPendapatanKotaScreen() {
                 Controller controller = new Controller();
-                JOptionPane.showMessageDialog(null, "Hitung Pendapatan per Kota", "Hitung Pendapatan",
-                                JOptionPane.INFORMATION_MESSAGE);
+                // JOptionPane.showMessageDialog(null, "Hitung Pendapatan per Kota", "Hitung Pendapatan",
+                //                 JOptionPane.INFORMATION_MESSAGE);
                 String kota = JOptionPane.showInputDialog(null, "Masukkan nama Kota : ", "Hitung Pendapatan",
                                 JOptionPane.QUESTION_MESSAGE);
                 boolean isKotaValid = controller.isKotaExists(kota);

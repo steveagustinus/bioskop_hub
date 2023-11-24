@@ -3,7 +3,7 @@ package src.view.user;
 import java.awt.Font;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
@@ -11,9 +11,10 @@ import src.controller.UserDataSingleton;
 
 public class CheckUserProfileScreen {
     public CheckUserProfileScreen(){
-        JFrame frame = new JFrame("Check User Profile");
+        JDialog frame = new JDialog();
+        frame.setTitle("Check User Profile");
         frame.setSize(500, 500);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         JPanel panel = new JPanel();
         panel.setLayout(null);        JLabel usernameLabel = new JLabel("Username : ");
@@ -65,14 +66,13 @@ public class CheckUserProfileScreen {
         else{
             statusMembershipString = "Membership";
         }
-        JLabel membershipStatus = new JLabel("Memebership Status : " + statusMembershipString);
+        JLabel membershipStatus = new JLabel("Membership Status : " + statusMembershipString);
         membershipStatus.setBounds(10, 230, 300, 25);
         
         JButton backButton = new JButton("Back");
         backButton.setBounds(10, 280, 80, 25);
 
         backButton.addActionListener(e -> {
-            new MainMenuUserScreen();
             frame.dispose();
         });
 

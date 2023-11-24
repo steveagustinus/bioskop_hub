@@ -16,8 +16,13 @@ import src.view.LoginScreen;
 import src.view.MainInterface;
 
 public class MainMenuUserScreen implements MainInterface {
-    UserDataSingleton userData = UserDataSingleton.getInstance();
     Controller controller = new Controller();
+
+    private JLabel mainlabel;
+    private JLabel usernameLabel;
+    private JLabel membershipPointLabel;
+    private JLabel membershipDateLabel;
+
 
     public MainMenuUserScreen() {
         JFrame frame = new JFrame();
@@ -28,24 +33,24 @@ public class MainMenuUserScreen implements MainInterface {
         JPanel panel = new JPanel();
         panel.setLayout(null);
 
-        JLabel mainlabel = new JLabel("Welcome " + userData.getProfile_name() + " to the Main Menu!");
+        mainlabel = new JLabel("Welcome " + UserDataSingleton.getInstance().getProfile_name() + " to the Main Menu!");
         mainlabel.setBounds(175, 10, 500, 50);
         panel.add(mainlabel);
         mainlabel.setFont(new Font("Arial", Font.BOLD, 24));
 
-        JLabel usernameLabel = new JLabel("Username : " + userData.getUsername());
+        usernameLabel = new JLabel("Username : " + UserDataSingleton.getInstance().getUsername());
         usernameLabel.setBounds(10, 70, 500, 50);
         panel.add(usernameLabel);
         
-        JLabel membershipPointLabel = new JLabel("Membership Point : " + userData.getMembership_point());
+        membershipPointLabel = new JLabel("Membership Point : " + UserDataSingleton.getInstance().getMembership_point());
         membershipPointLabel.setBounds(10, 90, 500, 50);
         panel.add(membershipPointLabel);
 
-        JLabel membershipDateLabel = new JLabel("Membership Date : " + userData.getMembership_expiry_date());
+        membershipDateLabel = new JLabel("Membership Date : " + UserDataSingleton.getInstance().getMembership_expiry_date());
         membershipDateLabel.setBounds(10, 110, 500, 50);
         panel.add(membershipDateLabel);
 
-        int isMember = controller.checkMembership(userData.getUsername());
+        int isMember = controller.checkMembership(UserDataSingleton.getInstance().getUsername());
         if(isMember == 1){
             membershipPointLabel.setVisible(true);
             membershipDateLabel.setVisible(true);
@@ -69,6 +74,7 @@ public class MainMenuUserScreen implements MainInterface {
         pesanFnBButton.addActionListener(e -> {
             frame.setVisible(false);
             new PesanFnb();
+            updateData();
             frame.setVisible(true);
         });
 
@@ -77,6 +83,7 @@ public class MainMenuUserScreen implements MainInterface {
         panel.add(joinMembershipButton);
         joinMembershipButton.addActionListener(e -> {
             new RegisterMembership(frame);
+            updateData();
         });
 
         JButton transactionHitoryButton = new JButton("Transaction History");
@@ -101,7 +108,7 @@ public class MainMenuUserScreen implements MainInterface {
         Color backgroundColor = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
 
         MyButton roundButton = new MyButton();
-        roundButton.setText(userData.getUsername().substring(0, 1).toUpperCase());
+        roundButton.setText(UserDataSingleton.getInstance().getUsername().substring(0, 1).toUpperCase());
         roundButton.setFont(new Font("Arial", Font.PLAIN, 18));
         roundButton.setPreferredSize(new Dimension(120, 120));
         roundButton.setBackground(backgroundColor);
@@ -111,11 +118,28 @@ public class MainMenuUserScreen implements MainInterface {
         roundButton.addActionListener(e -> {
             frame.setVisible(false);
             new CheckUserProfileScreen();
+            updateData();
             frame.setVisible(true);
         });
 
         frame.add(panel);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
+    }
+
+    public void updateData() {
+        mainlabel.setText("Welcome " + UserDataSingleton.getInstance().getProfile_name() + " to the Main Menu!");
+        usernameLabel.setText("Username : " + UserDataSingleton.getInstance().getUsername());
+        membershipPointLabel.setText("Membership Point : " + UserDataSingleton.getInstance().getMembership_point());
+        membershipDateLabel.setText("Membership Date : " + UserDataSingleton.getInstance().getMembership_expiry_date());
+
+        int isMember = UserDataSingleton.getInstance().getMembership_status();
+        if(isMember == 1){
+            membershipPointLabel.setVisible(true);
+            membershipDateLabel.setVisible(true);
+        }else{
+            membershipPointLabel.setVisible(false);
+            membershipDateLabel.setVisible(false);
+        }
     }
 }

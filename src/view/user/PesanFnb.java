@@ -147,7 +147,15 @@ public class PesanFnb {
 
                     if (response.equals("Transaksi Berhasil")) {
                         int membershipStatus = controller.checkMembership(UserDataSingleton.getInstance().getUsername());
-                        if (membershipStatus == 1 && totalBayar / 100000 > 0) {
+                        if (status == 1) {
+                            response = controller.decreasePoinMembership(
+                                UserDataSingleton.getInstance().getUsername(),
+                                membershipStatus,
+                                10
+                            );
+                            JOptionPane.showMessageDialog(null, response, "Terima kasih", JOptionPane.INFORMATION_MESSAGE);
+                        }
+                        else if (membershipStatus == 1 && totalBayar / 100000 > 0) {
                             response = controller.increasePoinMembership(
                                 UserDataSingleton.getInstance().getUsername(),
                                 membershipStatus,

@@ -109,7 +109,9 @@ public class MainMenuUserScreen implements MainInterface {
         roundButton.setFocusPainted(false);
         panel.add(roundButton);
         roundButton.addActionListener(e -> {
+            frame.setVisible(false);
             new CheckUserProfileScreen();
+            frame.setVisible(true);
         });
 
         frame.add(panel);

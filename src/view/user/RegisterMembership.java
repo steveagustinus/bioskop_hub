@@ -18,7 +18,7 @@ public class RegisterMembership {
     public RegisterMembership(){
         JFrame frame = new JFrame("Membership");
         frame.setSize(270, 260);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel panel = new JPanel();
         panel.setLayout(null);

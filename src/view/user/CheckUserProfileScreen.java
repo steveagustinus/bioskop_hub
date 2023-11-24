@@ -1,6 +1,7 @@
 package src.view.user;
 
 import java.awt.Font;
+import java.awt.Dialog.ModalityType;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -13,11 +14,15 @@ public class CheckUserProfileScreen {
     public CheckUserProfileScreen(){
         JDialog frame = new JDialog();
         frame.setTitle("Check User Profile");
+        frame.setModalityType(ModalityType.DOCUMENT_MODAL);
         frame.setSize(500, 500);
         frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        panel.setLayout(null);        JLabel usernameLabel = new JLabel("Username : ");
+        panel.setLayout(null);
+        
+        JLabel usernameLabel = new JLabel("Username : ");
         usernameLabel.setBounds(10, 50, 100, 25);
 
         JLabel mainlabel = new JLabel("Check Profile Menu");

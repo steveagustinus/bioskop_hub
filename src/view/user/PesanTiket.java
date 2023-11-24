@@ -36,6 +36,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.text.DecimalFormat;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -121,9 +122,16 @@ public class PesanTiket extends JDialog {
             labelMovieInfo.setLocation(labelMovie.getX(), labelMovie.getY() + labelMovie.getHeight() + 5);
             labelMovieInfo.setFont(new Font(fontFamily, Font.PLAIN, 15));
 
+            JLabel labelShowtime = new JLabel(
+                jadwal.getWaktu().format(DateTimeFormatter.ofPattern("hh:mm dd MMMM yyyy"))
+            );
+            labelShowtime.setSize(this.getWidth() - 20, 25);
+            labelShowtime.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 5);
+            labelShowtime.setFont(new Font(fontFamily, Font.BOLD, 18));
+
             JLabel labelSeat = new JLabel("Kursi yang dipilih: ");
             labelSeat.setSize(this.getWidth() - 20, 20);
-            labelSeat.setLocation(labelMovieInfo.getX(), labelMovieInfo.getY() + labelMovieInfo.getHeight() + 10);
+            labelSeat.setLocation(labelShowtime.getX(), labelShowtime.getY() + labelShowtime.getHeight() + 10);
             labelSeat.setFont(new Font(fontFamily, Font.PLAIN, 18));
 
             String seatMessage = "";
@@ -226,6 +234,7 @@ public class PesanTiket extends JDialog {
             this.add(separator1);
             this.add(labelMovie);
             this.add(labelMovieInfo);
+            this.add(labelShowtime);
             this.add(labelSeat);
             this.add(labelSeat2);
             this.add(separator2);

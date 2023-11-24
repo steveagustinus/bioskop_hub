@@ -317,9 +317,10 @@ public class PesanTiket extends JDialog implements MainInterface{
         panelCinemaTitle.setSize(panelCinema.getWidth() - 2, 30);
         panelCinemaTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelCinemaTitle.setOpaque(true);
-        panelCinemaTitle.setBackground(TEXT_BACKGROUND);
+        panelCinemaTitle.setBackground(BUTTON_BACKGROUND);
         panelCinemaTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelCinemaTitle.setVerticalAlignment(SwingConstants.CENTER);
+        panelCinemaTitle.setForeground(FRAME_BACKGROUND);
 
         int fieldWidth = (panelCinema.getWidth() - 60) / 2;
         int fieldHeight = (panelCinema.getHeight() - 75) / 2;
@@ -338,6 +339,8 @@ public class PesanTiket extends JDialog implements MainInterface{
         );
         fieldKota.setFont(new Font(FONTFAMILY, Font.PLAIN, 20));
         fieldKota.setSelectedIndex(-1);
+        fieldKota.setBackground(FRAME_BACKGROUND);
+        fieldKota.setForeground(TEXT_BACKGROUND);
         
         JLabel labelCinema = new JLabel("Pilih Cinema: ");
         labelCinema.setSize(fieldWidth, fieldHeight);
@@ -355,6 +358,8 @@ public class PesanTiket extends JDialog implements MainInterface{
             labelCinema.getY() + labelCinema.getHeight() + 5
         );
         fieldCinema.setFont(new Font(FONTFAMILY, Font.PLAIN, 20));
+        fieldCinema.setBackground(FRAME_BACKGROUND);
+        fieldCinema.setForeground(TEXT_BACKGROUND);
 
         JPanel panelFilm = new JPanel();
         panelFilm.setName("mainpanel_movie");
@@ -373,7 +378,7 @@ public class PesanTiket extends JDialog implements MainInterface{
         panelFilmTitle.setSize(panelFilm.getWidth() - 2, 30);
         panelFilmTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelFilmTitle.setOpaque(true);
-        panelFilmTitle.setBackground(TEXT_BACKGROUND);
+        panelFilmTitle.setBackground(BUTTON_BACKGROUND);
         panelFilmTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelFilmTitle.setVerticalAlignment(SwingConstants.CENTER);
         panelFilmTitle.setForeground(FRAME_BACKGROUND);
@@ -398,7 +403,7 @@ public class PesanTiket extends JDialog implements MainInterface{
         panelJadwalTitle.setSize(panelJadwal.getWidth() - 2, 30);
         panelJadwalTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelJadwalTitle.setOpaque(true);
-        panelJadwalTitle.setBackground(TEXT_BACKGROUND);
+        panelJadwalTitle.setBackground(BUTTON_BACKGROUND);
         panelJadwalTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelJadwalTitle.setVerticalAlignment(SwingConstants.CENTER);
         panelJadwalTitle.setForeground(FRAME_BACKGROUND);
@@ -423,7 +428,7 @@ public class PesanTiket extends JDialog implements MainInterface{
         panelSeatTitle.setSize(panelSeat.getWidth() - 2, 30);
         panelSeatTitle.setFont(new Font(FONTFAMILY, Font.BOLD, 20));
         panelSeatTitle.setOpaque(true);
-        panelSeatTitle.setBackground(TEXT_BACKGROUND);
+        panelSeatTitle.setBackground(BUTTON_BACKGROUND);
         panelSeatTitle.setHorizontalAlignment(SwingConstants.CENTER);
         panelSeatTitle.setVerticalAlignment(SwingConstants.CENTER);
         panelSeatTitle.setForeground(FRAME_BACKGROUND);
@@ -433,7 +438,7 @@ public class PesanTiket extends JDialog implements MainInterface{
         labelSelectedSeatsInfo.setSize(panelSeat.getWidth() - 2, 30);
         labelSelectedSeatsInfo.setLocation(1, panelSeat.getHeight() - labelSelectedSeatsInfo.getHeight() - 1);
         labelSelectedSeatsInfo.setOpaque(true);
-        labelSelectedSeatsInfo.setBackground(new Color(255, 240, 200));
+        labelSelectedSeatsInfo.setBackground(BUTTON_BACKGROUND);
 
         buttonOrder = new JButton("Go to Payment");
         buttonOrder.setSize(300, 50);

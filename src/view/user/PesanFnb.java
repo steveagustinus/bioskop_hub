@@ -100,7 +100,7 @@ public class PesanFnb implements MainInterface {
             labelTotalBayar2.setSize(this.getWidth() - 20, 30);
             labelTotalBayar2.setLocation(labelTotalBayar.getX(), labelTotalBayar.getY() + labelTotalBayar.getHeight() + 10);
             labelTotalBayar2.setFont(new Font(fontFamily, Font.BOLD, 25));
-            labelTotalBayar.setForeground(TEXT_BACKGROUND);
+            labelTotalBayar2.setForeground(TEXT_BACKGROUND);
 
             JLabel labelInformasiPenggunaanPoin = new JLabel(
                 "*Anda menggunakan 10 poin membership anda."

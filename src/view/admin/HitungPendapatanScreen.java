@@ -18,7 +18,7 @@ public class HitungPendapatanScreen {
         JFrame frame = new JFrame();
         frame.setTitle("Hitung Pendapatan");
         frame.setSize(425, 200);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         JPanel panel = new JPanel();
         panel.setLayout(null);

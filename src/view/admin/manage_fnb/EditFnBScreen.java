@@ -70,7 +70,7 @@ public class EditFnBScreen {
                 data[0]=nama.getText();
                 data[1]=harga.getText();
                 data[2]=description.getText();
-                int konfirmasi = controller.EditFnB(oldNameFnB,data);
+                int konfirmasi = controller.editFnB(oldNameFnB,data);
                 String status="";
                 if(konfirmasi==OperationCode.addFnB.SUCCESS){
                     status="Berhasil!";

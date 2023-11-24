@@ -9,6 +9,7 @@ import javax.swing.JTextField;
 import java.awt.*;
 
 import src.controller.Controller;
+import src.controller.OperationCode;
 
 public class RaiseRevokeMembership {
     public RaiseRevokeMembership() {
@@ -20,6 +21,7 @@ public class RaiseRevokeMembership {
         JFrame frame = new JFrame();
         frame.setTitle("Revoke dan Raise Membership");
         frame.setSize(400,150);
+        frame.setLocationRelativeTo(null);
         frame.setVisible(true);
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(4, 2));
@@ -37,41 +39,69 @@ public class RaiseRevokeMembership {
         panel.add(backButton);
         
         buttonRaise.addActionListener(e -> {
-            int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
-            String username = inputUsername.getText().toString();
-            if (username==null) {
-                JOptionPane.showMessageDialog(null, "Username Kosong !" );
-            }else{
-                if(confirmation==0){
-                    boolean result= controller.raiseMembership(username);
-                    if (result) {
-                        JOptionPane.showMessageDialog(null, "Perubahan telah di lakukan!" );
-                    }else{
-                        JOptionPane.showMessageDialog(null, "Error!" );
+           String username = inputUsername.getText().toString();
+            if (username.equals("")) {
+                username=null;
+            }
+            int checker = controller.isNameExist(username);
+            if (username!=null) {
+                if(checker==0){
+                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");      
+                }else if (checker ==1) {
+                    int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+                    if (confirmation == 0) {
+                        int status = controller.raiseMembership(username);
+                    String alert="";
+                    if (status == OperationCode.RaiseRevokeMembership.SUCCESS) {
+                         alert="Berhasil!";
+                    }else if(status == OperationCode.RaiseRevokeMembership.ALREADYMEMBER){
+                        alert="Sudah menjadi Member!";
+                    }else if (status == OperationCode.RaiseRevokeMembership.ANYEXCEPTION) {
+                        alert="Error!";
                     }
-                }else{
-                    JOptionPane.showMessageDialog(null, "Perubahan di batalkan !" );    
-                }
+                    JOptionPane.showMessageDialog(null,alert);  
+                    }else if (confirmation == 1) {
+                        
+                    }
+                    
+                }   
+            }else{
+                JOptionPane.showMessageDialog(null,"Username TIDAK boleh kosong !");
             }
         });
 
-        buttonRevoke.addActionListener(e -> {
-            int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+        buttonRevoke.addActionListener(e -> { 
             String username = inputUsername.getText().toString();
-            if (username==null) {
-                JOptionPane.showMessageDialog(null, "Username Kosong !" );
-            }else{
-                if(confirmation==0){
-                    boolean result= controller.revokeMembership(username);
-                    if (result) {
-                        JOptionPane.showMessageDialog(null, "Perubahan telah di lakukan!" );
-                    }else{
-                        JOptionPane.showMessageDialog(null, "Error!" );
-                    }
-                }else{
-                    JOptionPane.showMessageDialog(null, "Perubahan di batalkan !" );    
-                }
+            if (username.equals("")) {
+                username=null;
             }
+            int checker = controller.isNameExist(username);
+            if (username!=null) {
+                if(checker==0){
+                JOptionPane.showMessageDialog(null,"Username TIDAK di temukan !");      
+                }else if (checker ==1) {
+                    int confirmation = JOptionPane.showConfirmDialog(buttonRaise, "Apakah anda yakin untuk melakukan perubahan ?", "Confrimation", 0);
+                    if (confirmation == 0) {
+                        int status = controller.revokeMembership(username);
+                        String alert="";
+                    if (status == OperationCode.RaiseRevokeMembership.SUCCESS) {
+                         alert="Berhasil!";
+                    }else if(status == OperationCode.RaiseRevokeMembership.ALREADYUSER){
+                        alert="Sudah menjadi User biasa!";
+                    }else if (status == OperationCode.RaiseRevokeMembership.ANYEXCEPTION) {
+                        alert="Error!";
+                    }
+                    JOptionPane.showMessageDialog(null,alert);  
+                    }else if (confirmation == 1) {
+                        
+                    }
+                    
+                }   
+            }else{
+                JOptionPane.showMessageDialog(null,"Username TIDAK boleh kosong !");
+            }
+            
+            
         });
 
         backButton.addActionListener(e ->{

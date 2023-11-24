@@ -2367,11 +2367,20 @@ public class Controller {
                     + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
             PreparedStatement statement = conn.connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
+
+            String lastDate = "x";
             while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String transactionDate = resultSet.getString("t.transaction_date");
+                if (!lastDate.equals("x")) {
+                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
+                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
+                    }
+                }
+                lastDate = transactionDate.substring(8, 10);
+
                 String foodName = resultSet.getString("f.nama");
                 int quantity = resultSet.getInt("tf.qty");
-                int totalPrice = resultSet.getInt("f.harga * tf.qty");
+                String totalPrice = formatCurrency(resultSet.getInt("f.harga * tf.qty"));
                 String kota = resultSet.getString("c.kota");
                 String nama = resultSet.getString("c.nama");
                 String paymentMethod = resultSet.getString("t.payment_method");
@@ -2388,17 +2397,35 @@ public class Controller {
         String[] columns = { "Transaction Date", "City", "Cinema", "Movie Name", "Showtime", "Seat", "Class Type", "Total Price", "Payment method" };
         model.setColumnIdentifiers(columns);
         try {
-            String sql = "SELECT t.transaction_date, m.judul, j.waktu, tj.id_seat, s.studio_class, j.harga, c.kota, c.nama, t.payment_method FROM transaction t JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction JOIN jadwal j ON j.id_jadwal = tj.id_jadwal JOIN movie m ON m.id_movie = j.id_movie JOIN user u ON u.id_user = t.id_user JOIN studio s ON s.id_studio = j.id_studio JOIN cinema c ON s.id_cinema = c.id_cinema WHERE u.id_user = "
-                    + id + " GROUP BY t.id_transaction, tj.id_seat, s.studio_class ORDER BY t.transaction_date;";
+            String sql = "SELECT t.transaction_date, m.judul, j.waktu, GROUP_CONCAT(se.kode SEPARATOR ', '), s.studio_class, SUM(j.harga), c.kota, c.nama, t.payment_method FROM transaction t " +
+                "JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction " + 
+                "JOIN jadwal j ON j.id_jadwal = tj.id_jadwal " + 
+                "JOIN movie m ON m.id_movie = j.id_movie " +
+                "JOIN user u ON u.id_user = t.id_user " +
+                "JOIN studio s ON s.id_studio = j.id_studio " +
+                "JOIN cinema c ON s.id_cinema = c.id_cinema " +
+                "JOIN seat se ON tj.id_seat = se.id_seat " +
+                "WHERE u.id_user = " + id + " " +
+                "GROUP BY t.id_transaction " +
+                "ORDER BY t.transaction_date;";
             PreparedStatement statement = conn.connection.prepareStatement(sql);
             ResultSet resultSet = statement.executeQuery();
+
+            String lastDate = "x";
             while (resultSet.next()) {
-                Date transactionDate = resultSet.getDate("t.transaction_date");
+                String transactionDate = resultSet.getString("t.transaction_date");
+                if (!lastDate.equals("x")) {
+                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
+                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
+                    }
+                }
+                lastDate = transactionDate.substring(8, 10);
+
                 String movieName = resultSet.getString("m.judul");
                 String showtime = resultSet.getString("j.waktu");
-                int seat = resultSet.getInt("tj.id_seat");
+                String seat = resultSet.getString("GROUP_CONCAT(se.kode SEPARATOR ', ')");
                 String classType = resultSet.getString("s.studio_class");
-                int totalPrice = resultSet.getInt("j.harga");
+                String totalPrice = formatCurrency(resultSet.getInt("SUM(j.harga)"));
                 String kota = resultSet.getString("c.kota");
                 String nama = resultSet.getString("c.nama");
                 String paymentMethod = resultSet.getString("t.payment_method");

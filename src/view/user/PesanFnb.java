@@ -237,7 +237,7 @@ public class PesanFnb {
         JLabel labelTogglePoin = new JLabel("Pakai 10 poin (?):");
         labelTogglePoin.setBounds(40, 272, 200, 30);
         JLabel labelBenefit = new JLabel("untuk dapatkan potongan Rp. 100,000");
-        labelBenefit.setBounds(40, 288, 200, 30);
+        labelBenefit.setBounds(40, 288, 300, 30);
 
         JCheckBox checkBoxDiskon = new JCheckBox();
         checkBoxDiskon.setBounds(10, 280, 30, 30);

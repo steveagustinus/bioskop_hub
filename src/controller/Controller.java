@@ -2577,4 +2577,25 @@ public class Controller {
             return -99;
         }
     }
+    public String[] listUser(){
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `username` FROM `user` WHERE `user_type` = 1");
+
+            ArrayList<String> listUser = new ArrayList<String>();
+            while (result.next()) {
+                listUser.add(result.getString("username"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listUser.toArray(new String[listUser.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
 }

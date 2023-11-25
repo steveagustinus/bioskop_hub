@@ -6,14 +6,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import src.controller.Controller;
 import src.controller.OperationCode;
-import src.view.admin.MainMenuScreen;
 
 public class AddFnBScreen {
-    public AddFnBScreen(){
+    public AddFnBScreen(Window owner){
         Controller controller = new Controller();
-        JFrame frame = new JFrame();
+        JDialog frame = new JDialog(owner);
         frame.setTitle("Add FnB");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         frame.setSize(400,400);
         // JTextField namaFnB = new JTextField(40);
         // JTextField harga = new JTextField(40);;
@@ -128,7 +127,6 @@ public class AddFnBScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                // new ManageFnBScreen();
             }
         });
 
@@ -148,17 +146,18 @@ public class AddFnBScreen {
                     status="Berhasil!";
                     JOptionPane.showMessageDialog(null,status);
                     frame.dispose();
-                    new MainMenuScreen();
-                }else if(konfirmasi==OperationCode.AddFnB.EMPTYNAME){
-                    status="Nama Kosong!";
-                }else if (konfirmasi==OperationCode.AddFnB.EMPTYHARGA){
-                    status="Harga Kosong!";
-                }else if(konfirmasi==OperationCode.AddFnB.ANYEXCEPTION){
-                    status="Error!";
+                }else{
+                    if(konfirmasi==OperationCode.AddFnB.EMPTYNAME){
+                        status="Nama Kosong!";
+                    }else if(konfirmasi==OperationCode.AddFnB.EMPTYHARGA){
+                        status="Harga Kosong!";
+                    }else if(konfirmasi==OperationCode.AddFnB.ANYEXCEPTION){
+                        status="Error!";
+                    }else if(konfirmasi==OperationCode.AddFnB.INVALIDHARGA){
+                        status="Input harga tidak valid!";
+                    }
+                    JOptionPane.showMessageDialog(null,status);
                 }
-                 JOptionPane.showMessageDialog(null,status);
-                
-                
             }
         });
 

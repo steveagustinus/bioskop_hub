@@ -90,13 +90,13 @@ public class MainMenuScreen implements MainInterface {
         JButton manageFnBButton = new JButton("Tambah FnB");
         manageFnBButton.setBounds(40, 270, 200, 30);
         manageFnBButton.addActionListener(e -> {
-            new AddFnBScreen();
+            new AddFnBScreen(mainFrame);
         });
 
         JButton manageFnBButton2 = new JButton("Edit FnB");
         manageFnBButton2.setBounds(260, 270, 200, 30);
         manageFnBButton2.addActionListener(e -> {
-            new EditFnBScreen();
+            new EditFnBScreen(mainFrame);
         });
         
 

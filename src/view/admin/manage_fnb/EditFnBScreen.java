@@ -7,15 +7,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import src.controller.Controller;
+import src.controller.OperationCode;
 import src.model.FnB;
-import src.view.admin.MainMenuScreen;
 
 public class EditFnBScreen {
-    public EditFnBScreen() {
+    public EditFnBScreen(Window owner) {
         Controller controller = new Controller();
-        JFrame frame = new JFrame();
+        JDialog frame = new JDialog(owner);
         frame.setTitle("Edit and Delete FnB");
         frame.setSize(400, 600);
+        frame.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         JPanel panel = new JPanel();
         panel.setLayout(null);
 
@@ -117,7 +118,6 @@ public class EditFnBScreen {
             @Override
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                // new MainMenuScreen();
             }
         });
 
@@ -178,16 +178,39 @@ public class EditFnBScreen {
         });
         submitButton.addActionListener(e -> {
             if(delete.isSelected()){
-                controller.deleteFnB(foodsnbevs.getSelectedItem().toString());
-                // new MainMenuScreen();
+                int statusCode = controller.deleteFnB(foodsnbevs.getSelectedItem().toString());
+                if(statusCode==OperationCode.EditFnB.SUCCESS){
+                    JOptionPane.showMessageDialog(null,"Berhasil!");
+
+                    frame.setVisible(false);
+                    frame.dispose();
+                }else if(statusCode==OperationCode.EditFnB.EMPTYNAME){
+                    JOptionPane.showMessageDialog(null,"Terjadi error!");
+                }
+
             }else if(edit.isSelected()){
-                FnB fnb = controller.getFnBbyName(foodsnbevs.getSelectedItem().toString());
-                fnb.setNama(nama.getText());
-                fnb.setHarga(Integer.parseInt(harga.getText()));
-                fnb.setDescription(description.getText());
-                String[] tempFnB = { fnb.getNama() , String.valueOf(fnb.getHarga()) , fnb.getDescription()};
-                controller.editFnB(foodsnbevs.getSelectedItem().toString(), tempFnB);
-                new MainMenuScreen();
+                String[] tempFnB = { nama.getText() , harga.getText() , description.getText() };
+
+                int konfirmasi = controller.editFnB(foodsnbevs.getSelectedItem().toString(), tempFnB);
+                String status="";
+                if(konfirmasi==OperationCode.EditFnB.SUCCESS){
+                    status="Berhasil!";
+                    JOptionPane.showMessageDialog(null,status);
+
+                    frame.setVisible(false);
+                    frame.dispose();
+                }else{
+                    if(konfirmasi==OperationCode.EditFnB.EMPTYNAME){
+                        status="Nama Kosong!";
+                    }else if (konfirmasi==OperationCode.EditFnB.EMPTYHARGA){
+                        status="Harga Kosong!";
+                    }else if(konfirmasi==OperationCode.EditFnB.ANYEXCEPTION){
+                        status="Error!";
+                    }else if(konfirmasi==OperationCode.EditFnB.INVALIDHARGA){
+                        status="Input harga tidak valid!";
+                    }
+                    JOptionPane.showMessageDialog(null,status);
+                }
             }
         });
 

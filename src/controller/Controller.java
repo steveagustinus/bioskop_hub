@@ -2364,6 +2364,9 @@ public class Controller {
     }
 
     public int addFnB(String[] fnb) {
+        if (fnb[1].equals("") || !isNumber(fnb[1])) {
+            return OperationCode.AddFnB.INVALIDHARGA;
+        }
         int harga = Integer.parseInt(fnb[1]);
         if (fnb[0] == null) {
             return OperationCode.AddFnB.EMPTYNAME;
@@ -2405,6 +2408,9 @@ public class Controller {
     }
     
     public int editFnB(String fnbName, String [] dataFnB) {
+        if (dataFnB[1].equals("") || !isNumber(dataFnB[1])) {
+            return OperationCode.AddFnB.INVALIDHARGA;
+        }
         int harga = Integer.parseInt(dataFnB[1]);
         if (dataFnB[0] == null) {
             return OperationCode.EditFnB.EMPTYNAME;

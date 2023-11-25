@@ -128,6 +128,7 @@ public class OperationCode {
         public final static int EMPTYNAME=-1;
         public final static int EMPTYHARGA=-2;
         public final static int EMPTYDESCRIPTION=-3;
+        public final static int INVALIDHARGA=-4;
         public final static int ANYEXCEPTION=-99;
     }
 
@@ -141,6 +142,7 @@ public class OperationCode {
         public final static int EMPTYNAME=-1;
         public final static int EMPTYHARGA=-2;
         public final static int EMPTYDESCRIPTION=-3;
+        public final static int INVALIDHARGA=-4;
         public final static int ANYEXCEPTION=-99;
     }
     public class RaiseRevokeMembership {

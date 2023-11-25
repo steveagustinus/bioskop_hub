@@ -13,7 +13,8 @@ import src.controller.OperationCode;
 import src.model.Cinema;
 
 public class EditCinemaDialog extends CinemaFormDialog {
-    Controller controller = new Controller();
+    private Controller controller = new Controller();
+    JButton buttonDelete;
     
     public EditCinemaDialog(Window owner, String idCinema) {
         super(owner);
@@ -87,7 +88,7 @@ public class EditCinemaDialog extends CinemaFormDialog {
             }
         });
 
-        JButton buttonDelete = new JButton("Delete cinema");
+        buttonDelete = new JButton("Delete cinema");
         buttonDelete.setSize(buttonSubmit.getSize());
         buttonDelete.setLocation(
             buttonSubmit.getX() + buttonSubmit.getWidth() + 5,

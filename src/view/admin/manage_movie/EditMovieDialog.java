@@ -13,7 +13,9 @@ import src.controller.OperationCode;
 import src.model.movie.Movie;
 
 public class EditMovieDialog extends MovieFormDialog {
-    Controller controller = new Controller();
+    private Controller controller = new Controller();
+
+    private JButton buttonDelete;
     
     public EditMovieDialog(Window owner, String idMovie) {
         super(owner);
@@ -118,7 +120,7 @@ public class EditMovieDialog extends MovieFormDialog {
             }
         });
 
-        JButton buttonDelete = new JButton("Delete movie");
+        buttonDelete = new JButton("Delete movie");
         buttonDelete.setSize(buttonSubmit.getSize());
         buttonDelete.setLocation(
             buttonSubmit.getX() + buttonSubmit.getWidth() + 5,

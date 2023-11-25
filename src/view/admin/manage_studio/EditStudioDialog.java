@@ -12,6 +12,7 @@ import src.controller.OperationCode;
 import src.model.studio.Studio;
 
 public class EditStudioDialog extends StudioFormDialog {
+    private JButton buttonDelete;
     Controller controller = new Controller();
     
     public EditStudioDialog(Window owner, String idStudio) {
@@ -73,7 +74,7 @@ public class EditStudioDialog extends StudioFormDialog {
             }
         });
 
-        JButton buttonDelete = new JButton("Delete studio");
+        buttonDelete = new JButton("Delete studio");
         buttonDelete.setSize(buttonSubmit.getSize());
         buttonDelete.setLocation(
             buttonSubmit.getX() + buttonSubmit.getWidth() + 5,

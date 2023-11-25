@@ -251,17 +251,25 @@ public class Controller {
             conn.open();
             Statement statement = conn.connection.createStatement();
             ResultSet result = statement.executeQuery(
-                    "SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';");
+                "SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';"
+            );
+
+            System.out.println("SELECT * FROM `jadwal` WHERE `id_jadwal`='" + idJadwal + "';");
+
+            if (!result.isBeforeFirst()) {
+                return null;
+            }
 
             result.next();
 
             Jadwal jadwal = new Jadwal(
-                    result.getString("id_jadwal"),
-                    result.getString("id_movie"),
-                    result.getString("id_studio"),
-                    result.getInt("harga"),
-                    result.getTimestamp("waktu").toLocalDateTime(),
-                    getSeatFromJadwal(result.getString("id_jadwal")));
+                result.getString("id_jadwal"),
+                result.getString("id_movie"),
+                result.getString("id_studio"),
+                result.getInt("harga"),
+                result.getTimestamp("waktu").toLocalDateTime(),
+                getSeatFromJadwal(result.getString("id_jadwal"))
+            );
 
             result.close();
             statement.close();
@@ -1621,11 +1629,11 @@ public class Controller {
         }
     }
 
+    // Transaction
     public String[] getPaymentMethods() {
         return new String[] { "BCA", "GO-PAY", "DANA", "SHOPEEPAY" };
     }
 
-    // Transaction
     public String createTransactionId() {
         String newId = "";
         try {
@@ -1712,16 +1720,6 @@ public class Controller {
                 }
             }
         });
-    }
-
-    // Line Ini Jangan dihapus yak sementara yak biar ga pusing
-    public int totalPoinMembership(User user) {
-        if (user instanceof MembershipCustomer) {
-            MembershipCustomer membershipCustomer = (MembershipCustomer) user;
-            return membershipCustomer.getPoin();
-        } else {
-            return 0;
-        }
     }
 
     // Common services
@@ -1941,6 +1939,78 @@ public class Controller {
         }
     }
 
+    public int addFnB(String[] fnb) {
+        if (fnb[1].equals("") || !isNumber(fnb[1])) {
+            return OperationCode.AddFnB.INVALIDHARGA;
+        }
+        int harga = Integer.parseInt(fnb[1]);
+        if (fnb[0] == null) {
+            return OperationCode.AddFnB.EMPTYNAME;
+        } else if (fnb[1] == null) {
+            return OperationCode.AddFnB.EMPTYHARGA;
+        } else if (fnb[2] == null) {
+            return OperationCode.AddFnB.EMPTYDESCRIPTION;
+        }
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "INSERT INTO `fnb` (`nama`,`harga`,`description`,`is_deleted`) VALUES ('" + fnb[0] + "','" + harga
+                            + "','" + fnb[2] + "',0)");
+            statement.close();
+            conn.close();
+            return OperationCode.AddFnB.SUCCESS;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return OperationCode.AddFnB.ANYEXCEPTION;
+        }
+    }
+    
+    public int deleteFnB(String fnbName) {
+        try{
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "UPDATE `fnb` SET `is_deleted`=1 WHERE nama='" + fnbName + "'");
+            statement.close();
+            conn.close();
+            return 0;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return -99;
+        }
+    }
+    
+    public int editFnB(String fnbName, String [] dataFnB) {
+        if (dataFnB[1].equals("") || !isNumber(dataFnB[1])) {
+            return OperationCode.AddFnB.INVALIDHARGA;
+        }
+        int harga = Integer.parseInt(dataFnB[1]);
+        if (dataFnB[0] == null) {
+            return OperationCode.EditFnB.EMPTYNAME;
+        } else if (dataFnB[1] == null) {
+            return OperationCode.EditFnB.EMPTYHARGA;
+        } else if (dataFnB[2] == null) {
+            return OperationCode.EditFnB.EMPTYDESCRIPTION;
+        }
+        try {
+            conn.open();
+
+            Statement statement = conn.connection.createStatement();
+            statement.executeUpdate(
+                    "UPDATE `fnb` SET `nama`='" + dataFnB[0] + "', `harga`='" + harga + "', `description`='"
+                            + dataFnB[2] + "' WHERE nama='" + fnbName + "'");
+            statement.close();
+            conn.close();
+            return OperationCode.EditFnB.SUCCESS;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return OperationCode.EditFnB.ANYEXCEPTION;
+        }
+    }
+
     // Membership area
     public boolean checkSufficientPoint(int poinUser, int poinNeeded) {
         return poinUser >= poinNeeded;
@@ -2012,6 +2082,156 @@ public class Controller {
         }
     }
 
+    public int revokeMembership(String username) {
+        try {
+            int status = checkMembership(username);
+            if (status == 1) {
+                conn.open();
+                String updateQuery = "UPDATE user SET membership_status = 0, membership_expiry_date = ? WHERE username = ?";
+                try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
+                    preparedStatement.setDate(1, null);
+                    preparedStatement.setString(2, username);
+                    int rowsAffected = preparedStatement.executeUpdate();
+                    if (rowsAffected > 0) {
+                        UserDataSingleton.getInstance().setMembership_status(0);
+                        return 1;
+                    } else {
+                        return 0;
+                    }
+                }
+            }else{
+                return -2;
+            }
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+        }
+        return -99;
+    }
+    
+    public int checkExpiredMembership(String username) {
+        try {
+            conn.open();
+            String selectQuery = "SELECT `membership_expiry_date` FROM user WHERE username=? AND membership_status = 1";
+            PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (!resultSet.isBeforeFirst()) {
+                return 0;
+            }
+            resultSet.next();
+            Date date = resultSet.getDate("membership_expiry_date");
+            LocalDate localDate = dateToLocalDate(date);
+            LocalDate now = LocalDate.now();
+            int selisihHarinya = (int) ChronoUnit.DAYS.between(now, localDate);
+            if (localDate.isBefore(now)) {
+                return 1;
+            }
+            resultSet.close();
+            conn.close();
+            return selisihHarinya;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+            return -99;
+        }
+    }
+    
+    public int checkMembership(String username) {
+        try {
+            conn.open();
+            String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";
+            PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+            preparedStatement.setString(1, username);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (!resultSet.isBeforeFirst()) {
+                return 0;
+            }
+            resultSet.close();
+            conn.close();
+            return 1;
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+            return -99;
+        }
+    }
+
+    public int raiseMembership(String username) {
+        try {
+            int status = checkMembership(username);
+            if (status == 0) {
+                conn.open();
+                String updateQuery = "UPDATE user SET `membership_status` = 1, `membership_expiry_date` = ? WHERE username = ?";
+                PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery);
+                LocalDate date = LocalDate.now();
+                LocalDate newDate = date.plusDays(30);
+                preparedStatement.setDate(1, Date.valueOf(newDate));
+                preparedStatement.setString(2, username);
+
+                int rowsAffected = preparedStatement.executeUpdate();
+                preparedStatement.close();
+                conn.close();
+                if (rowsAffected > 0) {
+                    UserDataSingleton.getInstance().setMembership_status(1);
+                    UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
+                    return 1;
+                }
+            }else{
+                return -1;
+            }
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+        }
+        return -99;
+    }
+
+    public int extendMembership(String username) {
+        try {
+            int status = checkMembership(username);
+            if (status == 1) {
+                conn.open();
+                String selectQuery = "SELECT `membership_expiry_date` FROM user WHERE username=? AND membership_status = 1";
+                PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
+                preparedStatement.setString(1, username);
+                ResultSet resultSet = preparedStatement.executeQuery();
+                resultSet.next();
+                Date date = resultSet.getDate("membership_expiry_date");
+                LocalDate localDate = dateToLocalDate(date);
+                LocalDate newDate = localDate.plusDays(30);
+                resultSet.close();
+                preparedStatement.close();
+                String updateQuery = "UPDATE user SET membership_expiry_date = ? WHERE username = ?";
+                PreparedStatement preparedStatement2 = conn.connection.prepareStatement(updateQuery);
+                preparedStatement2.setDate(1, Date.valueOf(newDate));
+                preparedStatement2.setString(2, username);
+                int rowsAffected = preparedStatement2.executeUpdate();
+                preparedStatement2.close();
+                conn.close();
+                if (rowsAffected > 0) {
+                    UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
+                    return 1;
+                }
+            } else {
+                return 0;
+            }
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            ex.printStackTrace();
+        }
+        return -99;
+    }
+
+    public int totalPoinMembership(User user) {
+        if (user instanceof MembershipCustomer) {
+            MembershipCustomer membershipCustomer = (MembershipCustomer) user;
+            return membershipCustomer.getPoin();
+        } else {
+            return 0;
+        }
+    }
+    
     // Hitung pendapatan area
     public int hitungPendapatanCabang(String nama) {
         int total = 0;
@@ -2192,6 +2412,85 @@ public class Controller {
             return null;
         }
     }
+    
+    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "City", "Cinema", "Transaction Items", "Quantity", "Total Price", "Payment Method" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty, c.kota, c.nama, t.payment_method FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
+                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+
+            String lastDate = "x";
+            while (resultSet.next()) {
+                String transactionDate = resultSet.getString("t.transaction_date");
+                if (!lastDate.equals("x")) {
+                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
+                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
+                    }
+                }
+                lastDate = transactionDate.substring(8, 10);
+
+                String foodName = resultSet.getString("f.nama");
+                int quantity = resultSet.getInt("tf.qty");
+                String totalPrice = formatCurrency(resultSet.getInt("f.harga * tf.qty"));
+                String kota = resultSet.getString("c.kota");
+                String nama = resultSet.getString("c.nama");
+                String paymentMethod = resultSet.getString("t.payment_method");
+                model.addRow(new Object[] { transactionDate, kota, nama, foodName, quantity, totalPrice, paymentMethod });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
+        String[] columns = { "Transaction Date", "City", "Cinema", "Movie Name", "Showtime", "Seat", "Class Type", "Total Price", "Payment method" };
+        model.setColumnIdentifiers(columns);
+        try {
+            String sql = "SELECT t.transaction_date, m.judul, j.waktu, GROUP_CONCAT(se.kode SEPARATOR ', '), s.studio_class, SUM(j.harga), c.kota, c.nama, t.payment_method FROM transaction t " +
+                "JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction " + 
+                "JOIN jadwal j ON j.id_jadwal = tj.id_jadwal " + 
+                "JOIN movie m ON m.id_movie = j.id_movie " +
+                "JOIN user u ON u.id_user = t.id_user " +
+                "JOIN studio s ON s.id_studio = j.id_studio " +
+                "JOIN cinema c ON s.id_cinema = c.id_cinema " +
+                "JOIN seat se ON tj.id_seat = se.id_seat " +
+                "WHERE u.id_user = " + id + " " +
+                "GROUP BY t.id_transaction " +
+                "ORDER BY t.transaction_date;";
+            PreparedStatement statement = conn.connection.prepareStatement(sql);
+            ResultSet resultSet = statement.executeQuery();
+
+            String lastDate = "x";
+            while (resultSet.next()) {
+                String transactionDate = resultSet.getString("t.transaction_date");
+                if (!lastDate.equals("x")) {
+                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
+                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
+                    }
+                }
+                lastDate = transactionDate.substring(8, 10);
+
+                String movieName = resultSet.getString("m.judul");
+                String showtime = resultSet.getString("j.waktu");
+                String seat = resultSet.getString("GROUP_CONCAT(se.kode SEPARATOR ', ')");
+                String classType = resultSet.getString("s.studio_class");
+                String totalPrice = formatCurrency(resultSet.getInt("SUM(j.harga)"));
+                String kota = resultSet.getString("c.kota");
+                String nama = resultSet.getString("c.nama");
+                String paymentMethod = resultSet.getString("t.payment_method");
+                model.addRow(new Object[] { transactionDate, kota, nama, movieName, showtime, seat, classType, totalPrice, paymentMethod });
+            }
+            conn.close();
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            System.out.println(ex.getMessage());
+        }
+    }
 
     // Function tampilkan list
     public String[] listKota() {
@@ -2303,6 +2602,28 @@ public class Controller {
             return null;
         }
     }
+    
+    public String[] listUser() {
+        try {
+            conn.open();
+            Statement statement = conn.connection.createStatement();
+            ResultSet result = statement.executeQuery(
+                    "SELECT `username` FROM `user` WHERE `user_type` = 1");
+
+            ArrayList<String> listUser = new ArrayList<String>();
+            while (result.next()) {
+                listUser.add(result.getString("username"));
+            }
+            result.close();
+            statement.close();
+            conn.close();
+
+            return listUser.toArray(new String[listUser.size()]);
+        } catch (Exception ex) {
+            new ExceptionLogger(ex.getMessage());
+            return null;
+        }
+    }
 
     // User Profile area
     public int editProfile(String username, String oldPassword, String newPassword, String profileName, String email,
@@ -2361,318 +2682,5 @@ public class Controller {
         UserDataSingleton.getInstance().setPhone_no(phoneNo);
         UserDataSingleton.getInstance().setAddress(address);
         return 1;
-    }
-
-    public int addFnB(String[] fnb) {
-        if (fnb[1].equals("") || !isNumber(fnb[1])) {
-            return OperationCode.AddFnB.INVALIDHARGA;
-        }
-        int harga = Integer.parseInt(fnb[1]);
-        if (fnb[0] == null) {
-            return OperationCode.AddFnB.EMPTYNAME;
-        } else if (fnb[1] == null) {
-            return OperationCode.AddFnB.EMPTYHARGA;
-        } else if (fnb[2] == null) {
-            return OperationCode.AddFnB.EMPTYDESCRIPTION;
-        }
-        try {
-            conn.open();
-
-            Statement statement = conn.connection.createStatement();
-            statement.executeUpdate(
-                    "INSERT INTO `fnb` (`nama`,`harga`,`description`,`is_deleted`) VALUES ('" + fnb[0] + "','" + harga
-                            + "','" + fnb[2] + "',0)");
-            statement.close();
-            conn.close();
-            return OperationCode.AddFnB.SUCCESS;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return OperationCode.AddFnB.ANYEXCEPTION;
-        }
-    }
-    
-    public int deleteFnB(String fnbName) {
-        try{
-            conn.open();
-
-            Statement statement = conn.connection.createStatement();
-            statement.executeUpdate(
-                    "UPDATE `fnb` SET `is_deleted`=1 WHERE nama='" + fnbName + "'");
-            statement.close();
-            conn.close();
-            return 0;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return -99;
-        }
-    }
-    
-    public int editFnB(String fnbName, String [] dataFnB) {
-        if (dataFnB[1].equals("") || !isNumber(dataFnB[1])) {
-            return OperationCode.AddFnB.INVALIDHARGA;
-        }
-        int harga = Integer.parseInt(dataFnB[1]);
-        if (dataFnB[0] == null) {
-            return OperationCode.EditFnB.EMPTYNAME;
-        } else if (dataFnB[1] == null) {
-            return OperationCode.EditFnB.EMPTYHARGA;
-        } else if (dataFnB[2] == null) {
-            return OperationCode.EditFnB.EMPTYDESCRIPTION;
-        }
-        try {
-            conn.open();
-
-            Statement statement = conn.connection.createStatement();
-            statement.executeUpdate(
-                    "UPDATE `fnb` SET `nama`='" + dataFnB[0] + "', `harga`='" + harga + "', `description`='"
-                            + dataFnB[2] + "' WHERE nama='" + fnbName + "'");
-            statement.close();
-            conn.close();
-            return OperationCode.EditFnB.SUCCESS;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return OperationCode.EditFnB.ANYEXCEPTION;
-        }
-    }
-
-    // Main menu user area
-    public void printTableFnB(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "City", "Cinema", "Transaction Items", "Quantity", "Total Price", "Payment Method" };
-        model.setColumnIdentifiers(columns);
-        try {
-            String sql = "SELECT t.transaction_date,f.nama, tf.qty,f.harga * tf.qty, c.kota, c.nama, t.payment_method FROM transaction t JOIN transaction_fnb tf ON tf.id_transaction = t.id_transaction JOIN fnb f ON f.id_fnb = tf.id_fnb JOIN cinema c ON tf.id_cinema = c.id_cinema JOIN user u ON u.id_user = t.id_user WHERE u.id_user = "
-                    + id + " GROUP BY t.id_transaction, tf.qty, tf.id_fnb;";
-            PreparedStatement statement = conn.connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-
-            String lastDate = "x";
-            while (resultSet.next()) {
-                String transactionDate = resultSet.getString("t.transaction_date");
-                if (!lastDate.equals("x")) {
-                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
-                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
-                    }
-                }
-                lastDate = transactionDate.substring(8, 10);
-
-                String foodName = resultSet.getString("f.nama");
-                int quantity = resultSet.getInt("tf.qty");
-                String totalPrice = formatCurrency(resultSet.getInt("f.harga * tf.qty"));
-                String kota = resultSet.getString("c.kota");
-                String nama = resultSet.getString("c.nama");
-                String paymentMethod = resultSet.getString("t.payment_method");
-                model.addRow(new Object[] { transactionDate, kota, nama, foodName, quantity, totalPrice, paymentMethod });
-            }
-            conn.close();
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
-        }
-    }
-
-    public void printTableTickets(int id, JTable table, DefaultTableModel model) {
-        String[] columns = { "Transaction Date", "City", "Cinema", "Movie Name", "Showtime", "Seat", "Class Type", "Total Price", "Payment method" };
-        model.setColumnIdentifiers(columns);
-        try {
-            String sql = "SELECT t.transaction_date, m.judul, j.waktu, GROUP_CONCAT(se.kode SEPARATOR ', '), s.studio_class, SUM(j.harga), c.kota, c.nama, t.payment_method FROM transaction t " +
-                "JOIN transaction_jadwal tj ON tj.id_transaction = t.id_transaction " + 
-                "JOIN jadwal j ON j.id_jadwal = tj.id_jadwal " + 
-                "JOIN movie m ON m.id_movie = j.id_movie " +
-                "JOIN user u ON u.id_user = t.id_user " +
-                "JOIN studio s ON s.id_studio = j.id_studio " +
-                "JOIN cinema c ON s.id_cinema = c.id_cinema " +
-                "JOIN seat se ON tj.id_seat = se.id_seat " +
-                "WHERE u.id_user = " + id + " " +
-                "GROUP BY t.id_transaction " +
-                "ORDER BY t.transaction_date;";
-            PreparedStatement statement = conn.connection.prepareStatement(sql);
-            ResultSet resultSet = statement.executeQuery();
-
-            String lastDate = "x";
-            while (resultSet.next()) {
-                String transactionDate = resultSet.getString("t.transaction_date");
-                if (!lastDate.equals("x")) {
-                    if (!transactionDate.substring(8, 10).equals(lastDate)) {
-                        model.addRow(new String[] { "", "", "", "", "", "", "", "", "" });
-                    }
-                }
-                lastDate = transactionDate.substring(8, 10);
-
-                String movieName = resultSet.getString("m.judul");
-                String showtime = resultSet.getString("j.waktu");
-                String seat = resultSet.getString("GROUP_CONCAT(se.kode SEPARATOR ', ')");
-                String classType = resultSet.getString("s.studio_class");
-                String totalPrice = formatCurrency(resultSet.getInt("SUM(j.harga)"));
-                String kota = resultSet.getString("c.kota");
-                String nama = resultSet.getString("c.nama");
-                String paymentMethod = resultSet.getString("t.payment_method");
-                model.addRow(new Object[] { transactionDate, kota, nama, movieName, showtime, seat, classType, totalPrice, paymentMethod });
-            }
-            conn.close();
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            System.out.println(ex.getMessage());
-        }
-    }
-
-    public int checkMembership(String username) {
-        try {
-            conn.open();
-            String selectQuery = "SELECT `membership_status` FROM user WHERE username=? AND membership_status = 1";
-            PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
-            preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (!resultSet.isBeforeFirst()) {
-                return 0;
-            }
-            resultSet.close();
-            conn.close();
-            return 1;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            ex.printStackTrace();
-            return -99;
-        }
-    }
-
-    public int raiseMembership(String username) {
-        try {
-            int status = checkMembership(username);
-            if (status == 0) {
-                conn.open();
-                String updateQuery = "UPDATE user SET `membership_status` = 1, `membership_expiry_date` = ? WHERE username = ?";
-                PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery);
-                LocalDate date = LocalDate.now();
-                LocalDate newDate = date.plusDays(30);
-                preparedStatement.setDate(1, Date.valueOf(newDate));
-                preparedStatement.setString(2, username);
-
-                int rowsAffected = preparedStatement.executeUpdate();
-                preparedStatement.close();
-                conn.close();
-                if (rowsAffected > 0) {
-                    UserDataSingleton.getInstance().setMembership_status(1);
-                    UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
-                    return 1;
-                }
-            }else{
-                return -1;
-            }
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            ex.printStackTrace();
-        }
-        return -99;
-    }
-
-    public int extendMembership(String username) {
-        try {
-            int status = checkMembership(username);
-            if (status == 1) {
-                conn.open();
-                String selectQuery = "SELECT `membership_expiry_date` FROM user WHERE username=? AND membership_status = 1";
-                PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
-                preparedStatement.setString(1, username);
-                ResultSet resultSet = preparedStatement.executeQuery();
-                resultSet.next();
-                Date date = resultSet.getDate("membership_expiry_date");
-                LocalDate localDate = dateToLocalDate(date);
-                LocalDate newDate = localDate.plusDays(30);
-                resultSet.close();
-                preparedStatement.close();
-                String updateQuery = "UPDATE user SET membership_expiry_date = ? WHERE username = ?";
-                PreparedStatement preparedStatement2 = conn.connection.prepareStatement(updateQuery);
-                preparedStatement2.setDate(1, Date.valueOf(newDate));
-                preparedStatement2.setString(2, username);
-                int rowsAffected = preparedStatement2.executeUpdate();
-                preparedStatement2.close();
-                conn.close();
-                if (rowsAffected > 0) {
-                    UserDataSingleton.getInstance().setMembership_expiry_date(Date.valueOf(newDate));
-                    return 1;
-                }
-            } else {
-                return 0;
-            }
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            ex.printStackTrace();
-        }
-        return -99;
-    }
-
-    public int revokeMembership(String username) {
-        try {
-            int status = checkMembership(username);
-            if (status == 1) {
-                conn.open();
-                String updateQuery = "UPDATE user SET membership_status = 0, membership_expiry_date = ? WHERE username = ?";
-                try (PreparedStatement preparedStatement = conn.connection.prepareStatement(updateQuery)) {
-                    preparedStatement.setDate(1, null);
-                    preparedStatement.setString(2, username);
-                    int rowsAffected = preparedStatement.executeUpdate();
-                    if (rowsAffected > 0) {
-                        UserDataSingleton.getInstance().setMembership_status(0);
-                        return 1;
-                    } else {
-                        return 0;
-                    }
-                }
-            }else{
-                return -2;
-            }
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            ex.printStackTrace();
-        }
-        return -99;
-    }
-    public int checkExpiredMembership(String username) {
-        try {
-            conn.open();
-            String selectQuery = "SELECT `membership_expiry_date` FROM user WHERE username=? AND membership_status = 1";
-            PreparedStatement preparedStatement = conn.connection.prepareStatement(selectQuery);
-            preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (!resultSet.isBeforeFirst()) {
-                return 0;
-            }
-            resultSet.next();
-            Date date = resultSet.getDate("membership_expiry_date");
-            LocalDate localDate = dateToLocalDate(date);
-            LocalDate now = LocalDate.now();
-            int selisihHarinya = (int) ChronoUnit.DAYS.between(now, localDate);
-            if (localDate.isBefore(now)) {
-                return 1;
-            }
-            resultSet.close();
-            conn.close();
-            return selisihHarinya;
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            ex.printStackTrace();
-            return -99;
-        }
-    }
-    public String[] listUser(){
-        try {
-            conn.open();
-            Statement statement = conn.connection.createStatement();
-            ResultSet result = statement.executeQuery(
-                    "SELECT `username` FROM `user` WHERE `user_type` = 1");
-
-            ArrayList<String> listUser = new ArrayList<String>();
-            while (result.next()) {
-                listUser.add(result.getString("username"));
-            }
-            result.close();
-            statement.close();
-            conn.close();
-
-            return listUser.toArray(new String[listUser.size()]);
-        } catch (Exception ex) {
-            new ExceptionLogger(ex.getMessage());
-            return null;
-        }
     }
 }
